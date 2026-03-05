@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import type { Transaction, TransactionType } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
+import { generateId } from '@/utils/id';
 
 export async function getTransactionsByMonth(db: SQLiteDatabase, month: string): Promise<Transaction[]> {
   const rows = await db.getAllAsync<{
@@ -74,7 +74,7 @@ export async function insertTransaction(
   db: SQLiteDatabase,
   data: { type: TransactionType; amount: number; categoryId: string; note?: string; date: string }
 ) {
-  const id = uuidv4();
+  const id = generateId();
   const createdAt = new Date().toISOString();
 
   await db.runAsync(

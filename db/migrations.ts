@@ -3,15 +3,15 @@ import { CREATE_CATEGORIES_TABLE, CREATE_TRANSACTIONS_TABLE, CREATE_INDEXES } fr
 import { ALL_DEFAULT_CATEGORIES } from '@/constants/categories';
 
 export async function migrateDatabase(db: SQLiteDatabase) {
-  // Check if categories table has the is_custom column (v2 schema)
-  const tableInfo = await db.getAllAsync<{ name: string }>(
-    "PRAGMA table_info(categories)"
-  );
-  const hasIsCustom = tableInfo.some(col => col.name === 'is_custom');
+  // Check if old schema exists and drop to recreate with new schema
+  const catInfo = await db.getAllAsync<{ name: string }>("PRAGMA table_info(categories)");
+  const txInfo = await db.getAllAsync<{ name: string }>("PRAGMA table_info(transactions)");
 
-  if (tableInfo.length > 0 && !hasIsCustom) {
-    // Old schema exists — drop and recreate
+  if (catInfo.length > 0 && !catInfo.some(c => c.name === 'is_custom')) {
     await db.execAsync('DROP TABLE IF EXISTS categories');
+  }
+  if (txInfo.length > 0 && txInfo.some(c => c.name === 'book_id')) {
+    await db.execAsync('DROP TABLE IF EXISTS transactions');
   }
 
   await db.execAsync(CREATE_CATEGORIES_TABLE);

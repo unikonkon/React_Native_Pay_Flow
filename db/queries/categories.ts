@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import type { Category, TransactionType } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
+import { generateId } from '@/utils/id';
 
 export async function getAllCategories(db: SQLiteDatabase): Promise<Category[]> {
   const rows = await db.getAllAsync<{
@@ -40,7 +40,7 @@ export async function insertCategory(
   db: SQLiteDatabase,
   data: { name: string; icon: string; color: string; type: TransactionType }
 ) {
-  const id = uuidv4();
+  const id = generateId();
   const maxOrder = await db.getFirstAsync<{ max_order: number | null }>(
     'SELECT MAX(sort_order) as max_order FROM categories WHERE type = ?',
     [data.type]
