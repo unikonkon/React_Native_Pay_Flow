@@ -1,98 +1,98 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { TransactionForm } from '@/components/transaction/TransactionForm';
+import { TransactionList } from '@/components/transaction/TransactionList';
+import { FAB } from '@/components/ui/FAB';
+import { useSummary } from '@/hooks/useSummary';
+import { useTransactionStore } from '@/stores/transactionStore';
+import type { Transaction } from '@/types';
+import { formatCurrency } from '@/utils/currency';
+import { formatMonthYearThai, shiftMonth } from '@/utils/date';
+import { Ionicons } from '@expo/vector-icons';
+import BottomSheet from '@gorhom/bottom-sheet';
+import { useCallback, useEffect, useRef } from 'react';
+import { Alert, Pressable, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+export default function TransactionsScreen() {
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const {
+    transactions,
+    currentMonth,
+    setCurrentMonth,
+    loadTransactions,
+    deleteTransaction,
+  } = useTransactionStore();
 
-export default function HomeScreen() {
+  const { totalIncome, totalExpense } = useSummary(transactions);
+
+  useEffect(() => {
+    loadTransactions(currentMonth);
+  }, [currentMonth, loadTransactions]);
+
+  const handlePrevMonth = () => setCurrentMonth(shiftMonth(currentMonth, -1));
+  const handleNextMonth = () => setCurrentMonth(shiftMonth(currentMonth, 1));
+
+  const handleItemLongPress = useCallback((item: Transaction) => {
+    Alert.alert(
+      'ลบรายการ',
+      `ต้องการลบ "${item.category?.name}" ${formatCurrency(item.amount)} ?`,
+      [
+        { text: 'ยกเลิก', style: 'cancel' },
+        {
+          text: 'ลบ',
+          style: 'destructive',
+          onPress: () => deleteTransaction(item.id),
+        },
+      ]
+    );
+  }, [deleteTransaction]);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome! </ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView className="flex-1 bg-background">
+      {/* Month Selector + Quick Summary */}
+      <View className="px-4 pt-2 pb-3 bg-card border-b border-border">
+        <View className="flex-row items-center justify-between mb-2">
+          <Pressable onPress={handlePrevMonth} className="p-2">
+            <Ionicons name="chevron-back" size={24} color="#666" />
+          </Pressable>
+          <Text className="text-foreground font-bold text-lg">
+            {formatMonthYearThai(currentMonth)}
+          </Text>
+          <Pressable onPress={handleNextMonth} className="p-2">
+            <Ionicons name="chevron-forward" size={24} color="#666" />
+          </Pressable>
+        </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <View className="flex-row justify-around">
+          <View className="items-center">
+            <Text className="text-muted-foreground text-xs">รายรับ</Text>
+            <Text className="text-income font-bold text-base">{formatCurrency(totalIncome)}</Text>
+          </View>
+          <View className="items-center">
+            <Text className="text-muted-foreground text-xs">รายจ่าย</Text>
+            <Text className="text-expense font-bold text-base">{formatCurrency(totalExpense)}</Text>
+          </View>
+          <View className="items-center">
+            <Text className="text-muted-foreground text-xs">คงเหลือ</Text>
+            <Text className={`font-bold text-base ${totalIncome - totalExpense >= 0 ? 'text-income' : 'text-expense'}`}>
+              {formatCurrency(totalIncome - totalExpense)}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Transaction List */}
+      <View className="flex-1">
+        <TransactionList
+          transactions={transactions}
+          onItemLongPress={handleItemLongPress}
+        />
+      </View>
+
+      {/* FAB */}
+      <FAB onPress={() => bottomSheetRef.current?.snapToIndex(0)} />
+
+      {/* Bottom Sheet Form */}
+      <TransactionForm bottomSheetRef={bottomSheetRef} />
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
