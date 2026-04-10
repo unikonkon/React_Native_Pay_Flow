@@ -15,7 +15,9 @@ export interface Transaction {
   type: TransactionType;
   amount: number;
   categoryId: string;
+  walletId: string;
   category?: Category;
+  wallet?: Wallet;
   note?: string;
   date: string;
   createdAt: string;

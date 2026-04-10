@@ -6,6 +6,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useDatabase } from '@/lib/stores/db';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { useSettingsStore } from '@/lib/stores/settings-store';
+import { useWalletStore } from '@/lib/stores/wallet-store';
+import { useAnalysisStore } from '@/lib/stores/analysis-store';
 import 'react-native-reanimated';
 import '@/global.css';
 
@@ -17,13 +19,17 @@ export default function RootLayout() {
   const { isReady } = useDatabase();
   const loadCategories = useCategoryStore(s => s.loadCategories);
   const loadSettings = useSettingsStore(s => s.loadSettings);
+  const loadWallets = useWalletStore(s => s.loadWallets);
+  const loadAnalysis = useAnalysisStore(s => s.loadAnalysis);
 
   useEffect(() => {
     if (isReady) {
       loadCategories();
       loadSettings();
+      loadWallets();
+      loadAnalysis();
     }
-  }, [isReady, loadCategories, loadSettings]);
+  }, [isReady, loadCategories, loadSettings, loadWallets, loadAnalysis]);
 
   if (!isReady) {
     return (

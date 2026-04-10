@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import type { Transaction, TransactionType } from '@/types';
-import { getDb, getTransactionsByMonth, insertTransaction, updateTransaction as updateTx, deleteTransaction as deleteTx } from '@/lib/stores/db';
+import {
+  getDb,
+  getTransactionsByMonth,
+  insertTransaction,
+  updateTransaction as updateTx,
+  deleteTransaction as deleteTx,
+  upsertAnalysis,
+} from '@/lib/stores/db';
 
 interface TransactionStore {
   transactions: Transaction[];
@@ -13,6 +20,7 @@ interface TransactionStore {
     type: TransactionType;
     amount: number;
     categoryId: string;
+    walletId?: string;
     note?: string;
     date: string;
   }) => Promise<void>;
@@ -44,7 +52,19 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
 
   addTransaction: async (data) => {
     const db = getDb();
-    await insertTransaction(db, data);
+    const walletId = data.walletId ?? 'wallet-cash';
+    const txId = await insertTransaction(db, { ...data, walletId });
+
+    const matchType = data.note ? 'full' : 'basic';
+    await upsertAnalysis(db, {
+      walletId,
+      categoryId: data.categoryId,
+      type: data.type,
+      amount: data.amount,
+      note: data.note,
+      transactionId: txId,
+    }, matchType);
+
     await get().loadTransactions();
   },
 
@@ -54,6 +74,7 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
       type: data.type,
       amount: data.amount,
       categoryId: data.categoryId,
+      walletId: data.walletId,
       note: data.note,
       date: data.date,
     });
