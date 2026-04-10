@@ -3,9 +3,9 @@ import { ActivityIndicator, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useDatabase } from '@/hooks/useDatabase';
-import { useCategoryStore } from '@/stores/categoryStore';
-import { useSettingsStore } from '@/stores/settingsStore';
+import { useDatabase } from '@/lib/stores/db';
+import { useCategoryStore } from '@/lib/stores/category-store';
+import { useSettingsStore } from '@/lib/stores/settings-store';
 import 'react-native-reanimated';
 import '@/global.css';
 
