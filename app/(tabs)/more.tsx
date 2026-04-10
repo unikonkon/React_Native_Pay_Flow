@@ -7,6 +7,8 @@ import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { getDb, getAllTransactions } from '@/lib/stores/db';
 import { exportToCSV } from '@/lib/utils/export';
 import { getApiKey, setApiKey, deleteApiKey } from '@/lib/api/ai';
+import { isBiometricAvailable, getBiometricEnabled, setBiometricEnabled } from '@/lib/utils/auth';
+import { getNotificationsEnabled, setNotificationsEnabled } from '@/lib/utils/notifications';
 import Constants from 'expo-constants';
 
 function SettingsRow({
@@ -47,11 +49,30 @@ export default function SettingsScreen() {
 
   const [apiKeyStatus, setApiKeyStatus] = useState('ตรวจสอบ...');
 
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricEnabled, setBiometricEnabledState] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabledState] = useState(false);
+
   useEffect(() => {
     getApiKey().then(key => {
       setApiKeyStatus(key ? `ตั้งค่าแล้ว (****${key.slice(-4)})` : 'ยังไม่ได้ตั้งค่า');
     });
+    isBiometricAvailable().then(setBiometricAvailable);
+    getBiometricEnabled().then(setBiometricEnabledState);
+    getNotificationsEnabled().then(setNotificationsEnabledState);
   }, []);
+
+  const handleBiometricToggle = async () => {
+    const newValue = !biometricEnabled;
+    await setBiometricEnabled(newValue);
+    setBiometricEnabledState(newValue);
+  };
+
+  const handleNotificationsToggle = async () => {
+    const newValue = !notificationsEnabled;
+    await setNotificationsEnabled(newValue);
+    setNotificationsEnabledState(newValue);
+  };
 
   const handleApiKey = () => {
     Alert.prompt(
@@ -129,6 +150,20 @@ export default function SettingsScreen() {
         <SectionHeader title="ทั่วไป" />
         <SettingsRow icon="color-palette-outline" label="ธีม" value={themeLabel} onPress={handleThemeToggle} />
         <SettingsRow icon="key-outline" label="Gemini API Key" value={apiKeyStatus} onPress={handleApiKey} />
+        {biometricAvailable && (
+          <SettingsRow
+            icon="finger-print-outline"
+            label="ล็อกด้วย Face ID/ลายนิ้วมือ"
+            value={biometricEnabled ? 'เปิด' : 'ปิด'}
+            onPress={handleBiometricToggle}
+          />
+        )}
+        <SettingsRow
+          icon="notifications-outline"
+          label="แจ้งเตือน Push"
+          value={notificationsEnabled ? 'เปิด' : 'ปิด'}
+          onPress={handleNotificationsToggle}
+        />
         <SettingsRow icon="cash-outline" label="สกุลเงิน" value={`${currency} ฿`} />
 
         <SectionHeader title="ข้อมูล" />

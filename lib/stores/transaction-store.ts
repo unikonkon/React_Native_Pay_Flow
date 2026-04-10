@@ -8,6 +8,8 @@ import {
   deleteTransaction as deleteTx,
   upsertAnalysis,
 } from '@/lib/stores/db';
+import { sendBudgetAlert } from '@/lib/utils/notifications';
+import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 
 interface TransactionStore {
   transactions: Transaction[];
@@ -66,6 +68,15 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
     }, matchType);
 
     await get().loadTransactions();
+
+    // Check budget alert
+    const alertSettings = useAlertSettingsStore.getState();
+    if (alertSettings.isMonthlyTargetEnabled && data.type === 'expense') {
+      const monthlyExpense = get().transactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
+      await sendBudgetAlert(monthlyExpense, alertSettings.monthlyExpenseTarget);
+    }
   },
 
   updateTransaction: async (id, data) => {
