@@ -1,11 +1,6 @@
 import { create } from 'zustand';
 import type { Category, TransactionType } from '@/types';
-import { getDb } from '@/hooks/useDatabase';
-import {
-  getAllCategories,
-  insertCategory,
-  deleteCategory as deleteCat,
-} from '@/db/queries/categories';
+import { getDb, getAllCategories, insertCategory, deleteCategory as deleteCat } from '@/lib/stores/db';
 
 interface CategoryStore {
   categories: Category[];

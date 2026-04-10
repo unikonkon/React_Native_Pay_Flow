@@ -1,12 +1,6 @@
 import { create } from 'zustand';
 import type { Transaction, TransactionType } from '@/types';
-import { getDb } from '@/hooks/useDatabase';
-import {
-  getTransactionsByMonth,
-  insertTransaction,
-  updateTransaction as updateTx,
-  deleteTransaction as deleteTx,
-} from '@/db/queries/transactions';
+import { getDb, getTransactionsByMonth, insertTransaction, updateTransaction as updateTx, deleteTransaction as deleteTx } from '@/lib/stores/db';
 
 interface TransactionStore {
   transactions: Transaction[];
