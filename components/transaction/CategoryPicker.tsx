@@ -1,5 +1,6 @@
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import type { Category } from '@/types';
 
 interface CategoryPickerProps {
@@ -19,7 +20,10 @@ export function CategoryPicker({ categories, selectedId, onSelect }: CategoryPic
             return (
               <Pressable
                 key={cat.id}
-                onPress={() => onSelect(cat)}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  onSelect(cat);
+                }}
                 className={`flex-row items-center px-3 py-2 rounded-full border ${
                   isSelected ? 'border-primary bg-primary/10' : 'border-border bg-card'
                 }`}

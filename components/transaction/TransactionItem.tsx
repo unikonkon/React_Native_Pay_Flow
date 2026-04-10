@@ -1,5 +1,6 @@
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import type { Transaction } from '@/types';
 import { formatCurrency, formatDateThai } from '@/lib/utils/format';
 
@@ -16,8 +17,15 @@ export function TransactionItem({ item, onPress, onLongPress }: TransactionItemP
 
   return (
     <Pressable
-      onPress={() => onPress?.(item)}
-      onLongPress={() => onLongPress?.(item)}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress?.(item);
+      }}
+      onLongPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        onLongPress?.(item);
+      }}
+      android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
       className="flex-row items-center py-3 px-4 bg-card border-b border-border"
     >
       <View

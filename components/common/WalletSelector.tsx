@@ -1,5 +1,6 @@
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import type { Wallet } from '@/types';
 
 interface WalletSelectorProps {
@@ -19,7 +20,10 @@ export function WalletSelector({ wallets, selectedId, onSelect }: WalletSelector
             return (
               <Pressable
                 key={wallet.id}
-                onPress={() => onSelect(wallet)}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  onSelect(wallet);
+                }}
                 className={`flex-row items-center px-3 py-2 rounded-full border ${
                   isSelected ? 'border-primary bg-primary/10' : 'border-border bg-card'
                 }`}
