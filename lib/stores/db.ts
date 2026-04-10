@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { openDatabaseAsync, type SQLiteDatabase } from 'expo-sqlite';
-import type { Category, Transaction, TransactionType } from '@/types';
+import type { Analysis, Category, MatchType, Transaction, TransactionType, Wallet, WalletType } from '@/types';
 import { generateId } from '@/lib/utils/id';
 import { ALL_DEFAULT_CATEGORIES } from '@/lib/constants/categories';
 
@@ -142,6 +142,8 @@ async function migrateDatabase(db: SQLiteDatabase) {
   await db.execAsync(CREATE_WALLETS_INDEX);
 
   await seedDefaultCategories(db);
+  await migrateWalletId(db);
+  await seedDefaultWallet(db);
 }
 
 async function seedDefaultCategories(db: SQLiteDatabase) {
@@ -160,19 +162,43 @@ async function seedDefaultCategories(db: SQLiteDatabase) {
   }
 }
 
+async function migrateWalletId(db: SQLiteDatabase) {
+  const txCols = await db.getAllAsync<{ name: string }>('PRAGMA table_info(transactions)');
+  if (!txCols.some(c => c.name === 'wallet_id')) {
+    await db.execAsync("ALTER TABLE transactions ADD COLUMN wallet_id TEXT DEFAULT 'wallet-cash'");
+    await db.execAsync('CREATE INDEX IF NOT EXISTS idx_transactions_wallet ON transactions(wallet_id)');
+  }
+}
+
+async function seedDefaultWallet(db: SQLiteDatabase) {
+  const existing = await db.getFirstAsync<{ count: number }>(
+    "SELECT COUNT(*) as count FROM wallets WHERE id = 'wallet-cash'"
+  );
+  if (existing && existing.count > 0) return;
+
+  await db.runAsync(
+    `INSERT INTO wallets (id, name, type, icon, color, currency, initial_balance, current_balance, is_asset, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ['wallet-cash', 'เงินสด', 'cash', 'cash-outline', '#22C55E', 'THB', 0, 0, 1, new Date().toISOString()]
+  );
+}
+
 // ===== Transaction Queries =====
 
 export async function getTransactionsByMonth(db: SQLiteDatabase, month: string): Promise<Transaction[]> {
   const rows = await db.getAllAsync<{
     id: string; type: string; amount: number; category_id: string; note: string | null;
-    date: string; created_at: string;
+    date: string; created_at: string; wallet_id: string | null;
     cat_name: string; cat_icon: string; cat_color: string; cat_type: string;
     cat_is_custom: number; cat_sort_order: number;
+    w_name: string | null; w_type: string | null; w_icon: string | null; w_color: string | null;
   }>(
     `SELECT t.*, c.name as cat_name, c.icon as cat_icon, c.color as cat_color,
-            c.type as cat_type, c.is_custom as cat_is_custom, c.sort_order as cat_sort_order
+            c.type as cat_type, c.is_custom as cat_is_custom, c.sort_order as cat_sort_order,
+            w.name as w_name, w.type as w_type, w.icon as w_icon, w.color as w_color
      FROM transactions t
      LEFT JOIN categories c ON t.category_id = c.id
+     LEFT JOIN wallets w ON t.wallet_id = w.id
      WHERE strftime('%Y-%m', t.date) = ?
      ORDER BY t.date DESC, t.created_at DESC`,
     [month]
@@ -186,6 +212,7 @@ export async function getTransactionsByMonth(db: SQLiteDatabase, month: string):
     note: r.note ?? undefined,
     date: r.date,
     createdAt: r.created_at,
+    walletId: r.wallet_id ?? 'wallet-cash',
     category: {
       id: r.category_id,
       name: r.cat_name,
@@ -195,20 +222,24 @@ export async function getTransactionsByMonth(db: SQLiteDatabase, month: string):
       isCustom: r.cat_is_custom === 1,
       sortOrder: r.cat_sort_order,
     },
+    wallet: r.w_name ? { id: r.wallet_id!, name: r.w_name, type: r.w_type as WalletType, icon: r.w_icon!, color: r.w_color!, currency: 'THB', initialBalance: 0, currentBalance: 0, isAsset: true, createdAt: '' } : undefined,
   }));
 }
 
 export async function getAllTransactions(db: SQLiteDatabase): Promise<Transaction[]> {
   const rows = await db.getAllAsync<{
     id: string; type: string; amount: number; category_id: string; note: string | null;
-    date: string; created_at: string;
+    date: string; created_at: string; wallet_id: string | null;
     cat_name: string; cat_icon: string; cat_color: string; cat_type: string;
     cat_is_custom: number; cat_sort_order: number;
+    w_name: string | null; w_type: string | null; w_icon: string | null; w_color: string | null;
   }>(
     `SELECT t.*, c.name as cat_name, c.icon as cat_icon, c.color as cat_color,
-            c.type as cat_type, c.is_custom as cat_is_custom, c.sort_order as cat_sort_order
+            c.type as cat_type, c.is_custom as cat_is_custom, c.sort_order as cat_sort_order,
+            w.name as w_name, w.type as w_type, w.icon as w_icon, w.color as w_color
      FROM transactions t
      LEFT JOIN categories c ON t.category_id = c.id
+     LEFT JOIN wallets w ON t.wallet_id = w.id
      ORDER BY t.date DESC, t.created_at DESC`
   );
 
@@ -220,6 +251,7 @@ export async function getAllTransactions(db: SQLiteDatabase): Promise<Transactio
     note: r.note ?? undefined,
     date: r.date,
     createdAt: r.created_at,
+    walletId: r.wallet_id ?? 'wallet-cash',
     category: {
       id: r.category_id,
       name: r.cat_name,
@@ -229,20 +261,21 @@ export async function getAllTransactions(db: SQLiteDatabase): Promise<Transactio
       isCustom: r.cat_is_custom === 1,
       sortOrder: r.cat_sort_order,
     },
+    wallet: r.w_name ? { id: r.wallet_id!, name: r.w_name, type: r.w_type as WalletType, icon: r.w_icon!, color: r.w_color!, currency: 'THB', initialBalance: 0, currentBalance: 0, isAsset: true, createdAt: '' } : undefined,
   }));
 }
 
 export async function insertTransaction(
   db: SQLiteDatabase,
-  data: { type: TransactionType; amount: number; categoryId: string; note?: string; date: string }
+  data: { type: TransactionType; amount: number; categoryId: string; note?: string; date: string; walletId?: string }
 ) {
   const id = generateId();
   const createdAt = new Date().toISOString();
 
   await db.runAsync(
-    `INSERT INTO transactions (id, type, amount, category_id, note, date, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [id, data.type, data.amount, data.categoryId, data.note ?? null, data.date, createdAt]
+    `INSERT INTO transactions (id, type, amount, category_id, note, date, created_at, wallet_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, data.type, data.amount, data.categoryId, data.note ?? null, data.date, createdAt, data.walletId ?? 'wallet-cash']
   );
 
   return id;
@@ -251,7 +284,7 @@ export async function insertTransaction(
 export async function updateTransaction(
   db: SQLiteDatabase,
   id: string,
-  data: Partial<{ type: TransactionType; amount: number; categoryId: string; note: string; date: string }>
+  data: Partial<{ type: TransactionType; amount: number; categoryId: string; note: string; date: string; walletId: string }>
 ) {
   const sets: string[] = [];
   const values: (string | number | null)[] = [];
@@ -261,6 +294,7 @@ export async function updateTransaction(
   if (data.categoryId !== undefined) { sets.push('category_id = ?'); values.push(data.categoryId); }
   if (data.note !== undefined) { sets.push('note = ?'); values.push(data.note); }
   if (data.date !== undefined) { sets.push('date = ?'); values.push(data.date); }
+  if (data.walletId !== undefined) { sets.push('wallet_id = ?'); values.push(data.walletId); }
 
   if (sets.length === 0) return;
 
@@ -331,18 +365,70 @@ export async function deleteCategory(db: SQLiteDatabase, id: string) {
   await db.runAsync('DELETE FROM categories WHERE id = ? AND is_custom = 1', [id]);
 }
 
-// ===== Wallet Queries (stubs - implement in Phase 2) =====
+// ===== Wallet Queries =====
 
-export async function getAllWallets(db: SQLiteDatabase) {
-  return db.getAllAsync('SELECT * FROM wallets ORDER BY created_at');
+export async function getAllWallets(db: SQLiteDatabase): Promise<Wallet[]> {
+  const rows = await db.getAllAsync<{
+    id: string; name: string; type: string; icon: string; color: string;
+    currency: string; initial_balance: number; current_balance: number;
+    is_asset: number; created_at: string;
+  }>('SELECT * FROM wallets ORDER BY created_at');
+
+  return rows.map(r => ({
+    id: r.id,
+    name: r.name,
+    type: r.type as WalletType,
+    icon: r.icon,
+    color: r.color,
+    currency: r.currency,
+    initialBalance: r.initial_balance,
+    currentBalance: r.current_balance,
+    isAsset: r.is_asset === 1,
+    createdAt: r.created_at,
+  }));
 }
 
 export async function insertWallet(
   db: SQLiteDatabase,
-  _data: { name: string; type: string; icon: string; color: string }
-) {
-  // Stub - implement in Phase 2
-  void db;
+  data: { name: string; type: WalletType; icon: string; color: string }
+): Promise<string> {
+  const id = generateId();
+  const createdAt = new Date().toISOString();
+  await db.runAsync(
+    `INSERT INTO wallets (id, name, type, icon, color, currency, initial_balance, current_balance, is_asset, created_at)
+     VALUES (?, ?, ?, ?, ?, 'THB', 0, 0, 1, ?)`,
+    [id, data.name, data.type, data.icon, data.color, createdAt]
+  );
+  return id;
+}
+
+export async function updateWallet(
+  db: SQLiteDatabase,
+  id: string,
+  updates: Partial<{ name: string; type: WalletType; icon: string; color: string }>
+): Promise<void> {
+  const sets: string[] = [];
+  const values: (string | number)[] = [];
+  if (updates.name !== undefined) { sets.push('name = ?'); values.push(updates.name); }
+  if (updates.type !== undefined) { sets.push('type = ?'); values.push(updates.type); }
+  if (updates.icon !== undefined) { sets.push('icon = ?'); values.push(updates.icon); }
+  if (updates.color !== undefined) { sets.push('color = ?'); values.push(updates.color); }
+  if (sets.length === 0) return;
+  values.push(id);
+  await db.runAsync(`UPDATE wallets SET ${sets.join(', ')} WHERE id = ?`, values);
+}
+
+export async function deleteWallet(db: SQLiteDatabase, id: string): Promise<void> {
+  if (id === 'wallet-cash') return;
+  await db.runAsync('DELETE FROM wallets WHERE id = ?', [id]);
+}
+
+export async function getWalletTransactionCount(db: SQLiteDatabase, walletId: string): Promise<number> {
+  const result = await db.getFirstAsync<{ count: number }>(
+    'SELECT COUNT(*) as count FROM transactions WHERE wallet_id = ?',
+    [walletId]
+  );
+  return result?.count ?? 0;
 }
 
 // ===== AI History Queries (stubs - implement in Phase 3) =====
@@ -351,8 +437,78 @@ export async function getAiHistory(db: SQLiteDatabase) {
   return db.getAllAsync('SELECT * FROM ai_history ORDER BY created_at DESC');
 }
 
-// ===== Analysis Queries (stubs - implement in Phase 2) =====
+// ===== Analysis Queries =====
 
-export async function getAnalysis(db: SQLiteDatabase) {
-  return db.getAllAsync('SELECT * FROM analysis ORDER BY count DESC');
+export async function findAnalysisMatch(
+  db: SQLiteDatabase,
+  data: { walletId: string; categoryId: string; type: TransactionType; amount: number; note?: string }
+): Promise<{ id: string; matchType: 'basic' | 'full'; count: number } | null> {
+  if (data.note) {
+    const full = await db.getFirstAsync<{ id: string; count: number }>(
+      `SELECT id, count FROM analysis
+       WHERE wallet_id = ? AND category_id = ? AND type = ? AND amount = ? AND note = ? AND match_type = 'full'`,
+      [data.walletId, data.categoryId, data.type, data.amount, data.note]
+    );
+    if (full) return { id: full.id, matchType: 'full', count: full.count };
+  }
+
+  const basic = await db.getFirstAsync<{ id: string; count: number }>(
+    `SELECT id, count FROM analysis
+     WHERE wallet_id = ? AND category_id = ? AND type = ? AND amount = ? AND match_type = 'basic'`,
+    [data.walletId, data.categoryId, data.type, data.amount]
+  );
+  if (basic) return { id: basic.id, matchType: 'basic', count: basic.count };
+  return null;
+}
+
+export async function upsertAnalysis(
+  db: SQLiteDatabase,
+  data: { walletId: string; categoryId: string; type: TransactionType; amount: number; note?: string; transactionId: string },
+  matchType: 'basic' | 'full'
+): Promise<void> {
+  const now = new Date().toISOString();
+  const match = await findAnalysisMatch(db, data);
+  if (match) {
+    await db.runAsync(
+      `UPDATE analysis SET count = count + 1, last_transaction_id = ?, updated_at = ? WHERE id = ?`,
+      [data.transactionId, now, match.id]
+    );
+  } else {
+    const id = generateId();
+    await db.runAsync(
+      `INSERT INTO analysis (id, wallet_id, type, category_id, amount, note, match_type, count, last_transaction_id, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
+      [id, data.walletId, data.type, data.categoryId, data.amount, data.note ?? null, matchType, data.transactionId, now, now]
+    );
+  }
+}
+
+export async function getTopAnalyses(db: SQLiteDatabase, limit: number = 6): Promise<Analysis[]> {
+  const rows = await db.getAllAsync<{
+    id: string; wallet_id: string; type: string; category_id: string;
+    amount: number; note: string | null; match_type: string;
+    count: number; last_transaction_id: string;
+    created_at: string; updated_at: string;
+  }>(
+    'SELECT * FROM analysis WHERE count >= 2 ORDER BY count DESC LIMIT ?',
+    [limit]
+  );
+
+  return rows.map(r => ({
+    id: r.id,
+    walletId: r.wallet_id,
+    type: r.type as TransactionType,
+    categoryId: r.category_id,
+    amount: r.amount,
+    note: r.note ?? undefined,
+    matchType: r.match_type as MatchType,
+    count: r.count,
+    lastTransactionId: r.last_transaction_id,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  }));
+}
+
+export async function deleteAnalysisByWalletId(db: SQLiteDatabase, walletId: string): Promise<void> {
+  await db.runAsync('DELETE FROM analysis WHERE wallet_id = ?', [walletId]);
 }
