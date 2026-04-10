@@ -43,15 +43,15 @@ export function TransactionList({ transactions, onItemPress, onItemLongPress }: 
   return (
     <SectionList
       sections={sections}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
+      keyExtractor={(tx) => tx.id}
+      renderItem={(info: any) => (
         <TransactionItem
-          item={item}
+          item={info.item}
           onPress={onItemPress}
           onLongPress={onItemLongPress}
         />
       )}
-      renderSectionHeader={({ section }) => (
+      renderSectionHeader={({ section }: any) => (
         <DayGroupHeader
           date={section.date}
           income={section.income}
