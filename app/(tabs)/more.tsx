@@ -3,7 +3,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
-import { useCategoryStore } from '@/lib/stores/category-store';
 import { getDb, getAllTransactions } from '@/lib/stores/db';
 import { exportToCSV } from '@/lib/utils/export';
 import Constants from 'expo-constants';
@@ -43,7 +42,6 @@ function SectionHeader({ title }: { title: string }) {
 export default function SettingsScreen() {
   const { theme, currency, updateSettings } = useSettingsStore();
   const loadTransactions = useTransactionStore(s => s.loadTransactions);
-  const loadCategories = useCategoryStore(s => s.loadCategories);
 
   const handleThemeToggle = () => {
     const next = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';

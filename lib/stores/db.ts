@@ -203,8 +203,10 @@ export async function getAllTransactions(db: SQLiteDatabase): Promise<Transactio
     id: string; type: string; amount: number; category_id: string; note: string | null;
     date: string; created_at: string;
     cat_name: string; cat_icon: string; cat_color: string; cat_type: string;
+    cat_is_custom: number; cat_sort_order: number;
   }>(
-    `SELECT t.*, c.name as cat_name, c.icon as cat_icon, c.color as cat_color, c.type as cat_type
+    `SELECT t.*, c.name as cat_name, c.icon as cat_icon, c.color as cat_color,
+            c.type as cat_type, c.is_custom as cat_is_custom, c.sort_order as cat_sort_order
      FROM transactions t
      LEFT JOIN categories c ON t.category_id = c.id
      ORDER BY t.date DESC, t.created_at DESC`
@@ -224,8 +226,8 @@ export async function getAllTransactions(db: SQLiteDatabase): Promise<Transactio
       icon: r.cat_icon,
       color: r.cat_color,
       type: r.cat_type as TransactionType,
-      isCustom: false,
-      sortOrder: 0,
+      isCustom: r.cat_is_custom === 1,
+      sortOrder: r.cat_sort_order,
     },
   }));
 }
