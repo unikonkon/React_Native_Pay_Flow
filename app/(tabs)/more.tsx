@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { View, Text, Pressable, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -5,6 +6,7 @@ import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { getDb, getAllTransactions } from '@/lib/stores/db';
 import { exportToCSV } from '@/lib/utils/export';
+import { getApiKey, setApiKey, deleteApiKey } from '@/lib/api/ai';
 import Constants from 'expo-constants';
 
 function SettingsRow({
@@ -42,6 +44,37 @@ function SectionHeader({ title }: { title: string }) {
 export default function SettingsScreen() {
   const { theme, currency, updateSettings } = useSettingsStore();
   const loadTransactions = useTransactionStore(s => s.loadTransactions);
+
+  const [apiKeyStatus, setApiKeyStatus] = useState('ตรวจสอบ...');
+
+  useEffect(() => {
+    getApiKey().then(key => {
+      setApiKeyStatus(key ? `ตั้งค่าแล้ว (****${key.slice(-4)})` : 'ยังไม่ได้ตั้งค่า');
+    });
+  }, []);
+
+  const handleApiKey = () => {
+    Alert.prompt(
+      'Gemini API Key',
+      'ใส่ API Key จาก Google AI Studio',
+      [
+        { text: 'ยกเลิก', style: 'cancel' },
+        { text: 'ลบ Key', style: 'destructive', onPress: async () => {
+          await deleteApiKey();
+          setApiKeyStatus('ยังไม่ได้ตั้งค่า');
+        }},
+        { text: 'บันทึก', onPress: async (key?: string) => {
+          if (key?.trim()) {
+            await setApiKey(key.trim());
+            setApiKeyStatus(`ตั้งค่าแล้ว (****${key.trim().slice(-4)})`);
+          }
+        }},
+      ],
+      'plain-text',
+      '',
+      'default'
+    );
+  };
 
   const handleThemeToggle = () => {
     const next = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
@@ -95,6 +128,7 @@ export default function SettingsScreen() {
       <ScrollView>
         <SectionHeader title="ทั่วไป" />
         <SettingsRow icon="color-palette-outline" label="ธีม" value={themeLabel} onPress={handleThemeToggle} />
+        <SettingsRow icon="key-outline" label="Gemini API Key" value={apiKeyStatus} onPress={handleApiKey} />
         <SettingsRow icon="cash-outline" label="สกุลเงิน" value={`${currency} ฿`} />
 
         <SectionHeader title="ข้อมูล" />
