@@ -136,6 +136,12 @@ async function migrateDatabase(db: SQLiteDatabase) {
     await db.execAsync(sql);
   }
 
+  // Check if wallets table has old schema (missing currency column) and recreate
+  const walletInfo = await db.getAllAsync<{ name: string }>('PRAGMA table_info(wallets)');
+  if (walletInfo.length > 0 && !walletInfo.some(c => c.name === 'currency')) {
+    await db.execAsync('DROP TABLE IF EXISTS wallets');
+  }
+
   await db.execAsync(CREATE_WALLETS_TABLE);
   await db.execAsync(CREATE_AI_HISTORY_TABLE);
   await db.execAsync(CREATE_ANALYSIS_TABLE);
