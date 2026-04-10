@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { openDatabaseAsync, type SQLiteDatabase } from 'expo-sqlite';
-import type { Analysis, Category, MatchType, Transaction, TransactionType, Wallet, WalletType } from '@/types';
+import type { AiHistory, AiPromptType, Analysis, Category, MatchType, Transaction, TransactionType, Wallet, WalletType } from '@/types';
 import { generateId } from '@/lib/utils/id';
 import { ALL_DEFAULT_CATEGORIES } from '@/lib/constants/categories';
 
@@ -371,6 +371,91 @@ export async function deleteCategory(db: SQLiteDatabase, id: string) {
   await db.runAsync('DELETE FROM categories WHERE id = ? AND is_custom = 1', [id]);
 }
 
+// ===== Monthly Summary Queries =====
+
+export async function getMonthlySummaries(
+  db: SQLiteDatabase,
+  months: string[],
+  walletId?: string
+): Promise<{ month: string; income: number; expense: number }[]> {
+  const placeholders = months.map(() => '?').join(',');
+  const params: (string | number)[] = [...months];
+  let walletFilter = '';
+  if (walletId) {
+    walletFilter = ' AND wallet_id = ?';
+    params.push(walletId);
+  }
+
+  const rows = await db.getAllAsync<{
+    month: string; type: string; total: number;
+  }>(
+    `SELECT strftime('%Y-%m', date) as month, type, SUM(amount) as total
+     FROM transactions
+     WHERE strftime('%Y-%m', date) IN (${placeholders})${walletFilter}
+     GROUP BY month, type`,
+    params
+  );
+
+  return months.map(m => {
+    const incomeRow = rows.find(r => r.month === m && r.type === 'income');
+    const expenseRow = rows.find(r => r.month === m && r.type === 'expense');
+    return {
+      month: m,
+      income: incomeRow?.total ?? 0,
+      expense: expenseRow?.total ?? 0,
+    };
+  });
+}
+
+export async function getTransactionsByYear(
+  db: SQLiteDatabase,
+  year: number,
+  walletId?: string
+): Promise<Transaction[]> {
+  const yearStr = String(year);
+  let walletFilter = '';
+  const params: string[] = [yearStr];
+  if (walletId) {
+    walletFilter = ' AND t.wallet_id = ?';
+    params.push(walletId);
+  }
+
+  const rows = await db.getAllAsync<{
+    id: string; type: string; amount: number; category_id: string; wallet_id: string;
+    note: string | null; date: string; created_at: string;
+    cat_name: string; cat_icon: string; cat_color: string; cat_type: string;
+    cat_is_custom: number; cat_sort_order: number;
+  }>(
+    `SELECT t.*, c.name as cat_name, c.icon as cat_icon, c.color as cat_color,
+            c.type as cat_type, c.is_custom as cat_is_custom, c.sort_order as cat_sort_order
+     FROM transactions t
+     LEFT JOIN categories c ON t.category_id = c.id
+     WHERE strftime('%Y', t.date) = ?${walletFilter}
+     ORDER BY t.date DESC`,
+    params
+  );
+
+  return rows.map(r => ({
+    id: r.id,
+    type: r.type as TransactionType,
+    amount: r.amount,
+    categoryId: r.category_id,
+    walletId: r.wallet_id ?? 'wallet-cash',
+    note: r.note ?? undefined,
+    date: r.date,
+    createdAt: r.created_at,
+    category: {
+      id: r.category_id,
+      name: r.cat_name,
+      icon: r.cat_icon,
+      color: r.cat_color,
+      type: r.cat_type as TransactionType,
+      isCustom: r.cat_is_custom === 1,
+      sortOrder: r.cat_sort_order,
+    },
+  }));
+}
+
 // ===== Wallet Queries =====
 
 export async function getAllWallets(db: SQLiteDatabase): Promise<Wallet[]> {
@@ -437,10 +522,42 @@ export async function getWalletTransactionCount(db: SQLiteDatabase, walletId: st
   return result?.count ?? 0;
 }
 
-// ===== AI History Queries (stubs - implement in Phase 3) =====
+// ===== AI History Queries =====
 
-export async function getAiHistory(db: SQLiteDatabase) {
-  return db.getAllAsync('SELECT * FROM ai_history ORDER BY created_at DESC');
+export async function getAllAiHistory(db: SQLiteDatabase): Promise<AiHistory[]> {
+  const rows = await db.getAllAsync<{
+    id: string; wallet_id: string | null; prompt_type: string;
+    year: number; response_type: string; response_data: string;
+    created_at: string;
+  }>('SELECT * FROM ai_history ORDER BY created_at DESC');
+
+  return rows.map(r => ({
+    id: r.id,
+    walletId: r.wallet_id,
+    promptType: r.prompt_type as AiPromptType,
+    year: r.year,
+    responseType: r.response_type as 'structured' | 'full' | 'text',
+    responseData: r.response_data,
+    createdAt: r.created_at,
+  }));
+}
+
+export async function insertAiHistory(
+  db: SQLiteDatabase,
+  data: { walletId: string | null; promptType: AiPromptType; year: number; responseType: string; responseData: string }
+): Promise<string> {
+  const id = generateId();
+  const createdAt = new Date().toISOString();
+  await db.runAsync(
+    `INSERT INTO ai_history (id, wallet_id, prompt_type, year, response_type, response_data, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [id, data.walletId, data.promptType, data.year, data.responseType, data.responseData, createdAt]
+  );
+  return id;
+}
+
+export async function deleteAiHistory(db: SQLiteDatabase, id: string): Promise<void> {
+  await db.runAsync('DELETE FROM ai_history WHERE id = ?', [id]);
 }
 
 // ===== Analysis Queries =====

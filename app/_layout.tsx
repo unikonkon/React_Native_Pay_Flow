@@ -8,6 +8,7 @@ import { useCategoryStore } from '@/lib/stores/category-store';
 import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useWalletStore } from '@/lib/stores/wallet-store';
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
+import { useAiHistoryStore } from '@/lib/stores/ai-history-store';
 import 'react-native-reanimated';
 import '@/global.css';
 
@@ -21,6 +22,7 @@ export default function RootLayout() {
   const loadSettings = useSettingsStore(s => s.loadSettings);
   const loadWallets = useWalletStore(s => s.loadWallets);
   const loadAnalysis = useAnalysisStore(s => s.loadAnalysis);
+  const loadAiHistories = useAiHistoryStore(s => s.loadHistories);
 
   useEffect(() => {
     if (isReady) {
@@ -28,8 +30,9 @@ export default function RootLayout() {
       loadSettings();
       loadWallets();
       loadAnalysis();
+      loadAiHistories();
     }
-  }, [isReady, loadCategories, loadSettings, loadWallets, loadAnalysis]);
+  }, [isReady, loadCategories, loadSettings, loadWallets, loadAnalysis, loadAiHistories]);
 
   if (!isReady) {
     return (
