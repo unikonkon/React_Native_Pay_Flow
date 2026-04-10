@@ -1,6 +1,6 @@
 import { AmountInput } from '@/components/ui/AmountInput';
-import { useCategoryStore } from '@/stores/categoryStore';
-import { useTransactionStore } from '@/stores/transactionStore';
+import { useCategoryStore } from '@/lib/stores/category-store';
+import { useTransactionStore } from '@/lib/stores/transaction-store';
 import type { Category, TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';

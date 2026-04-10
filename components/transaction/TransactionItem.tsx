@@ -1,8 +1,7 @@
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { Transaction } from '@/types';
-import { formatCurrency } from '@/utils/currency';
-import { formatDateThai } from '@/utils/date';
+import { formatCurrency, formatDateThai } from '@/lib/utils/format';
 
 interface TransactionItemProps {
   item: Transaction;
