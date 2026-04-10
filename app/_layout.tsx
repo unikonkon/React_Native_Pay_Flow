@@ -9,6 +9,8 @@ import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useWalletStore } from '@/lib/stores/wallet-store';
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
 import { useAiHistoryStore } from '@/lib/stores/ai-history-store';
+import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
+import { useThemeStore } from '@/lib/stores/theme-store';
 import 'react-native-reanimated';
 import '@/global.css';
 
@@ -23,6 +25,9 @@ export default function RootLayout() {
   const loadWallets = useWalletStore(s => s.loadWallets);
   const loadAnalysis = useAnalysisStore(s => s.loadAnalysis);
   const loadAiHistories = useAiHistoryStore(s => s.loadHistories);
+  const loadAlertSettings = useAlertSettingsStore(s => s.loadAlertSettings);
+  const loadTheme = useThemeStore(s => s.loadTheme);
+  const currentTheme = useThemeStore(s => s.currentTheme);
 
   useEffect(() => {
     if (isReady) {
@@ -31,8 +36,10 @@ export default function RootLayout() {
       loadWallets();
       loadAnalysis();
       loadAiHistories();
+      loadAlertSettings();
+      loadTheme();
     }
-  }, [isReady, loadCategories, loadSettings, loadWallets, loadAnalysis, loadAiHistories]);
+  }, [isReady, loadCategories, loadSettings, loadWallets, loadAnalysis, loadAiHistories, loadAlertSettings, loadTheme]);
 
   if (!isReady) {
     return (
@@ -43,7 +50,7 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1 }} className={currentTheme !== 'light' ? currentTheme : undefined}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="settings/wallets" options={{ title: 'กระเป๋าเงิน', headerBackTitle: 'กลับ' }} />

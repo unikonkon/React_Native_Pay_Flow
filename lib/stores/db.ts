@@ -371,6 +371,21 @@ export async function deleteCategory(db: SQLiteDatabase, id: string) {
   await db.runAsync('DELETE FROM categories WHERE id = ? AND is_custom = 1', [id]);
 }
 
+export async function updateCategory(
+  db: SQLiteDatabase,
+  id: string,
+  updates: Partial<{ name: string; icon: string; color: string }>
+): Promise<void> {
+  const sets: string[] = [];
+  const values: (string | number)[] = [];
+  if (updates.name !== undefined) { sets.push('name = ?'); values.push(updates.name); }
+  if (updates.icon !== undefined) { sets.push('icon = ?'); values.push(updates.icon); }
+  if (updates.color !== undefined) { sets.push('color = ?'); values.push(updates.color); }
+  if (sets.length === 0) return;
+  values.push(id);
+  await db.runAsync(`UPDATE categories SET ${sets.join(', ')} WHERE id = ? AND is_custom = 1`, values);
+}
+
 // ===== Monthly Summary Queries =====
 
 export async function getMonthlySummaries(
