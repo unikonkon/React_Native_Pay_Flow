@@ -2,6 +2,8 @@ import { TransactionForm } from '@/components/transaction/TransactionForm';
 import { TransactionList } from '@/components/transaction/TransactionList';
 import { FrequentTransactions } from '@/components/transaction/FrequentTransactions';
 import { FAB } from '@/components/ui/FAB';
+import { AlertBanner } from '@/components/ui/AlertBanner';
+import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useSummary } from '@/hooks/useSummary';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { useCategoryStore } from '@/lib/stores/category-store';
@@ -29,6 +31,7 @@ export default function TransactionsScreen() {
   const categories = useCategoryStore(s => s.categories);
   const { analyses, loadAnalysis } = useAnalysisStore();
   const { totalIncome, totalExpense } = useSummary(transactions);
+  const { isMonthlyTargetEnabled, monthlyExpenseTarget } = useAlertSettingsStore();
 
   useEffect(() => {
     loadTransactions(currentMonth);
@@ -117,6 +120,11 @@ export default function TransactionsScreen() {
           </View>
         </View>
       </View>
+
+      {/* Budget Alert */}
+      {isMonthlyTargetEnabled && (
+        <AlertBanner currentExpense={totalExpense} target={monthlyExpenseTarget} />
+      )}
 
       <FrequentTransactions
         analyses={analyses}
