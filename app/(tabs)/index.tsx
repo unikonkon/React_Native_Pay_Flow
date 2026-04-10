@@ -1,18 +1,23 @@
 import { TransactionForm } from '@/components/transaction/TransactionForm';
 import { TransactionList } from '@/components/transaction/TransactionList';
+import { FrequentTransactions } from '@/components/transaction/FrequentTransactions';
 import { FAB } from '@/components/ui/FAB';
 import { useSummary } from '@/hooks/useSummary';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
-import type { Transaction } from '@/types';
+import { useCategoryStore } from '@/lib/stores/category-store';
+import { useAnalysisStore } from '@/lib/stores/analysis-store';
+import type { Analysis, Transaction } from '@/types';
 import { formatCurrency, formatMonthYearThai, shiftMonth } from '@/lib/utils/format';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet from '@gorhom/bottom-sheet';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TransactionsScreen() {
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+
   const {
     transactions,
     currentMonth,
@@ -21,6 +26,8 @@ export default function TransactionsScreen() {
     deleteTransaction,
   } = useTransactionStore();
 
+  const categories = useCategoryStore(s => s.categories);
+  const { analyses, loadAnalysis } = useAnalysisStore();
   const { totalIncome, totalExpense } = useSummary(transactions);
 
   useEffect(() => {
@@ -29,6 +36,11 @@ export default function TransactionsScreen() {
 
   const handlePrevMonth = () => setCurrentMonth(shiftMonth(currentMonth, -1));
   const handleNextMonth = () => setCurrentMonth(shiftMonth(currentMonth, 1));
+
+  const handleItemPress = useCallback((item: Transaction) => {
+    setEditingTransaction(item);
+    bottomSheetRef.current?.snapToIndex(0);
+  }, []);
 
   const handleItemLongPress = useCallback((item: Transaction) => {
     Alert.alert(
@@ -45,9 +57,36 @@ export default function TransactionsScreen() {
     );
   }, [deleteTransaction]);
 
+  const handleAddNew = useCallback(() => {
+    setEditingTransaction(null);
+    bottomSheetRef.current?.snapToIndex(0);
+  }, []);
+
+  const handleFrequentSelect = useCallback((analysis: Analysis) => {
+    const cat = categories.find(c => c.id === analysis.categoryId);
+    setEditingTransaction({
+      id: '',
+      type: analysis.type,
+      amount: analysis.amount,
+      categoryId: analysis.categoryId,
+      walletId: analysis.walletId,
+      category: cat,
+      note: analysis.note,
+      date: new Date().toISOString().split('T')[0],
+      createdAt: '',
+    });
+    bottomSheetRef.current?.snapToIndex(0);
+  }, [categories]);
+
+  const handleFormDismiss = useCallback(() => {
+    setEditingTransaction(null);
+    loadAnalysis();
+  }, [loadAnalysis]);
+
+  const formEditTransaction = editingTransaction?.id ? editingTransaction : null;
+
   return (
     <SafeAreaView className="flex-1 bg-background">
-      {/* Month Selector + Quick Summary */}
       <View className="px-4 pt-2 pb-3 bg-card border-b border-border">
         <View className="flex-row items-center justify-between mb-2">
           <Pressable onPress={handlePrevMonth} className="p-2">
@@ -79,19 +118,27 @@ export default function TransactionsScreen() {
         </View>
       </View>
 
-      {/* Transaction List */}
+      <FrequentTransactions
+        analyses={analyses}
+        categories={categories}
+        onSelect={handleFrequentSelect}
+      />
+
       <View className="flex-1">
         <TransactionList
           transactions={transactions}
+          onItemPress={handleItemPress}
           onItemLongPress={handleItemLongPress}
         />
       </View>
 
-      {/* FAB */}
-      <FAB onPress={() => bottomSheetRef.current?.snapToIndex(0)} />
+      <FAB onPress={handleAddNew} />
 
-      {/* Bottom Sheet Form */}
-      <TransactionForm bottomSheetRef={bottomSheetRef} />
+      <TransactionForm
+        bottomSheetRef={bottomSheetRef}
+        editTransaction={formEditTransaction}
+        onDismiss={handleFormDismiss}
+      />
     </SafeAreaView>
   );
 }
