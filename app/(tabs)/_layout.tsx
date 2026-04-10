@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { HapticTab } from '@/components/haptic-tab';
+import { HapticTab } from '@/components/layout/HapticTab';
 
 export default function TabLayout() {
   return (
@@ -26,20 +26,29 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="summary"
+        name="analytics"
         options={{
           title: 'สรุป',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart" size={size} color={color} />
+            <Ionicons name="pie-chart-outline" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="ai-analysis"
+        options={{
+          title: 'AI วิเคราะห์',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="sparkles-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="more"
         options={{
           title: 'ตั้งค่า',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" size={size} color={color} />
+            <Ionicons name="settings-outline" size={size} color={color} />
           ),
         }}
       />

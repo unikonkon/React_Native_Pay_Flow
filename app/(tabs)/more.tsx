@@ -1,12 +1,11 @@
 import { View, Text, Pressable, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useSettingsStore } from '@/stores/settingsStore';
-import { getDb } from '@/hooks/useDatabase';
-import { useTransactionStore } from '@/stores/transactionStore';
-import { useCategoryStore } from '@/stores/categoryStore';
-import { getAllTransactions } from '@/db/queries/transactions';
-import { exportToCSV } from '@/utils/export';
+import { useSettingsStore } from '@/lib/stores/settings-store';
+import { useTransactionStore } from '@/lib/stores/transaction-store';
+import { useCategoryStore } from '@/lib/stores/category-store';
+import { getDb, getAllTransactions } from '@/lib/stores/db';
+import { exportToCSV } from '@/lib/utils/export';
 import Constants from 'expo-constants';
 
 function SettingsRow({
