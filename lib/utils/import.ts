@@ -18,7 +18,7 @@ export async function importFromExcel(uri: string): Promise<ImportResult> {
   const base64 = file.base64();
   const wb = XLSX.read(base64, { type: 'base64' });
   const ws = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json<Record<string, any>>(ws);
+  const rows: Record<string, any>[] = XLSX.utils.sheet_to_json(ws);
 
   const result: ImportResult = { imported: 0, skipped: 0, errors: [] };
 
@@ -66,7 +66,7 @@ export async function importFromText(uri: string): Promise<ImportResult> {
   const wallets = await getAllWallets(db);
 
   const file = new File(uri);
-  const content = file.text();
+  const content = await file.text();
   const lines = content.split('\n');
 
   const result: ImportResult = { imported: 0, skipped: 0, errors: [] };
