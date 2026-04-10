@@ -1,17 +1,175 @@
-import { View, Text } from 'react-native';
+import { View, Text, Pressable, SectionList, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useCategoryStore } from '@/lib/stores/category-store';
+import type { Category, TransactionType } from '@/types';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import BottomSheet, { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import * as Haptics from 'expo-haptics';
+
+const CATEGORY_COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#B0B0B0', '#2ECC71', '#F39C12', '#8B5CF6', '#EC4899'];
+const CATEGORY_ICONS = ['fast-food', 'car', 'home', 'medkit', 'game-controller', 'shirt', 'book', 'cash', 'briefcase', 'gift', 'build', 'cart', 'football', 'musical-notes', 'paw', 'airplane'];
 
 export default function CategoriesScreen() {
+  const { categories, addCategory, updateCategory, deleteCategory } = useCategoryStore();
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ['65%'], []);
+
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [name, setName] = useState('');
+  const [selectedType, setSelectedType] = useState<TransactionType>('expense');
+  const [selectedIcon, setSelectedIcon] = useState(CATEGORY_ICONS[0]);
+  const [selectedColor, setSelectedColor] = useState(CATEGORY_COLORS[0]);
+
+  const isEditing = !!editingCategory;
+
+  const sections = useMemo(() => [
+    { title: 'รายจ่าย', data: categories.filter(c => c.type === 'expense') },
+    { title: 'รายรับ', data: categories.filter(c => c.type === 'income') },
+  ], [categories]);
+
+  const resetForm = useCallback(() => {
+    setEditingCategory(null);
+    setName('');
+    setSelectedType('expense');
+    setSelectedIcon(CATEGORY_ICONS[0]);
+    setSelectedColor(CATEGORY_COLORS[0]);
+  }, []);
+
+  const openAddForm = useCallback(() => {
+    resetForm();
+    bottomSheetRef.current?.snapToIndex(0);
+  }, [resetForm]);
+
+  const openEditForm = useCallback((cat: Category) => {
+    if (!cat.isCustom) return;
+    setEditingCategory(cat);
+    setName(cat.name);
+    setSelectedType(cat.type);
+    setSelectedIcon(cat.icon);
+    setSelectedColor(cat.color);
+    bottomSheetRef.current?.snapToIndex(0);
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    if (!name.trim()) return;
+    if (isEditing && editingCategory) {
+      await updateCategory(editingCategory.id, { name: name.trim(), icon: selectedIcon, color: selectedColor });
+    } else {
+      await addCategory({ name: name.trim(), type: selectedType, icon: selectedIcon, color: selectedColor });
+    }
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    resetForm();
+    bottomSheetRef.current?.close();
+  }, [name, selectedType, selectedIcon, selectedColor, isEditing, editingCategory, addCategory, updateCategory, resetForm]);
+
+  const handleDelete = useCallback((cat: Category) => {
+    if (!cat.isCustom) return;
+    Alert.alert('ลบหมวดหมู่', `ต้องการลบ "${cat.name}" ?`, [
+      { text: 'ยกเลิก', style: 'cancel' },
+      { text: 'ลบ', style: 'destructive', onPress: () => deleteCategory(cat.id) },
+    ]);
+  }, [deleteCategory]);
+
+  const renderItem = ({ item }: { item: Category }) => (
+    <Pressable
+      onPress={() => openEditForm(item)}
+      onLongPress={() => handleDelete(item)}
+      className="flex-row items-center px-4 py-3 bg-card border-b border-border"
+    >
+      <View className="w-9 h-9 rounded-full items-center justify-center mr-3" style={{ backgroundColor: item.color }}>
+        <Ionicons name={item.icon as keyof typeof Ionicons.glyphMap} size={18} color="white" />
+      </View>
+      <Text className="text-foreground font-medium flex-1">{item.name}</Text>
+      {item.isCustom && (
+        <View className="bg-secondary px-2 py-0.5 rounded">
+          <Text className="text-muted-foreground text-xs">กำหนดเอง</Text>
+        </View>
+      )}
+    </Pressable>
+  );
+
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <View className="px-4 pt-4 pb-2">
-        <Text className="text-foreground text-2xl font-bold">จัดการหมวดหมู่</Text>
-      </View>
-      <View className="flex-1 items-center justify-center">
-        <Ionicons name="grid-outline" size={64} color="#ccc" />
-        <Text className="text-muted-foreground text-lg mt-4">เร็วๆ นี้</Text>
-      </View>
+    <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
+      <SectionList
+        sections={sections}
+        keyExtractor={item => item.id}
+        renderItem={renderItem as any}
+        renderSectionHeader={({ section }: any) => (
+          <View className="px-4 py-2 bg-background">
+            <Text className="text-muted-foreground text-xs font-semibold uppercase">{section.title}</Text>
+          </View>
+        )}
+        stickySectionHeadersEnabled={false}
+      />
+
+      <Pressable
+        onPress={openAddForm}
+        className="absolute bottom-6 right-6 w-14 h-14 rounded-full bg-primary items-center justify-center shadow-lg"
+        style={{ elevation: 8 }}
+      >
+        <Ionicons name="add" size={28} color="white" />
+      </Pressable>
+
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={-1}
+        snapPoints={snapPoints}
+        enablePanDownToClose
+        onClose={resetForm}
+        handleIndicatorStyle={{ backgroundColor: '#ccc' }}
+      >
+        <BottomSheetScrollView contentContainerStyle={{ padding: 20 }}>
+          <Text className="text-foreground text-lg font-bold mb-4 text-center">
+            {isEditing ? 'แก้ไขหมวดหมู่' : 'เพิ่มหมวดหมู่'}
+          </Text>
+
+          <Text className="text-foreground font-semibold mb-2">ชื่อ</Text>
+          <BottomSheetTextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="ชื่อหมวดหมู่"
+            placeholderTextColor="#999"
+            style={{ borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, padding: 12, fontSize: 16, marginBottom: 16 }}
+          />
+
+          {!isEditing && (
+            <>
+              <Text className="text-foreground font-semibold mb-2">ประเภท</Text>
+              <View className="flex-row mb-4 rounded-xl overflow-hidden border border-border">
+                <Pressable onPress={() => setSelectedType('expense')} className={`flex-1 py-2.5 items-center ${selectedType === 'expense' ? 'bg-expense' : 'bg-card'}`}>
+                  <Text className={`font-semibold ${selectedType === 'expense' ? 'text-white' : 'text-foreground'}`}>รายจ่าย</Text>
+                </Pressable>
+                <Pressable onPress={() => setSelectedType('income')} className={`flex-1 py-2.5 items-center ${selectedType === 'income' ? 'bg-income' : 'bg-card'}`}>
+                  <Text className={`font-semibold ${selectedType === 'income' ? 'text-white' : 'text-foreground'}`}>รายรับ</Text>
+                </Pressable>
+              </View>
+            </>
+          )}
+
+          <Text className="text-foreground font-semibold mb-2">ไอคอน</Text>
+          <View className="flex-row flex-wrap gap-2 mb-4">
+            {CATEGORY_ICONS.map(icon => (
+              <Pressable key={icon} onPress={() => setSelectedIcon(icon)} className={`w-10 h-10 rounded-full items-center justify-center ${selectedIcon === icon ? 'border-2 border-primary' : 'bg-secondary'}`}>
+                <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={20} color={selectedIcon === icon ? '#0891b2' : '#666'} />
+              </Pressable>
+            ))}
+          </View>
+
+          <Text className="text-foreground font-semibold mb-2">สี</Text>
+          <View className="flex-row flex-wrap gap-3 mb-6">
+            {CATEGORY_COLORS.map(color => (
+              <Pressable key={color} onPress={() => setSelectedColor(color)} className={`w-9 h-9 rounded-full items-center justify-center ${selectedColor === color ? 'border-2 border-foreground' : ''}`} style={{ backgroundColor: color }}>
+                {selectedColor === color && <Ionicons name="checkmark" size={18} color="white" />}
+              </Pressable>
+            ))}
+          </View>
+
+          <Pressable onPress={handleSave} className={`py-4 rounded-xl items-center bg-primary ${!name.trim() ? 'opacity-50' : ''}`} disabled={!name.trim()}>
+            <Text className="text-white font-bold text-lg">{isEditing ? 'อัพเดท' : 'เพิ่ม'}</Text>
+          </Pressable>
+        </BottomSheetScrollView>
+      </BottomSheet>
     </SafeAreaView>
   );
 }
