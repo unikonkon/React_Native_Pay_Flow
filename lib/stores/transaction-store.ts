@@ -15,6 +15,7 @@ interface TransactionStore {
   transactions: Transaction[];
   isLoading: boolean;
   currentMonth: string;
+  editingTransaction: Transaction | null;
 
   setCurrentMonth: (month: string) => void;
   loadTransactions: (month?: string) => Promise<void>;
@@ -28,6 +29,7 @@ interface TransactionStore {
   }) => Promise<void>;
   updateTransaction: (id: string, data: Partial<Transaction>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
+  setEditingTransaction: (tx: Transaction | null) => void;
 }
 
 const getCurrentMonth = () => {
@@ -39,9 +41,14 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
   transactions: [],
   isLoading: false,
   currentMonth: getCurrentMonth(),
+  editingTransaction: null,
 
   setCurrentMonth: (month) => {
     set({ currentMonth: month });
+  },
+
+  setEditingTransaction: (tx) => {
+    set({ editingTransaction: tx });
   },
 
   loadTransactions: async (month) => {

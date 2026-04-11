@@ -1,5 +1,4 @@
-import { View, Text, Pressable } from 'react-native';
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import type { Category } from '@/types';
@@ -36,7 +35,7 @@ export function CategoryPicker({ categories, selectedId, onSelect }: CategoryPic
       </View>
 
       {/* Grid — vertical scrollable */}
-      <BottomSheetScrollView
+      <ScrollView
         style={{ maxHeight: ITEM_HEIGHT * ROWS_VISIBLE + 8 }}
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled
@@ -78,7 +77,7 @@ export function CategoryPicker({ categories, selectedId, onSelect }: CategoryPic
             );
           })}
         </View>
-      </BottomSheetScrollView>
+      </ScrollView>
     </View>
   );
 }

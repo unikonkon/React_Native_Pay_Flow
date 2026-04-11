@@ -1,35 +1,32 @@
-import { TransactionForm } from '@/components/transaction/TransactionForm';
-import { TransactionList } from '@/components/transaction/TransactionList';
 import { FrequentTransactions } from '@/components/transaction/FrequentTransactions';
-import { FAB } from '@/components/ui/FAB';
+import { TransactionList } from '@/components/transaction/TransactionList';
 import { AlertBanner } from '@/components/ui/AlertBanner';
-import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
+import { FAB } from '@/components/ui/FAB';
 import { useSummary } from '@/hooks/useSummary';
-import { useTransactionStore } from '@/lib/stores/transaction-store';
-import { useCategoryStore } from '@/lib/stores/category-store';
+import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
-import type { Analysis, Transaction } from '@/types';
+import { useCategoryStore } from '@/lib/stores/category-store';
+import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { formatCurrency, formatMonthYearThai, shiftMonth } from '@/lib/utils/format';
+import type { Analysis, Transaction } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
-import BottomSheet from '@gorhom/bottom-sheet';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { router } from 'expo-router';
+import { useCallback, useEffect } from 'react';
 import { Alert, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TransactionsScreen() {
-  const bottomSheetRef = useRef<BottomSheet>(null);
-  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-
   const {
     transactions,
     currentMonth,
     setCurrentMonth,
     loadTransactions,
     deleteTransaction,
+    setEditingTransaction,
   } = useTransactionStore();
 
   const categories = useCategoryStore(s => s.categories);
-  const { analyses, loadAnalysis } = useAnalysisStore();
+  const analyses = useAnalysisStore(s => s.analyses);
   const { totalIncome, totalExpense } = useSummary(transactions);
   const { isMonthlyTargetEnabled, monthlyExpenseTarget } = useAlertSettingsStore();
 
@@ -40,10 +37,14 @@ export default function TransactionsScreen() {
   const handlePrevMonth = () => setCurrentMonth(shiftMonth(currentMonth, -1));
   const handleNextMonth = () => setCurrentMonth(shiftMonth(currentMonth, 1));
 
+  const openForm = useCallback(() => {
+    router.push('/transaction/add');
+  }, []);
+
   const handleItemPress = useCallback((item: Transaction) => {
     setEditingTransaction(item);
-    bottomSheetRef.current?.snapToIndex(0);
-  }, []);
+    openForm();
+  }, [setEditingTransaction, openForm]);
 
   const handleItemLongPress = useCallback((item: Transaction) => {
     Alert.alert(
@@ -62,13 +63,13 @@ export default function TransactionsScreen() {
 
   const handleAddNew = useCallback(() => {
     setEditingTransaction(null);
-    bottomSheetRef.current?.snapToIndex(0);
-  }, []);
+    openForm();
+  }, [setEditingTransaction, openForm]);
 
   const handleFrequentSelect = useCallback((analysis: Analysis) => {
     const cat = categories.find(c => c.id === analysis.categoryId);
     setEditingTransaction({
-      id: '',
+      id: '', // empty id = pre-fill mode (add, not edit)
       type: analysis.type,
       amount: analysis.amount,
       categoryId: analysis.categoryId,
@@ -78,15 +79,8 @@ export default function TransactionsScreen() {
       date: new Date().toISOString().split('T')[0],
       createdAt: '',
     });
-    bottomSheetRef.current?.snapToIndex(0);
-  }, [categories]);
-
-  const handleFormDismiss = useCallback(() => {
-    setEditingTransaction(null);
-    loadAnalysis();
-  }, [loadAnalysis]);
-
-  const formEditTransaction = editingTransaction?.id ? editingTransaction : null;
+    openForm();
+  }, [categories, setEditingTransaction, openForm]);
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -141,12 +135,6 @@ export default function TransactionsScreen() {
       </View>
 
       <FAB onPress={handleAddNew} />
-
-      <TransactionForm
-        bottomSheetRef={bottomSheetRef}
-        editTransaction={formEditTransaction}
-        onDismiss={handleFormDismiss}
-      />
     </SafeAreaView>
   );
 }
