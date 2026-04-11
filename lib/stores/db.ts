@@ -148,6 +148,7 @@ async function migrateDatabase(db: SQLiteDatabase) {
   await db.execAsync(CREATE_WALLETS_INDEX);
 
   await seedDefaultCategories(db);
+  await migrateDefaultCategories(db);
   await migrateWalletId(db);
   await seedDefaultWallet(db);
 }
@@ -165,6 +166,48 @@ async function seedDefaultCategories(db: SQLiteDatabase) {
        VALUES (?, ?, ?, ?, ?, 0, ?)`,
       [cat.id, cat.name, cat.icon, cat.color, cat.type, cat.sortOrder]
     );
+  }
+}
+
+/**
+ * Migrate old default categories (8 expense + 4 income) to new set (30 + 14).
+ * - Upsert all new default categories with latest name/icon/color/sort_order
+ * - Remap any transactions still referencing removed old categories to a fallback
+ * - Delete old default categories that no longer exist in the new set
+ */
+async function migrateDefaultCategories(db: SQLiteDatabase) {
+  // Upsert every default category (insert or update)
+  for (const cat of ALL_DEFAULT_CATEGORIES) {
+    await db.runAsync(
+      `INSERT INTO categories (id, name, icon, color, type, is_custom, sort_order)
+       VALUES (?, ?, ?, ?, ?, 0, ?)
+       ON CONFLICT(id) DO UPDATE SET
+         name = excluded.name,
+         icon = excluded.icon,
+         color = excluded.color,
+         type = excluded.type,
+         sort_order = excluded.sort_order,
+         is_custom = 0`,
+      [cat.id, cat.name, cat.icon, cat.color, cat.type, cat.sortOrder]
+    );
+  }
+
+  // Find old default categories that are no longer in ALL_DEFAULT_CATEGORIES
+  const newIds = ALL_DEFAULT_CATEGORIES.map(c => c.id);
+  const placeholders = newIds.map(() => '?').join(',');
+  const oldDefaults = await db.getAllAsync<{ id: string; type: string }>(
+    `SELECT id, type FROM categories WHERE is_custom = 0 AND id NOT IN (${placeholders})`,
+    newIds
+  );
+
+  // Remap transactions from removed categories to type-appropriate fallback
+  for (const old of oldDefaults) {
+    const fallbackId = old.type === 'income' ? 'inc-other' : 'exp-other';
+    await db.runAsync(
+      'UPDATE transactions SET category_id = ? WHERE category_id = ?',
+      [fallbackId, old.id]
+    );
+    await db.runAsync('DELETE FROM categories WHERE id = ?', [old.id]);
   }
 }
 

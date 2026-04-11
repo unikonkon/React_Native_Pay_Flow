@@ -7,8 +7,37 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import BottomSheet, { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 
-const CATEGORY_COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#B0B0B0', '#2ECC71', '#F39C12', '#8B5CF6', '#EC4899'];
-const CATEGORY_ICONS = ['fast-food', 'car', 'home', 'medkit', 'game-controller', 'shirt', 'book', 'cash', 'briefcase', 'gift', 'build', 'cart', 'football', 'musical-notes', 'paw', 'airplane'];
+const CATEGORY_COLORS = [
+  '#FF6B6B', '#F59E0B', '#FACC15', '#84CC16', '#22C55E', '#10B981', '#14B8A6', '#06B6D4',
+  '#0EA5E9', '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899', '#F43F5E',
+  '#4ECDC4', '#45B7D1', '#96CEB4', '#DDA0DD', '#B0B0B0', '#64748B', '#78716C', '#D97706',
+];
+
+const CATEGORY_ICONS = [
+  // Food & Drinks
+  'fast-food', 'restaurant', 'cafe', 'wine', 'beer', 'pizza', 'ice-cream', 'nutrition',
+  // Transport
+  'car', 'car-sport', 'bus', 'train', 'bicycle', 'airplane', 'boat', 'flame',
+  // Home & Bills
+  'home', 'bed', 'bulb', 'water', 'wifi', 'phone-portrait', 'tv', 'construct',
+  // Shopping & Personal
+  'bag', 'basket', 'cart', 'shirt', 'gift', 'diamond', 'cut', 'sparkles',
+  // Health & Fitness
+  'medkit', 'fitness', 'barbell', 'heart', 'pulse', 'bandage', 'body', 'walk',
+  // Entertainment
+  'film', 'game-controller', 'musical-notes', 'headset', 'book', 'library', 'camera', 'image',
+  // People & Social
+  'people', 'person', 'happy', 'star', 'paw',
+  // Work & Finance
+  'briefcase', 'business', 'laptop', 'card', 'cash', 'wallet', 'stats-chart', 'analytics',
+  'trending-up', 'calculator', 'receipt', 'shield-checkmark', 'trophy', 'ribbon',
+  // Travel & Nature
+  'map', 'compass', 'globe', 'sunny', 'moon', 'cloud', 'umbrella', 'leaf',
+  // School
+  'school', 'pencil', 'reader',
+  // Other
+  'build', 'hammer', 'time', 'storefront', 'ellipsis-horizontal',
+];
 
 export default function CategoriesScreen() {
   const { categories, addCategory, updateCategory, deleteCategory } = useCategoryStore();
