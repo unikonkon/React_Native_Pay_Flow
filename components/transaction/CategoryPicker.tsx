@@ -1,4 +1,5 @@
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import type { Category } from '@/types';
@@ -9,12 +10,38 @@ interface CategoryPickerProps {
   onSelect: (category: Category) => void;
 }
 
+const COLUMNS = 6;
+const ROWS_VISIBLE = 2;
+const ITEM_HEIGHT = 78; // icon (56) + name + gap
+
 export function CategoryPicker({ categories, selectedId, onSelect }: CategoryPickerProps) {
+  const selectedCat = categories.find(c => c.id === selectedId);
+
   return (
     <View className="mb-4">
-      <Text className="text-foreground font-semibold mb-2">หมวดหมู่</Text>
-      <ScrollView horizontal={false}>
-        <View className="flex-row flex-wrap gap-2">
+      {/* Header: title + selected chip */}
+      <View className="flex-row items-center justify-between mb-3">
+        <Text className="text-foreground font-semibold">เลือกหมวดหมู่</Text>
+        {selectedCat && (
+          <View className="flex-row items-center px-3 py-1 rounded-full bg-primary/10 border border-primary">
+            <View
+              className="w-5 h-5 rounded-full items-center justify-center mr-1.5"
+              style={{ backgroundColor: selectedCat.color }}
+            >
+              <Ionicons name={selectedCat.icon as keyof typeof Ionicons.glyphMap} size={12} color="white" />
+            </View>
+            <Text className="text-primary text-xs font-semibold">{selectedCat.name}</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Grid — vertical scrollable */}
+      <BottomSheetScrollView
+        style={{ maxHeight: ITEM_HEIGHT * ROWS_VISIBLE + 8 }}
+        showsVerticalScrollIndicator={false}
+        nestedScrollEnabled
+      >
+        <View className="flex-row flex-wrap">
           {categories.map((cat) => {
             const isSelected = cat.id === selectedId;
             return (
@@ -24,24 +51,34 @@ export function CategoryPicker({ categories, selectedId, onSelect }: CategoryPic
                   Haptics.selectionAsync();
                   onSelect(cat);
                 }}
-                className={`flex-row items-center px-3 py-2 rounded-full border ${
-                  isSelected ? 'border-primary bg-primary/10' : 'border-border bg-card'
-                }`}
+                style={{ width: `${100 / COLUMNS}%` }}
+                className="items-center mb-3"
               >
                 <View
-                  className="w-7 h-7 rounded-full items-center justify-center mr-2"
+                  className={`w-14 h-14 rounded-full items-center justify-center ${
+                    isSelected ? 'border-2 border-primary' : ''
+                  }`}
                   style={{ backgroundColor: cat.color }}
                 >
-                  <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={16} color="white" />
+                  <Ionicons
+                    name={cat.icon as keyof typeof Ionicons.glyphMap}
+                    size={26}
+                    color="white"
+                  />
                 </View>
-                <Text className={`text-sm ${isSelected ? 'text-primary font-semibold' : 'text-foreground'}`}>
+                <Text
+                  className={`text-xs text-center mt-1 px-0.5 ${
+                    isSelected ? 'text-primary font-semibold' : 'text-foreground'
+                  }`}
+                  numberOfLines={1}
+                >
                   {cat.name}
                 </Text>
               </Pressable>
             );
           })}
         </View>
-      </ScrollView>
+      </BottomSheetScrollView>
     </View>
   );
 }
