@@ -91,17 +91,21 @@ export default function TransactionsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <View className="px-4 pt-2 pb-3 bg-card border-b border-border">
-        <PeriodSelector
-          period={currentPeriod}
-          onChange={setCurrentPeriod}
-          className="mb-2"
-        />
 
-        <WalletFilter
-          selectedWalletId={selectedWalletId}
-          onChange={setSelectedWalletId}
-          className="mb-2"
-        />
+
+        <View className="flex-row items-center justify-between mb-1">
+          <WalletFilter
+            selectedWalletId={selectedWalletId}
+            onChange={setSelectedWalletId}
+            className=""
+          />
+          <PeriodSelector
+            period={currentPeriod}
+            onChange={setCurrentPeriod}
+            className=""
+          />
+        </View>
+
 
         <View className="flex-row justify-around">
           <View className="items-center">
