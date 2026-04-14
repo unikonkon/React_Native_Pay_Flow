@@ -1,7 +1,7 @@
+import { useWalletStore } from '@/lib/stores/wallet-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
-import { useWalletStore } from '@/lib/stores/wallet-store';
+import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { AddWalletModal } from './AddWalletModal';
 
 interface Props {
@@ -19,10 +19,15 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
     ? wallets.find(w => w.id === selectedWalletId)?.name ?? 'กระเป๋า'
     : 'ทุกกระเป๋า';
 
+  const handlePick = (id: string | null) => {
+    onChange(id);
+    setOpen(false);
+  };
+
   return (
     <View className={className}>
       <Pressable
-        onPress={() => setOpen(!open)}
+        onPress={() => setOpen(true)}
         className="flex-row items-center px-3 py-2 bg-secondary rounded-lg self-start"
       >
         <Ionicons name="wallet-outline" size={16} color="#666" />
@@ -30,44 +35,78 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
         <Ionicons name="chevron-down" size={14} color="#666" style={{ marginLeft: 4 }} />
       </Pressable>
 
-      {open && (
-        <View className="mt-2 bg-card rounded-xl border border-border overflow-hidden">
+      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+        <Pressable
+          onPress={() => setOpen(false)}
+          className="flex-1 bg-black/40 items-center justify-center"
+        >
           <Pressable
-            onPress={() => { onChange(null); setOpen(false); }}
-            className={`px-4 py-3 border-b border-border ${!selectedWalletId ? 'bg-primary/10' : ''}`}
+            onPress={(e) => e.stopPropagation()}
+            className="w-11/12 max-w-md bg-card rounded-2xl p-4 border border-border"
           >
-            <Text className={`${!selectedWalletId ? 'text-primary font-semibold' : 'text-foreground'}`}>
-              ทุกกระเป๋า
-            </Text>
-          </Pressable>
-          {wallets.map(w => (
-            <Pressable
-              key={w.id}
-              onPress={() => { onChange(w.id); setOpen(false); }}
-              className={`flex-row items-center px-4 py-3 border-b border-border ${selectedWalletId === w.id ? 'bg-primary/10' : ''}`}
-            >
-              <View
-                className="w-6 h-6 rounded-full items-center justify-center mr-2"
-                style={{ backgroundColor: w.color }}
-              >
-                <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={12} color="white" />
-              </View>
-              <Text className={`${selectedWalletId === w.id ? 'text-primary font-semibold' : 'text-foreground'}`}>
-                {w.name}
-              </Text>
-            </Pressable>
-          ))}
-          <Pressable
-            onPress={() => { setOpen(false); setAddVisible(true); }}
-            className="flex-row items-center px-4 py-3"
-          >
-            <View className="w-6 h-6 rounded-full items-center justify-center mr-2 bg-primary/10">
-              <Ionicons name="add" size={14} color="#0891b2" />
+            <View className="flex-row items-center justify-between mb-3">
+              <Text className="text-foreground font-bold text-lg">เลือกกระเป๋า</Text>
+              <Pressable onPress={() => setOpen(false)} className="p-1">
+                <Ionicons name="close" size={22} color="#666" />
+              </Pressable>
             </View>
-            <Text className="text-primary font-semibold">เพิ่มกระเป๋า</Text>
+
+            <ScrollView className="max-h-96">
+              <Pressable
+                onPress={() => handlePick(null)}
+                className={`px-4 py-3 rounded-xl mb-2 border flex-row items-center justify-between ${!selectedWalletId ? 'bg-primary border-primary' : 'border-border bg-background'}`}
+              >
+                <View className="flex-row items-center">
+                  <View className="w-7 h-7 rounded-full items-center justify-center mr-2 bg-secondary">
+                    <Ionicons name="albums-outline" size={14} color="#666" />
+                  </View>
+                  <Text className={`text-sm font-semibold ${!selectedWalletId ? 'text-primary-foreground' : 'text-foreground'}`}>
+                    ทุกกระเป๋า
+                  </Text>
+                </View>
+                {!selectedWalletId && <Ionicons name="checkmark" size={18} color="white" />}
+              </Pressable>
+
+              {wallets.map(w => {
+                const selected = selectedWalletId === w.id;
+                return (
+                  <Pressable
+                    key={w.id}
+                    onPress={() => handlePick(w.id)}
+                    className={`px-4 py-3 rounded-xl mb-2 border flex-row items-center justify-between ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
+                  >
+                    <View className="flex-row items-center flex-1">
+                      <View
+                        className="w-7 h-7 rounded-full items-center justify-center mr-2"
+                        style={{ backgroundColor: w.color }}
+                      >
+                        <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={14} color="white" />
+                      </View>
+                      <Text
+                        className={`text-sm font-semibold ${selected ? 'text-primary-foreground' : 'text-foreground'}`}
+                        numberOfLines={1}
+                      >
+                        {w.name}
+                      </Text>
+                    </View>
+                    {selected && <Ionicons name="checkmark" size={18} color="white" />}
+                  </Pressable>
+                );
+              })}
+
+              <Pressable
+                onPress={() => { setOpen(false); setAddVisible(true); }}
+                className="px-4 py-3 rounded-xl border border-dashed border-primary/50 flex-row items-center"
+              >
+                <View className="w-7 h-7 rounded-full items-center justify-center mr-2 bg-primary/10">
+                  <Ionicons name="add" size={16} color="#0891b2" />
+                </View>
+                <Text className="text-primary font-semibold text-sm">เพิ่มกระเป๋า</Text>
+              </Pressable>
+            </ScrollView>
           </Pressable>
-        </View>
-      )}
+        </Pressable>
+      </Modal>
 
       <AddWalletModal
         visible={addVisible}
