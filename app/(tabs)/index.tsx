@@ -3,6 +3,7 @@ import { TransactionList } from '@/components/transaction/TransactionList';
 import { AlertBanner } from '@/components/ui/AlertBanner';
 import { FAB } from '@/components/ui/FAB';
 import { PeriodSelector } from '@/components/ui/PeriodSelector';
+import { WalletFilter } from '@/components/wallet/WalletFilter';
 import { useSummary } from '@/hooks/useSummary';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
@@ -11,7 +12,7 @@ import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { formatCurrency } from '@/lib/utils/format';
 import type { Analysis, Transaction } from '@/types';
 import { router } from 'expo-router';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { Alert, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -21,13 +22,21 @@ export default function TransactionsScreen() {
     currentPeriod,
     setCurrentPeriod,
     loadTransactions,
+    selectedWalletId,
+    setSelectedWalletId,
     deleteTransaction,
     setEditingTransaction,
   } = useTransactionStore();
 
   const categories = useCategoryStore(s => s.categories);
   const analyses = useAnalysisStore(s => s.analyses);
-  const { totalIncome, totalExpense } = useSummary(transactions);
+
+  const filteredTransactions = useMemo(() => {
+    if (!selectedWalletId) return transactions;
+    return transactions.filter(t => t.walletId === selectedWalletId);
+  }, [transactions, selectedWalletId]);
+
+  const { totalIncome, totalExpense } = useSummary(filteredTransactions);
   const { isMonthlyTargetEnabled, monthlyExpenseTarget } = useAlertSettingsStore();
 
   useEffect(() => {
@@ -88,6 +97,12 @@ export default function TransactionsScreen() {
           className="mb-2"
         />
 
+        <WalletFilter
+          selectedWalletId={selectedWalletId}
+          onChange={setSelectedWalletId}
+          className="mb-2"
+        />
+
         <View className="flex-row justify-around">
           <View className="items-center">
             <Text className="text-muted-foreground text-xs">รายรับ</Text>
@@ -119,7 +134,7 @@ export default function TransactionsScreen() {
 
       <View className="flex-1">
         <TransactionList
-          transactions={transactions}
+          transactions={filteredTransactions}
           onItemPress={handleItemPress}
           onItemLongPress={handleItemLongPress}
         />

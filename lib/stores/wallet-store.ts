@@ -6,7 +6,6 @@ import {
   insertWallet,
   updateWallet as updateW,
   deleteWallet as deleteW,
-  getWalletTransactionCount,
 } from '@/lib/stores/db';
 
 interface WalletStore {
@@ -52,8 +51,6 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   deleteWallet: async (id) => {
     if (id === 'wallet-cash') return false;
     const db = getDb();
-    const count = await getWalletTransactionCount(db, id);
-    if (count > 0) return false;
     await deleteW(db, id);
     await get().loadWallets();
     return true;

@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS: Settings = {
   dateFormat: 'DD/MM/YYYY',
   defaultTab: 0,
   theme: 'system',
+  defaultWalletId: 'wallet-cash',
 };
 
 interface SettingsStore extends Settings {
@@ -37,6 +38,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       dateFormat: get().dateFormat,
       defaultTab: get().defaultTab,
       theme: get().theme,
+      defaultWalletId: get().defaultWalletId,
     };
     const updated = { ...current, ...partial };
     await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));

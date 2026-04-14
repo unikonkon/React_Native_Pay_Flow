@@ -1,7 +1,10 @@
-import { View, Text, Pressable, FlatList, Alert } from 'react-native';
+import { View, Text, Pressable, FlatList, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useWalletStore } from '@/lib/stores/wallet-store';
+import { useSettingsStore } from '@/lib/stores/settings-store';
+import { useTransactionStore } from '@/lib/stores/transaction-store';
+import { getDb, getWalletTransactionCount } from '@/lib/stores/db';
 import type { Wallet, WalletType } from '@/types';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import BottomSheet, { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
@@ -20,6 +23,9 @@ const WALLET_COLORS = ['#22C55E', '#3B82F6', '#EF4444', '#F59E0B', '#8B5CF6', '#
 
 export default function WalletsScreen() {
   const { wallets, addWallet, updateWallet, deleteWallet } = useWalletStore();
+  const defaultWalletId = useSettingsStore(s => s.defaultWalletId);
+  const updateSettings = useSettingsStore(s => s.updateSettings);
+  const reloadTransactions = useTransactionStore(s => s.loadTransactions);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['60%'], []);
 
@@ -27,6 +33,7 @@ export default function WalletsScreen() {
   const [name, setName] = useState('');
   const [selectedType, setSelectedType] = useState<WalletType>('cash');
   const [selectedColor, setSelectedColor] = useState(WALLET_COLORS[0]);
+  const [actionWallet, setActionWallet] = useState<Wallet | null>(null);
 
   const isEditing = !!editingWallet;
 
@@ -43,13 +50,18 @@ export default function WalletsScreen() {
   }, [resetForm]);
 
   const openEditForm = useCallback((wallet: Wallet) => {
-    if (wallet.id === 'wallet-cash') return;
     setEditingWallet(wallet);
     setName(wallet.name);
     setSelectedType(wallet.type);
     setSelectedColor(wallet.color);
     bottomSheetRef.current?.snapToIndex(0);
   }, []);
+
+  const handleSetDefault = useCallback(async (wallet: Wallet) => {
+    await updateSettings({ defaultWalletId: wallet.id });
+    Haptics.selectionAsync();
+    setActionWallet(null);
+  }, [updateSettings]);
 
   const handleSave = useCallback(async () => {
     if (!name.trim()) return;
@@ -76,33 +88,43 @@ export default function WalletsScreen() {
     bottomSheetRef.current?.close();
   }, [name, selectedType, selectedColor, isEditing, editingWallet, addWallet, updateWallet, resetForm]);
 
-  const handleDelete = useCallback((wallet: Wallet) => {
-    if (wallet.id === 'wallet-cash') return;
+  const handleDelete = useCallback(async (wallet: Wallet) => {
+    if (wallet.id === 'wallet-cash') {
+      Alert.alert('ไม่สามารถลบได้', 'กระเป๋าเงินสดเป็นกระเป๋าพื้นฐานของระบบ');
+      return;
+    }
+    if (wallet.id === defaultWalletId) {
+      Alert.alert('ไม่สามารถลบได้', 'กระเป๋านี้เป็นค่าเริ่มต้น กรุณาเปลี่ยนค่าเริ่มต้นก่อน');
+      return;
+    }
+    const txCount = await getWalletTransactionCount(getDb(), wallet.id);
+    const message = txCount > 0
+      ? `ต้องการลบ "${wallet.name}" ?\nรายการที่เกี่ยวข้อง ${txCount} รายการจะถูกลบด้วย`
+      : `ต้องการลบ "${wallet.name}" ?`;
     Alert.alert(
       'ลบกระเป๋าเงิน',
-      `ต้องการลบ "${wallet.name}" ?`,
+      message,
       [
         { text: 'ยกเลิก', style: 'cancel' },
         {
           text: 'ลบ',
           style: 'destructive',
           onPress: async () => {
-            const success = await deleteWallet(wallet.id);
-            if (!success) {
-              Alert.alert('ไม่สามารถลบได้', 'กระเป๋านี้มีรายการอยู่ ต้องลบรายการก่อน');
-            }
+            await deleteWallet(wallet.id);
+            await reloadTransactions();
+            setActionWallet(null);
           },
         },
       ]
     );
-  }, [deleteWallet]);
+  }, [deleteWallet, defaultWalletId, reloadTransactions]);
 
   const renderWalletItem = ({ item }: { item: Wallet }) => {
-    const isDefault = item.id === 'wallet-cash';
+    const isDefault = item.id === defaultWalletId;
+    const isSystem = item.id === 'wallet-cash';
     return (
       <Pressable
         onPress={() => openEditForm(item)}
-        onLongPress={() => handleDelete(item)}
         className="flex-row items-center px-4 py-4 bg-card border-b border-border"
       >
         <View
@@ -118,10 +140,17 @@ export default function WalletsScreen() {
           </Text>
         </View>
         {isDefault && (
-          <View className="bg-primary/10 px-2 py-1 rounded">
+          <View className="bg-primary/10 px-2 py-1 rounded mr-2">
             <Text className="text-primary text-xs">ค่าเริ่มต้น</Text>
           </View>
         )}
+        <Pressable
+          onPress={() => setActionWallet(item)}
+          hitSlop={8}
+          className="p-1"
+        >
+          <Ionicons name="ellipsis-vertical" size={18} color="#666" />
+        </Pressable>
       </Pressable>
     );
   };
@@ -218,6 +247,75 @@ export default function WalletsScreen() {
           </Pressable>
         </BottomSheetScrollView>
       </BottomSheet>
+
+      <Modal
+        visible={!!actionWallet}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setActionWallet(null)}
+      >
+        <Pressable
+          onPress={() => setActionWallet(null)}
+          className="flex-1 bg-black/40 items-center justify-center"
+        >
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            className="w-11/12 max-w-md bg-card rounded-2xl p-4 border border-border"
+          >
+            {actionWallet && (
+              <>
+                <View className="flex-row items-center mb-3">
+                  <View
+                    className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                    style={{ backgroundColor: actionWallet.color }}
+                  >
+                    <Ionicons
+                      name={actionWallet.icon as keyof typeof Ionicons.glyphMap}
+                      size={20}
+                      color="white"
+                    />
+                  </View>
+                  <Text className="text-foreground font-bold text-lg flex-1" numberOfLines={1}>
+                    {actionWallet.name}
+                  </Text>
+                </View>
+
+                <Pressable
+                  onPress={() => handleSetDefault(actionWallet)}
+                  disabled={actionWallet.id === defaultWalletId}
+                  className={`flex-row items-center py-3 px-3 rounded-xl mb-2 ${actionWallet.id === defaultWalletId ? 'opacity-50' : 'active:bg-secondary'}`}
+                >
+                  <Ionicons name="star-outline" size={20} color="#0891b2" />
+                  <Text className="text-foreground ml-3 flex-1">
+                    {actionWallet.id === defaultWalletId ? 'เป็นค่าเริ่มต้นอยู่แล้ว' : 'ตั้งเป็นค่าเริ่มต้น'}
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => {
+                    const w = actionWallet;
+                    setActionWallet(null);
+                    openEditForm(w);
+                  }}
+                  className="flex-row items-center py-3 px-3 rounded-xl mb-2 active:bg-secondary"
+                >
+                  <Ionicons name="create-outline" size={20} color="#666" />
+                  <Text className="text-foreground ml-3 flex-1">แก้ไข</Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => handleDelete(actionWallet)}
+                  disabled={actionWallet.id === 'wallet-cash' || actionWallet.id === defaultWalletId}
+                  className={`flex-row items-center py-3 px-3 rounded-xl ${actionWallet.id === 'wallet-cash' || actionWallet.id === defaultWalletId ? 'opacity-50' : 'active:bg-destructive/10'}`}
+                >
+                  <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                  <Text className="text-destructive ml-3 flex-1">ลบกระเป๋า</Text>
+                </Pressable>
+              </>
+            )}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }

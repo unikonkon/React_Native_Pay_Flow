@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, Pressable, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { getDb, getAllTransactions } from '@/lib/stores/db';
@@ -9,6 +10,7 @@ import { exportToCSV } from '@/lib/utils/export';
 import { getApiKey, setApiKey, deleteApiKey } from '@/lib/api/ai';
 import { isBiometricAvailable, getBiometricEnabled, setBiometricEnabled } from '@/lib/utils/auth';
 import { getNotificationsEnabled, setNotificationsEnabled } from '@/lib/utils/notifications';
+import { AddWalletModal } from '@/components/wallet/AddWalletModal';
 import Constants from 'expo-constants';
 
 function SettingsRow({
@@ -52,6 +54,7 @@ export default function SettingsScreen() {
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometricEnabled, setBiometricEnabledState] = useState(false);
   const [notificationsEnabled, setNotificationsEnabledState] = useState(false);
+  const [addWalletVisible, setAddWalletVisible] = useState(false);
 
   useEffect(() => {
     getApiKey().then(key => {
@@ -166,6 +169,18 @@ export default function SettingsScreen() {
         />
         <SettingsRow icon="cash-outline" label="สกุลเงิน" value={`${currency} ฿`} />
 
+        <SectionHeader title="กระเป๋าเงิน" />
+        <SettingsRow
+          icon="add-circle-outline"
+          label="สร้างกระเป๋าใหม่"
+          onPress={() => setAddWalletVisible(true)}
+        />
+        <SettingsRow
+          icon="wallet-outline"
+          label="จัดการกระเป๋าเงิน"
+          onPress={() => router.push('/settings/wallets')}
+        />
+
         <SectionHeader title="ข้อมูล" />
         <SettingsRow icon="download-outline" label="ส่งออก Excel" onPress={handleExport} />
         <SettingsRow icon="trash-outline" label="ล้างข้อมูลทั้งหมด" onPress={handleClearData} />
@@ -174,6 +189,11 @@ export default function SettingsScreen() {
         <SettingsRow icon="information-circle-outline" label="เวอร์ชัน" value={appVersion} />
         <SettingsRow icon="logo-github" label="CeasFlow" value="Expense Tracker" />
       </ScrollView>
+
+      <AddWalletModal
+        visible={addWalletVisible}
+        onClose={() => setAddWalletVisible(false)}
+      />
     </SafeAreaView>
   );
 }

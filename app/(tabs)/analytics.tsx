@@ -10,6 +10,7 @@ import { PieChartView } from '@/components/analytics/PieChartView';
 import { BarChartView } from '@/components/analytics/BarChartView';
 import { WalletsContent } from '@/components/analytics/WalletsContent';
 import { PeriodSelector } from '@/components/ui/PeriodSelector';
+import { WalletFilter } from '@/components/wallet/WalletFilter';
 import { getBarChartBuckets } from '@/lib/utils/period';
 import { getAllTransactions, getDb, getSummariesByBuckets } from '@/lib/stores/db';
 import { exportToCSV } from '@/lib/utils/export';
@@ -17,11 +18,16 @@ import { exportToCSV } from '@/lib/utils/export';
 type ChartTab = 'overview' | 'category' | 'wallets';
 
 export default function AnalyticsScreen() {
-  const { transactions, currentPeriod, setCurrentPeriod, loadTransactions } = useTransactionStore();
+  const {
+    transactions,
+    currentPeriod,
+    setCurrentPeriod,
+    loadTransactions,
+    selectedWalletId,
+    setSelectedWalletId,
+  } = useTransactionStore();
   const wallets = useWalletStore(s => s.wallets);
   const [chartTab, setChartTab] = useState<ChartTab>('overview');
-  const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
-  const [walletFilterOpen, setWalletFilterOpen] = useState(false);
 
   const filteredTransactions = useMemo(() => {
     if (!selectedWalletId) return transactions;
@@ -67,10 +73,6 @@ export default function AnalyticsScreen() {
     }
   };
 
-  const selectedWalletName = selectedWalletId
-    ? wallets.find(w => w.id === selectedWalletId)?.name ?? 'กระเป๋า'
-    : 'ทุกกระเป๋า';
-
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView>
@@ -80,42 +82,11 @@ export default function AnalyticsScreen() {
           className="px-4 pt-2 pb-1"
         />
 
-        <View className="px-4 pb-3">
-          <Pressable
-            onPress={() => setWalletFilterOpen(!walletFilterOpen)}
-            className="flex-row items-center px-3 py-2 bg-secondary rounded-lg self-start"
-          >
-            <Ionicons name="wallet-outline" size={16} color="#666" />
-            <Text className="text-foreground text-sm ml-1">{selectedWalletName}</Text>
-            <Ionicons name="chevron-down" size={14} color="#666" style={{ marginLeft: 4 }} />
-          </Pressable>
-          {walletFilterOpen && (
-            <View className="mt-2 bg-card rounded-xl border border-border overflow-hidden">
-              <Pressable
-                onPress={() => { setSelectedWalletId(null); setWalletFilterOpen(false); }}
-                className={`px-4 py-3 border-b border-border ${!selectedWalletId ? 'bg-primary/10' : ''}`}
-              >
-                <Text className={`${!selectedWalletId ? 'text-primary font-semibold' : 'text-foreground'}`}>
-                  ทุกกระเป๋า
-                </Text>
-              </Pressable>
-              {wallets.map(w => (
-                <Pressable
-                  key={w.id}
-                  onPress={() => { setSelectedWalletId(w.id); setWalletFilterOpen(false); }}
-                  className={`flex-row items-center px-4 py-3 border-b border-border ${selectedWalletId === w.id ? 'bg-primary/10' : ''}`}
-                >
-                  <View className="w-6 h-6 rounded-full items-center justify-center mr-2" style={{ backgroundColor: w.color }}>
-                    <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={12} color="white" />
-                  </View>
-                  <Text className={`${selectedWalletId === w.id ? 'text-primary font-semibold' : 'text-foreground'}`}>
-                    {w.name}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          )}
-        </View>
+        <WalletFilter
+          selectedWalletId={selectedWalletId}
+          onChange={setSelectedWalletId}
+          className="px-4 pb-3"
+        />
 
         <BalanceCard totalIncome={totalIncome} totalExpense={totalExpense} balance={balance} />
 

@@ -1,5 +1,6 @@
 import { CalculatorPad } from '@/components/common/CalculatorPad';
 import { useCategoryStore } from '@/lib/stores/category-store';
+import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { useWalletStore } from '@/lib/stores/wallet-store';
 import type { Category, Transaction, TransactionType, Wallet } from '@/types';
@@ -38,6 +39,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
 
   const categories = useCategoryStore(s => s.categories);
   const wallets = useWalletStore(s => s.wallets);
+  const defaultWalletId = useSettingsStore(s => s.defaultWalletId);
   const addTransaction = useTransactionStore(s => s.addTransaction);
   const updateTransaction = useTransactionStore(s => s.updateTransaction);
 
@@ -60,9 +62,10 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   // Default wallet if none selected
   useEffect(() => {
     if (!selectedWallet && wallets.length > 0) {
-      setSelectedWallet(wallets[0]);
+      const preferred = wallets.find(w => w.id === defaultWalletId) ?? wallets[0];
+      setSelectedWallet(preferred);
     }
-  }, [wallets, selectedWallet]);
+  }, [wallets, selectedWallet, defaultWalletId]);
 
   const handleSave = useCallback(async () => {
     if (!amount || !selectedCategory) return;
@@ -72,7 +75,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
         type,
         amount,
         categoryId: selectedCategory.id,
-        walletId: selectedWallet?.id ?? 'wallet-cash',
+        walletId: selectedWallet?.id ?? defaultWalletId,
         note: note.trim() || undefined,
         date: date.toISOString().split('T')[0],
       });
@@ -81,7 +84,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
         type,
         amount,
         categoryId: selectedCategory.id,
-        walletId: selectedWallet?.id ?? 'wallet-cash',
+        walletId: selectedWallet?.id ?? defaultWalletId,
         note: note.trim() || undefined,
         date: date.toISOString().split('T')[0],
       });
@@ -89,7 +92,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     onClose();
-  }, [amount, selectedCategory, selectedWallet, type, note, date, isEditMode, editTransaction, addTransaction, updateTransaction, onClose]);
+  }, [amount, selectedCategory, selectedWallet, defaultWalletId, type, note, date, isEditMode, editTransaction, addTransaction, updateTransaction, onClose]);
 
   const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     // Android: system auto-dismisses the dialog; event.type is 'set' or 'dismissed'

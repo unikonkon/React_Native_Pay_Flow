@@ -49,6 +49,7 @@ export interface Settings {
   dateFormat: string;
   defaultTab: number;
   theme: 'light' | 'dark' | 'system';
+  defaultWalletId: string;
 }
 
 // ===== Wallet Types =====

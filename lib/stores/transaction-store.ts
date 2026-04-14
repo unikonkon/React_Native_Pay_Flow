@@ -16,9 +16,11 @@ interface TransactionStore {
   transactions: Transaction[];
   isLoading: boolean;
   currentPeriod: Period;
+  selectedWalletId: string | null;
   editingTransaction: Transaction | null;
 
   setCurrentPeriod: (period: Period) => void;
+  setSelectedWalletId: (id: string | null) => void;
   loadTransactions: (period?: Period) => Promise<void>;
   addTransaction: (data: {
     type: TransactionType;
@@ -37,9 +39,11 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
   transactions: [],
   isLoading: false,
   currentPeriod: getCurrentPeriod('month'),
+  selectedWalletId: null,
   editingTransaction: null,
 
   setCurrentPeriod: (period) => set({ currentPeriod: period }),
+  setSelectedWalletId: (id) => set({ selectedWalletId: id }),
   setEditingTransaction: (tx) => set({ editingTransaction: tx }),
 
   loadTransactions: async (period) => {
