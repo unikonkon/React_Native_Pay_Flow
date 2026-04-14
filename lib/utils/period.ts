@@ -4,6 +4,8 @@ import { THAI_MONTHS, THAI_MONTHS_FULL, formatDateRangeThai } from './format';
 const pad = (n: number) => String(n).padStart(2, '0');
 const toISO = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
+const ALL_START = '1970-01-01';
+
 function mondayOf(d: Date): Date {
   const x = new Date(d);
   const day = x.getDay();
@@ -24,12 +26,18 @@ export function getCurrentPeriod(type: PeriodType): Period {
       return { type, anchor: toISO(mondayOf(now)) };
     case 'month':
       return { type, anchor: toISO(firstOfMonth(now)) };
+    case '3months': {
+      const start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+      return { type, anchor: toISO(start) };
+    }
     case '6months': {
       const start = new Date(now.getFullYear(), now.getMonth() - 5, 1);
       return { type, anchor: toISO(start) };
     }
     case 'year':
       return { type, anchor: `${now.getFullYear()}-01-01` };
+    case 'all':
+      return { type, anchor: ALL_START };
   }
 }
 
@@ -45,13 +53,23 @@ export function getPeriodRange(p: Period): { start: string; end: string } {
       const end = new Date(a.getFullYear(), a.getMonth() + 1, 0);
       return { start: toISO(a), end: toISO(end) };
     }
+    case '3months': {
+      const end = new Date(a.getFullYear(), a.getMonth() + 3, 0);
+      return { start: toISO(a), end: toISO(end) };
+    }
     case '6months': {
       const end = new Date(a.getFullYear(), a.getMonth() + 6, 0);
       return { start: toISO(a), end: toISO(end) };
     }
     case 'year':
       return { start: `${a.getFullYear()}-01-01`, end: `${a.getFullYear()}-12-31` };
+    case 'all':
+      return { start: ALL_START, end: toISO(new Date()) };
   }
+}
+
+export function canShiftPeriod(p: Period): boolean {
+  return p.type !== 'all';
 }
 
 export function shiftPeriod(p: Period, dir: -1 | 1): Period {
@@ -65,12 +83,18 @@ export function shiftPeriod(p: Period, dir: -1 | 1): Period {
       const n = new Date(a.getFullYear(), a.getMonth() + dir, 1);
       return { type: 'month', anchor: toISO(n) };
     }
+    case '3months': {
+      const n = new Date(a.getFullYear(), a.getMonth() + 3 * dir, 1);
+      return { type: '3months', anchor: toISO(n) };
+    }
     case '6months': {
       const n = new Date(a.getFullYear(), a.getMonth() + 6 * dir, 1);
       return { type: '6months', anchor: toISO(n) };
     }
     case 'year':
       return { type: 'year', anchor: `${a.getFullYear() + dir}-01-01` };
+    case 'all':
+      return p;
   }
 }
 
@@ -83,6 +107,7 @@ export function formatPeriodLabel(p: Period): string {
       const a = new Date(p.anchor);
       return `${THAI_MONTHS_FULL[a.getMonth()]} ${a.getFullYear() + 543}`;
     }
+    case '3months':
     case '6months': {
       const s = new Date(start);
       const e = new Date(end);
@@ -90,6 +115,8 @@ export function formatPeriodLabel(p: Period): string {
     }
     case 'year':
       return `ปี ${new Date(p.anchor).getFullYear() + 543}`;
+    case 'all':
+      return 'ทั้งหมด';
   }
 }
 
@@ -138,6 +165,14 @@ export function getBarChartBuckets(
       }
       return buckets;
     }
+    case '3months': {
+      for (let i = 0; i < 3; i++) {
+        const s = new Date(a.getFullYear(), a.getMonth() + i, 1);
+        const e = new Date(a.getFullYear(), a.getMonth() + i + 1, 0);
+        buckets.push({ start: toISO(s), end: toISO(e), label: THAI_MONTHS[s.getMonth()] });
+      }
+      return buckets;
+    }
     case '6months': {
       for (let i = 0; i < 6; i++) {
         const s = new Date(a.getFullYear(), a.getMonth() + i, 1);
@@ -151,6 +186,26 @@ export function getBarChartBuckets(
         const s = new Date(a.getFullYear(), i, 1);
         const e = new Date(a.getFullYear(), i + 1, 0);
         buckets.push({ start: toISO(s), end: toISO(e), label: THAI_MONTHS[i] });
+      }
+      return buckets;
+    }
+    case 'all': {
+      const { start, end } = getPeriodRange(p);
+      const s = new Date(start);
+      const e = new Date(end);
+      const months: { y: number; m: number }[] = [];
+      let cy = s.getFullYear();
+      let cm = s.getMonth();
+      while (cy < e.getFullYear() || (cy === e.getFullYear() && cm <= e.getMonth())) {
+        months.push({ y: cy, m: cm });
+        cm++;
+        if (cm > 11) { cm = 0; cy++; }
+      }
+      const sliced = months.length > 12 ? months.slice(-12) : months;
+      for (const { y, m } of sliced) {
+        const bs = new Date(y, m, 1);
+        const be = new Date(y, m + 1, 0);
+        buckets.push({ start: toISO(bs), end: toISO(be), label: THAI_MONTHS[m] });
       }
       return buckets;
     }
