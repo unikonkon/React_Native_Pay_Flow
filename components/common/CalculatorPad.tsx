@@ -166,7 +166,7 @@ export function CalculatorPad({
                 key={colIdx}
                 onPress={() => handlePress(btn.label)}
                 android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
-                className={`flex-1 mx-1 py-4 rounded-full items-center justify-center ${bgClass}`}
+                className={`flex-1 mx-1 py-3 rounded-full items-center justify-center ${bgClass}`}
               >
                 {btn.icon ? (
                   <Ionicons name="backspace-outline" size={22} color="#666" />
@@ -186,14 +186,14 @@ export function CalculatorPad({
         <Pressable
           onPress={() => handlePress('00')}
           android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
-          className="flex-1 mx-1 py-4 rounded-full items-center justify-center bg-card"
+          className="flex-1 mx-1 py-3 rounded-full items-center justify-center bg-card"
         >
           <Text className="text-2xl font-bold text-foreground">00</Text>
         </Pressable>
         <Pressable
           onPress={() => handlePress('0')}
           android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
-          className="flex-1 mx-1 py-4 rounded-full items-center justify-center bg-card"
+          className="flex-1 mx-1 py-3 rounded-full items-center justify-center bg-card"
         >
           <Text className="text-2xl font-bold text-foreground">0</Text>
         </Pressable>
@@ -202,7 +202,7 @@ export function CalculatorPad({
           disabled={saveDisabled}
           android_ripple={{ color: 'rgba(255,255,255,0.2)' }}
           style={{ flex: 2 }}
-          className={`mx-1 py-4 rounded-full items-center justify-center ${saveBgClass} ${saveDisabled ? 'opacity-50' : ''}`}
+          className={`mx-1 py-3 rounded-full items-center justify-center ${saveBgClass} ${saveDisabled ? 'opacity-50' : ''}`}
         >
           <Text className="text-white text-xl font-bold">{saveLabel}</Text>
         </Pressable>

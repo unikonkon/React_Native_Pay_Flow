@@ -113,31 +113,31 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   return (
     <View className="flex-1 bg-background">
       {/* Header — type toggle + close */}
-      <View className="flex-row items-center px-4 py-3 border-b border-border">
+      <View className="flex-row items-center px-4 py-2 border-b border-border">
         <View className="flex-1 flex-row items-center justify-center">
           <View className="flex-row rounded-full overflow-hidden border border-border">
             <Pressable
               onPress={() => toggleType('expense')}
-              className={`flex-row items-center px-5 py-2 ${type === 'expense' ? 'bg-expense' : 'bg-card'}`}
+              className={`flex-row items-center px-4 py-1.5 ${type === 'expense' ? 'bg-expense' : 'bg-card'}`}
             >
-              <Ionicons name="remove-circle-outline" size={16} color={type === 'expense' ? 'white' : '#666'} />
-              <Text className={`font-bold ml-1 ${type === 'expense' ? 'text-white' : 'text-foreground'}`}>
+              <Ionicons name="remove-circle-outline" size={14} color={type === 'expense' ? 'white' : '#666'} />
+              <Text className={`font-bold ml-1 text-sm ${type === 'expense' ? 'text-white' : 'text-foreground'}`}>
                 รายจ่าย
               </Text>
             </Pressable>
             <Pressable
               onPress={() => toggleType('income')}
-              className={`flex-row items-center px-5 py-2 ${type === 'income' ? 'bg-income' : 'bg-card'}`}
+              className={`flex-row items-center px-4 py-1.5 ${type === 'income' ? 'bg-income' : 'bg-card'}`}
             >
-              <Ionicons name="add-circle-outline" size={16} color={type === 'income' ? 'white' : '#666'} />
-              <Text className={`font-bold ml-1 ${type === 'income' ? 'text-white' : 'text-foreground'}`}>
+              <Ionicons name="add-circle-outline" size={14} color={type === 'income' ? 'white' : '#666'} />
+              <Text className={`font-bold ml-1 text-sm ${type === 'income' ? 'text-white' : 'text-foreground'}`}>
                 รายรับ
               </Text>
             </Pressable>
           </View>
         </View>
-        <Pressable onPress={onClose} className="p-2">
-          <Ionicons name="close" size={26} color="#666" />
+        <Pressable onPress={onClose} className="p-1">
+          <Ionicons name="close" size={24} color="#666" />
         </Pressable>
       </View>
 
@@ -146,8 +146,9 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
         style={{ flex: 1 }}
       >
         <BottomSheetScrollView
-          contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+          contentContainerStyle={{ paddingHorizontal: 12, paddingTop: 10, paddingBottom: 16 }}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           {/* Category grid (vertical scroll) */}
           <CategoryPicker
@@ -157,13 +158,13 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           />
 
           {/* Date + Wallet chips — inline selector */}
-          <View className="flex-row items-center mb-3">
+          <View className="flex-row items-center mb-2">
             <Pressable
               onPress={() => setShowDatePicker(true)}
-              className="flex-row items-center py-2 px-3 bg-secondary rounded-xl mr-2"
+              className="flex-row items-center py-1.5 px-3 bg-secondary rounded-full mr-2"
             >
-              <Ionicons name="calendar-outline" size={16} color="#666" />
-              <Text className="text-foreground text-sm ml-1">
+              <Ionicons name="calendar-outline" size={14} color="#666" />
+              <Text className="text-foreground text-xs ml-1">
                 {date.toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}
               </Text>
             </Pressable>
@@ -174,7 +175,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               showsHorizontalScrollIndicator={false}
               className="flex-1"
             >
-              <View className="flex-row gap-2">
+              <View className="flex-row gap-1.5">
                 {wallets.map(w => {
                   const isSelected = w.id === selectedWallet?.id;
                   return (
@@ -184,7 +185,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                         Haptics.selectionAsync();
                         setSelectedWallet(w);
                       }}
-                      className={`flex-row items-center py-2 px-3 rounded-xl border ${
+                      className={`flex-row items-center py-1.5 px-3 rounded-full border ${
                         isSelected ? 'border-primary bg-primary/10' : 'border-border bg-secondary'
                       }`}
                     >
@@ -199,7 +200,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                         />
                       </View>
                       <Text
-                        className={`text-sm ${
+                        className={`text-xs ${
                           isSelected ? 'text-primary font-semibold' : 'text-foreground'
                         }`}
                       >
@@ -260,16 +261,16 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           )}
 
           {/* Note + Amount */}
-          <View className="flex-row items-center border border-border rounded-xl px-3 py-2 mb-4">
-            <Ionicons name="create-outline" size={16} color="#999" />
+          <View className="flex-row items-center border border-border rounded-xl px-3 py-1.5 mb-2">
+            <Ionicons name="create-outline" size={14} color="#999" />
             <BottomSheetTextInput
               value={note}
               onChangeText={setNote}
               placeholder="บันทึก..."
               placeholderTextColor="#999"
-              style={{ flex: 1, marginLeft: 8, fontSize: 14, color: '#0a0a0a' }}
+              style={{ flex: 1, marginLeft: 6, fontSize: 13, color: '#0a0a0a', paddingVertical: 2 }}
             />
-            <Text className={`text-xl font-bold ${type === 'income' ? 'text-income' : 'text-expense'}`}>
+            <Text className={`text-lg font-bold ${type === 'income' ? 'text-income' : 'text-expense'}`}>
               {amount > 0 ? `฿${amount.toLocaleString('th-TH')}` : '฿0'}
             </Text>
           </View>

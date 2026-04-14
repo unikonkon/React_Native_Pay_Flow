@@ -63,6 +63,8 @@ export default function AddTransactionScreen() {
         ref={sheetRef}
         index={0}
         snapPoints={snapPoints}
+        enableDynamicSizing={false}
+        enableOverDrag={false}
         enablePanDownToClose
         animationConfigs={animationConfigs}
         onClose={handleSheetClose}
