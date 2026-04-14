@@ -1,5 +1,4 @@
 import { CalculatorPad } from '@/components/common/CalculatorPad';
-import { WalletSelector } from '@/components/common/WalletSelector';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { useWalletStore } from '@/lib/stores/wallet-store';
@@ -13,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   Text,
   View,
 } from 'react-native';
@@ -140,13 +140,6 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Wallet */}
-          <WalletSelector
-            wallets={wallets}
-            selectedId={selectedWallet?.id}
-            onSelect={setSelectedWallet}
-          />
-
           {/* Category grid (vertical scroll) */}
           <CategoryPicker
             categories={filteredCategories}
@@ -154,7 +147,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             onSelect={setSelectedCategory}
           />
 
-          {/* Date + Amount display */}
+          {/* Date + Wallet chips — inline selector */}
           <View className="flex-row items-center mb-3">
             <Pressable
               onPress={() => setShowDatePicker(true)}
@@ -165,12 +158,49 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                 {date.toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}
               </Text>
             </Pressable>
-            {selectedWallet && (
-              <View className="flex-row items-center py-2 px-3 bg-secondary rounded-xl">
-                <View className="w-4 h-4 rounded-full mr-1" style={{ backgroundColor: selectedWallet.color }} />
-                <Text className="text-foreground text-sm">{selectedWallet.name}</Text>
+
+            {/* Wallet selector — horizontal scroll alongside date */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="flex-1"
+            >
+              <View className="flex-row gap-2">
+                {wallets.map(w => {
+                  const isSelected = w.id === selectedWallet?.id;
+                  return (
+                    <Pressable
+                      key={w.id}
+                      onPress={() => {
+                        Haptics.selectionAsync();
+                        setSelectedWallet(w);
+                      }}
+                      className={`flex-row items-center py-2 px-3 rounded-xl border ${
+                        isSelected ? 'border-primary bg-primary/10' : 'border-border bg-secondary'
+                      }`}
+                    >
+                      <View
+                        className="w-4 h-4 rounded-full items-center justify-center mr-1"
+                        style={{ backgroundColor: w.color }}
+                      >
+                        <Ionicons
+                          name={w.icon as keyof typeof Ionicons.glyphMap}
+                          size={10}
+                          color="white"
+                        />
+                      </View>
+                      <Text
+                        className={`text-sm ${
+                          isSelected ? 'text-primary font-semibold' : 'text-foreground'
+                        }`}
+                      >
+                        {w.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </View>
-            )}
+            </ScrollView>
           </View>
 
           {showDatePicker && (
