@@ -236,7 +236,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                   style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }}
                   onPress={() => setShowDatePicker(false)}
                 />
-                <View style={{ backgroundColor: 'white', paddingBottom: 24 }}>
+                <View style={{ backgroundColor: 'white', paddingBottom: 24, }}>
                   <View className="flex-row items-center justify-between px-4 py-3 border-b border-border">
                     <Pressable onPress={() => setShowDatePicker(false)}>
                       <Text className="text-muted-foreground font-medium text-base">ยกเลิก</Text>
@@ -246,15 +246,18 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                       <Text className="text-primary font-semibold text-base">ตกลง</Text>
                     </Pressable>
                   </View>
-                  <DateTimePicker
-                    value={date}
-                    mode="date"
-                    display="spinner"
-                    onChange={handleDateChange}
-                    locale="th-TH"
-                    themeVariant="light"
-                    textColor="#000000"
-                  />
+                  <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                    <DateTimePicker
+                      value={date}
+                      mode="date"
+                      display="spinner"
+                      onChange={handleDateChange}
+                      locale="th-TH"
+                      themeVariant="light"
+                      textColor="#000000"
+                      style={{ alignSelf: 'center' }}
+                    />
+                  </View>
                 </View>
               </View>
             </Modal>
