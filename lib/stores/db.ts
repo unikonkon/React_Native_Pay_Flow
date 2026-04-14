@@ -275,6 +275,51 @@ export async function getTransactionsByMonth(db: SQLiteDatabase, month: string):
   }));
 }
 
+export async function getTransactionsByRange(
+  db: SQLiteDatabase,
+  start: string,
+  end: string,
+): Promise<Transaction[]> {
+  const rows = await db.getAllAsync<{
+    id: string; type: string; amount: number; category_id: string; note: string | null;
+    date: string; created_at: string; wallet_id: string | null;
+    cat_name: string; cat_icon: string; cat_color: string; cat_type: string;
+    cat_is_custom: number; cat_sort_order: number;
+    w_name: string | null; w_type: string | null; w_icon: string | null; w_color: string | null;
+  }>(
+    `SELECT t.*, c.name as cat_name, c.icon as cat_icon, c.color as cat_color,
+            c.type as cat_type, c.is_custom as cat_is_custom, c.sort_order as cat_sort_order,
+            w.name as w_name, w.type as w_type, w.icon as w_icon, w.color as w_color
+     FROM transactions t
+     LEFT JOIN categories c ON t.category_id = c.id
+     LEFT JOIN wallets w ON t.wallet_id = w.id
+     WHERE t.date BETWEEN ? AND ?
+     ORDER BY t.date DESC, t.created_at DESC`,
+    [start, end]
+  );
+
+  return rows.map(r => ({
+    id: r.id,
+    type: r.type as TransactionType,
+    amount: r.amount,
+    categoryId: r.category_id,
+    note: r.note ?? undefined,
+    date: r.date,
+    createdAt: r.created_at,
+    walletId: r.wallet_id ?? 'wallet-cash',
+    category: {
+      id: r.category_id,
+      name: r.cat_name,
+      icon: r.cat_icon,
+      color: r.cat_color,
+      type: r.cat_type as TransactionType,
+      isCustom: r.cat_is_custom === 1,
+      sortOrder: r.cat_sort_order,
+    },
+    wallet: r.w_name ? { id: r.wallet_id!, name: r.w_name, type: r.w_type as WalletType, icon: r.w_icon!, color: r.w_color!, currency: 'THB', initialBalance: 0, currentBalance: 0, isAsset: true, createdAt: '' } : undefined,
+  }));
+}
+
 export async function getAllTransactions(db: SQLiteDatabase): Promise<Transaction[]> {
   const rows = await db.getAllAsync<{
     id: string; type: string; amount: number; category_id: string; note: string | null;
@@ -463,6 +508,32 @@ export async function getMonthlySummaries(
       expense: expenseRow?.total ?? 0,
     };
   });
+}
+
+export async function getSummariesByBuckets(
+  db: SQLiteDatabase,
+  buckets: { start: string; end: string; label: string }[],
+  walletId?: string,
+): Promise<{ label: string; income: number; expense: number }[]> {
+  const results: { label: string; income: number; expense: number }[] = [];
+  for (const b of buckets) {
+    const params: (string | number)[] = [b.start, b.end];
+    let walletFilter = '';
+    if (walletId) {
+      walletFilter = ' AND wallet_id = ?';
+      params.push(walletId);
+    }
+    const rows = await db.getAllAsync<{ type: string; total: number }>(
+      `SELECT type, SUM(amount) as total FROM transactions
+       WHERE date BETWEEN ? AND ?${walletFilter}
+       GROUP BY type`,
+      params
+    );
+    const income = rows.find(r => r.type === 'income')?.total ?? 0;
+    const expense = rows.find(r => r.type === 'expense')?.total ?? 0;
+    results.push({ label: b.label, income, expense });
+  }
+  return results;
 }
 
 export async function getTransactionsByYear(

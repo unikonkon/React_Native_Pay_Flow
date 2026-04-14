@@ -9,14 +9,15 @@ import { BalanceCard } from '@/components/analytics/BalanceCard';
 import { PieChartView } from '@/components/analytics/PieChartView';
 import { BarChartView } from '@/components/analytics/BarChartView';
 import { WalletsContent } from '@/components/analytics/WalletsContent';
-import { formatMonthYearThai, shiftMonth } from '@/lib/utils/format';
-import { getAllTransactions, getDb, getMonthlySummaries } from '@/lib/stores/db';
+import { PeriodSelector } from '@/components/ui/PeriodSelector';
+import { getBarChartBuckets } from '@/lib/utils/period';
+import { getAllTransactions, getDb, getSummariesByBuckets } from '@/lib/stores/db';
 import { exportToCSV } from '@/lib/utils/export';
 
 type ChartTab = 'overview' | 'category' | 'wallets';
 
 export default function AnalyticsScreen() {
-  const { transactions, currentMonth, setCurrentMonth, loadTransactions } = useTransactionStore();
+  const { transactions, currentPeriod, setCurrentPeriod, loadTransactions } = useTransactionStore();
   const wallets = useWalletStore(s => s.wallets);
   const [chartTab, setChartTab] = useState<ChartTab>('overview');
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
@@ -30,11 +31,8 @@ export default function AnalyticsScreen() {
   const { totalIncome, totalExpense, balance, expenseByCategory } = useSummary(filteredTransactions);
 
   useEffect(() => {
-    loadTransactions(currentMonth);
-  }, [currentMonth, loadTransactions]);
-
-  const handlePrevMonth = () => setCurrentMonth(shiftMonth(currentMonth, -1));
-  const handleNextMonth = () => setCurrentMonth(shiftMonth(currentMonth, 1));
+    loadTransactions(currentPeriod);
+  }, [currentPeriod, loadTransactions]);
 
   const [barData, setBarData] = useState<{ labels: string[]; incomeData: number[]; expenseData: number[] }>({
     labels: [], incomeData: [], expenseData: [],
@@ -42,27 +40,22 @@ export default function AnalyticsScreen() {
 
   useEffect(() => {
     const fetchBarData = async () => {
-      const months: string[] = [];
-      const labels: string[] = [];
-      for (let i = 5; i >= 0; i--) {
-        const m = shiftMonth(currentMonth, -i);
-        months.push(m);
-        labels.push(m.split('-')[1]);
-      }
+      const buckets = getBarChartBuckets(currentPeriod);
+      const labels = buckets.map(b => b.label);
       try {
         const db = getDb();
-        const summaries = await getMonthlySummaries(db, months, selectedWalletId ?? undefined);
+        const rows = await getSummariesByBuckets(db, buckets, selectedWalletId ?? undefined);
         setBarData({
           labels,
-          incomeData: summaries.map(s => s.income),
-          expenseData: summaries.map(s => s.expense),
+          incomeData: rows.map(r => r.income),
+          expenseData: rows.map(r => r.expense),
         });
       } catch {
         setBarData({ labels, incomeData: labels.map(() => 0), expenseData: labels.map(() => 0) });
       }
     };
     fetchBarData();
-  }, [currentMonth, selectedWalletId]);
+  }, [currentPeriod, selectedWalletId]);
 
   const handleExport = async () => {
     try {
@@ -81,17 +74,11 @@ export default function AnalyticsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView>
-        <View className="flex-row items-center justify-between px-4 pt-2 pb-1">
-          <Pressable onPress={handlePrevMonth} className="p-2">
-            <Ionicons name="chevron-back" size={24} color="#666" />
-          </Pressable>
-          <Text className="text-foreground font-bold text-lg">
-            {formatMonthYearThai(currentMonth)}
-          </Text>
-          <Pressable onPress={handleNextMonth} className="p-2">
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-          </Pressable>
-        </View>
+        <PeriodSelector
+          period={currentPeriod}
+          onChange={setCurrentPeriod}
+          className="px-4 pt-2 pb-1"
+        />
 
         <View className="px-4 pb-3">
           <Pressable

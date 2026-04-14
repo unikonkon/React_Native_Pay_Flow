@@ -2,24 +2,24 @@ import { FrequentTransactions } from '@/components/transaction/FrequentTransacti
 import { TransactionList } from '@/components/transaction/TransactionList';
 import { AlertBanner } from '@/components/ui/AlertBanner';
 import { FAB } from '@/components/ui/FAB';
+import { PeriodSelector } from '@/components/ui/PeriodSelector';
 import { useSummary } from '@/hooks/useSummary';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
-import { formatCurrency, formatMonthYearThai, shiftMonth } from '@/lib/utils/format';
+import { formatCurrency } from '@/lib/utils/format';
 import type { Analysis, Transaction } from '@/types';
-import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useCallback, useEffect } from 'react';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TransactionsScreen() {
   const {
     transactions,
-    currentMonth,
-    setCurrentMonth,
+    currentPeriod,
+    setCurrentPeriod,
     loadTransactions,
     deleteTransaction,
     setEditingTransaction,
@@ -31,11 +31,8 @@ export default function TransactionsScreen() {
   const { isMonthlyTargetEnabled, monthlyExpenseTarget } = useAlertSettingsStore();
 
   useEffect(() => {
-    loadTransactions(currentMonth);
-  }, [currentMonth, loadTransactions]);
-
-  const handlePrevMonth = () => setCurrentMonth(shiftMonth(currentMonth, -1));
-  const handleNextMonth = () => setCurrentMonth(shiftMonth(currentMonth, 1));
+    loadTransactions(currentPeriod);
+  }, [currentPeriod, loadTransactions]);
 
   const openForm = useCallback(() => {
     router.push('/transaction/add');
@@ -85,17 +82,11 @@ export default function TransactionsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <View className="px-4 pt-2 pb-3 bg-card border-b border-border">
-        <View className="flex-row items-center justify-between mb-2">
-          <Pressable onPress={handlePrevMonth} className="p-2">
-            <Ionicons name="chevron-back" size={24} color="#666" />
-          </Pressable>
-          <Text className="text-foreground font-bold text-lg">
-            {formatMonthYearThai(currentMonth)}
-          </Text>
-          <Pressable onPress={handleNextMonth} className="p-2">
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-          </Pressable>
-        </View>
+        <PeriodSelector
+          period={currentPeriod}
+          onChange={setCurrentPeriod}
+          className="mb-2"
+        />
 
         <View className="flex-row justify-around">
           <View className="items-center">

@@ -163,8 +163,8 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               onPress={() => setShowDatePicker(true)}
               className="flex-row items-center py-1.5 px-3 bg-secondary rounded-full mr-2"
             >
-              <Ionicons name="calendar-outline" size={14} color="#666" />
-              <Text className="text-foreground text-xs ml-1">
+              <Ionicons name="calendar-outline" size={18} color="#666" />
+              <Text className="text-foreground text-base ml-1">
                 {date.toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}
               </Text>
             </Pressable>

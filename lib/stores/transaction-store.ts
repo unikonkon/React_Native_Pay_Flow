@@ -1,24 +1,25 @@
 import { create } from 'zustand';
-import type { Transaction, TransactionType } from '@/types';
+import type { Period, Transaction, TransactionType } from '@/types';
 import {
   getDb,
-  getTransactionsByMonth,
+  getTransactionsByRange,
   insertTransaction,
   updateTransaction as updateTx,
   deleteTransaction as deleteTx,
   upsertAnalysis,
 } from '@/lib/stores/db';
+import { getCurrentPeriod, getPeriodRange } from '@/lib/utils/period';
 import { sendBudgetAlert } from '@/lib/utils/notifications';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 
 interface TransactionStore {
   transactions: Transaction[];
   isLoading: boolean;
-  currentMonth: string;
+  currentPeriod: Period;
   editingTransaction: Transaction | null;
 
-  setCurrentMonth: (month: string) => void;
-  loadTransactions: (month?: string) => Promise<void>;
+  setCurrentPeriod: (period: Period) => void;
+  loadTransactions: (period?: Period) => Promise<void>;
   addTransaction: (data: {
     type: TransactionType;
     amount: number;
@@ -32,31 +33,22 @@ interface TransactionStore {
   setEditingTransaction: (tx: Transaction | null) => void;
 }
 
-const getCurrentMonth = () => {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-};
-
 export const useTransactionStore = create<TransactionStore>((set, get) => ({
   transactions: [],
   isLoading: false,
-  currentMonth: getCurrentMonth(),
+  currentPeriod: getCurrentPeriod('month'),
   editingTransaction: null,
 
-  setCurrentMonth: (month) => {
-    set({ currentMonth: month });
-  },
+  setCurrentPeriod: (period) => set({ currentPeriod: period }),
+  setEditingTransaction: (tx) => set({ editingTransaction: tx }),
 
-  setEditingTransaction: (tx) => {
-    set({ editingTransaction: tx });
-  },
-
-  loadTransactions: async (month) => {
+  loadTransactions: async (period) => {
     set({ isLoading: true });
-    const m = month ?? get().currentMonth;
+    const p = period ?? get().currentPeriod;
+    const { start, end } = getPeriodRange(p);
     const db = getDb();
-    const transactions = await getTransactionsByMonth(db, m);
-    set({ transactions, isLoading: false, currentMonth: m });
+    const transactions = await getTransactionsByRange(db, start, end);
+    set({ transactions, isLoading: false, currentPeriod: p });
   },
 
   addTransaction: async (data) => {
@@ -76,7 +68,6 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
 
     await get().loadTransactions();
 
-    // Check budget alert
     const alertSettings = useAlertSettingsStore.getState();
     if (alertSettings.isMonthlyTargetEnabled && data.type === 'expense') {
       const monthlyExpense = get().transactions
