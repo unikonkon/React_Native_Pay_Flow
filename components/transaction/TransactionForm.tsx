@@ -10,6 +10,7 @@ import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -90,8 +91,16 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
     onClose();
   }, [amount, selectedCategory, selectedWallet, type, note, date, isEditMode, editTransaction, addTransaction, updateTransaction, onClose]);
 
-  const handleDateChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios');
+  const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    // Android: system auto-dismisses the dialog; event.type is 'set' or 'dismissed'
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+      if (event.type === 'set' && selectedDate) {
+        setDate(selectedDate);
+      }
+      return;
+    }
+    // iOS: picker stays open inside our Modal; just update value as user spins
     if (selectedDate) setDate(selectedDate);
   };
 
@@ -203,14 +212,51 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             </ScrollView>
           </View>
 
-          {showDatePicker && (
+          {/* Android: native dialog — only render when opened, system handles modal */}
+          {Platform.OS === 'android' && showDatePicker && (
             <DateTimePicker
               value={date}
               mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              display="default"
               onChange={handleDateChange}
-              locale="th-TH"
             />
+          )}
+
+          {/* iOS: Modal with spinner + Done/Cancel buttons for reliable visibility */}
+          {Platform.OS === 'ios' && (
+            <Modal
+              visible={showDatePicker}
+              transparent
+              animationType="fade"
+              onRequestClose={() => setShowDatePicker(false)}
+            >
+              <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+                <Pressable
+                  style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }}
+                  onPress={() => setShowDatePicker(false)}
+                />
+                <View style={{ backgroundColor: 'white', paddingBottom: 24 }}>
+                  <View className="flex-row items-center justify-between px-4 py-3 border-b border-border">
+                    <Pressable onPress={() => setShowDatePicker(false)}>
+                      <Text className="text-muted-foreground font-medium text-base">ยกเลิก</Text>
+                    </Pressable>
+                    <Text className="text-foreground font-semibold text-base">เลือกวันที่</Text>
+                    <Pressable onPress={() => setShowDatePicker(false)}>
+                      <Text className="text-primary font-semibold text-base">ตกลง</Text>
+                    </Pressable>
+                  </View>
+                  <DateTimePicker
+                    value={date}
+                    mode="date"
+                    display="spinner"
+                    onChange={handleDateChange}
+                    locale="th-TH"
+                    themeVariant="light"
+                    textColor="#000000"
+                  />
+                </View>
+              </View>
+            </Modal>
           )}
 
           {/* Note + Amount */}
