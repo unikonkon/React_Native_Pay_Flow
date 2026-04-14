@@ -3,26 +3,67 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useState, useCallback } from 'react';
 import type { TransactionType } from '@/types';
-import { formatCurrency } from '@/lib/utils/format';
 
 interface CalculatorPadProps {
   value: number;
   onChange: (value: number) => void;
   type: TransactionType;
+  onSave: () => void;
+  saveLabel?: string;
+  saveDisabled?: boolean;
 }
 
-const BUTTONS = [
-  ['7', '8', '9', '÷'],
-  ['4', '5', '6', '×'],
-  ['1', '2', '3', '-'],
-  ['.', '0', '⌫', '+'],
+type BtnKind = 'num' | 'op' | 'fn';
+
+interface BtnConfig {
+  label: string;
+  kind: BtnKind;
+  icon?: boolean;
+}
+
+// Layout: 4 columns × 4 rows of regular buttons
+// Row 1: C, ÷, ×, ⌫    (fn/op buttons — secondary gray)
+// Row 2: 7, 8, 9, -    (numbers white, op gray)
+// Row 3: 4, 5, 6, +
+// Row 4: 1, 2, 3, =
+// Row 5 (special):  00, 0, [SAVE spanning 2 cols]
+const BUTTONS: BtnConfig[][] = [
+  [
+    { label: 'C', kind: 'fn' },
+    { label: '÷', kind: 'op' },
+    { label: '×', kind: 'op' },
+    { label: '⌫', kind: 'fn', icon: true },
+  ],
+  [
+    { label: '7', kind: 'num' },
+    { label: '8', kind: 'num' },
+    { label: '9', kind: 'num' },
+    { label: '-', kind: 'op' },
+  ],
+  [
+    { label: '4', kind: 'num' },
+    { label: '5', kind: 'num' },
+    { label: '6', kind: 'num' },
+    { label: '+', kind: 'op' },
+  ],
+  [
+    { label: '1', kind: 'num' },
+    { label: '2', kind: 'num' },
+    { label: '3', kind: 'num' },
+    { label: '=', kind: 'op' },
+  ],
 ];
 
-export function CalculatorPad({ value, onChange, type }: CalculatorPadProps) {
+export function CalculatorPad({
+  value,
+  onChange,
+  type,
+  onSave,
+  saveLabel = 'บันทึก',
+  saveDisabled,
+}: CalculatorPadProps) {
   const [expression, setExpression] = useState(value > 0 ? String(value) : '');
   const [hasOperator, setHasOperator] = useState(false);
-
-  const colorClass = type === 'income' ? 'text-income' : 'text-expense';
 
   const evaluate = useCallback((expr: string): number => {
     try {
@@ -35,17 +76,57 @@ export function CalculatorPad({ value, onChange, type }: CalculatorPadProps) {
     }
   }, []);
 
-  const handlePress = useCallback((btn: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  const handleClear = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setExpression('');
+    setHasOperator(false);
+    onChange(0);
+  }, [onChange]);
 
-    if (btn === '⌫') {
-      const newExpr = expression.slice(0, -1);
-      setExpression(newExpr);
-      if (!newExpr.match(/[+\-×÷]/)) setHasOperator(false);
-      onChange(evaluate(newExpr) || 0);
-      return;
+  const handleBackspace = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const newExpr = expression.slice(0, -1);
+    setExpression(newExpr);
+    if (!newExpr.match(/[+\-×÷]/)) setHasOperator(false);
+    onChange(evaluate(newExpr) || 0);
+  }, [expression, evaluate, onChange]);
+
+  const handleEquals = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const result = evaluate(expression);
+    setExpression(result > 0 ? String(result) : '');
+    setHasOperator(false);
+    onChange(result);
+  }, [expression, evaluate, onChange]);
+
+  const appendDigits = useCallback((digits: string) => {
+    // Check decimal limit (max 2 places after dot)
+    const parts = expression.split(/[+\-×÷]/);
+    const lastPart = parts[parts.length - 1];
+    const decIdx = lastPart.indexOf('.');
+    let toAppend = digits;
+    if (decIdx !== -1) {
+      const currentDecimals = lastPart.length - decIdx - 1;
+      const available = 2 - currentDecimals;
+      if (available <= 0) return;
+      toAppend = digits.slice(0, available);
     }
 
+    const newExpr = expression + toAppend;
+    setExpression(newExpr);
+    if (!hasOperator) {
+      onChange(evaluate(newExpr));
+    }
+  }, [expression, hasOperator, evaluate, onChange]);
+
+  const handlePress = useCallback((btn: string) => {
+    if (btn === 'C') return handleClear();
+    if (btn === '⌫') return handleBackspace();
+    if (btn === '=') return handleEquals();
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    // Operator
     if (['+', '-', '×', '÷'].includes(btn)) {
       if (expression === '' || /[+\-×÷]$/.test(expression)) return;
       if (hasOperator) {
@@ -60,64 +141,38 @@ export function CalculatorPad({ value, onChange, type }: CalculatorPadProps) {
       return;
     }
 
-    if (btn === '.') {
-      const parts = expression.split(/[+\-×÷]/);
-      const lastPart = parts[parts.length - 1];
-      if (lastPart.includes('.')) return;
-    }
+    // Digit(s) — supports "0", "00", "1"-"9"
+    appendDigits(btn);
+  }, [expression, hasOperator, evaluate, onChange, handleClear, handleBackspace, handleEquals, appendDigits]);
 
-    if (btn !== '.') {
-      const parts = expression.split(/[+\-×÷]/);
-      const lastPart = parts[parts.length - 1];
-      const decIdx = lastPart.indexOf('.');
-      if (decIdx !== -1 && lastPart.length - decIdx > 2) return;
-    }
+  const handleSavePress = useCallback(() => {
+    if (saveDisabled) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    onSave();
+  }, [saveDisabled, onSave]);
 
-    const newExpr = expression + btn;
-    setExpression(newExpr);
-
-    if (!hasOperator) {
-      onChange(evaluate(newExpr));
-    }
-  }, [expression, hasOperator, evaluate, onChange]);
-
-  const handleEquals = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const result = evaluate(expression);
-    setExpression(result > 0 ? String(result) : '');
-    setHasOperator(false);
-    onChange(result);
-  }, [expression, evaluate, onChange]);
+  const saveBgClass = type === 'income' ? 'bg-income' : 'bg-expense';
 
   return (
-    <View className="mb-4">
-      <View className="border-b-2 border-border pb-2 mb-3">
-        <Text className="text-muted-foreground text-xs mb-1">
-          {hasOperator ? expression : ''}
-        </Text>
-        <Text className={`text-3xl font-bold ${colorClass}`}>
-          {value > 0 ? formatCurrency(value) : '฿0'}
-        </Text>
-      </View>
-
+    <View>
       {BUTTONS.map((row, rowIdx) => (
-        <View key={rowIdx} className="flex-row mb-1">
-          {row.map((btn) => {
-            const isOperator = ['+', '-', '×', '÷'].includes(btn);
-            const isBackspace = btn === '⌫';
+        <View key={rowIdx} className="flex-row mb-2">
+          {row.map((btn, colIdx) => {
+            const isNumber = btn.kind === 'num';
+            const bgClass = isNumber ? 'bg-card' : 'bg-secondary';
+            const textColor = isNumber ? 'text-foreground' : 'text-muted-foreground';
             return (
               <Pressable
-                key={btn}
-                onPress={() => handlePress(btn)}
-                className={`flex-1 mx-0.5 py-3 rounded-lg items-center justify-center ${
-                  isOperator ? 'bg-primary/10' : 'bg-secondary'
-                }`}
+                key={colIdx}
+                onPress={() => handlePress(btn.label)}
+                android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
+                className={`flex-1 mx-1 py-4 rounded-full items-center justify-center ${bgClass}`}
               >
-                {isBackspace ? (
+                {btn.icon ? (
                   <Ionicons name="backspace-outline" size={22} color="#666" />
                 ) : (
-                  <Text className={`text-lg font-semibold ${isOperator ? 'text-primary' : 'text-foreground'}`}>
-                    {btn}
+                  <Text className={`text-2xl font-bold ${textColor}`}>
+                    {btn.label}
                   </Text>
                 )}
               </Pressable>
@@ -126,12 +181,32 @@ export function CalculatorPad({ value, onChange, type }: CalculatorPadProps) {
         </View>
       ))}
 
-      <Pressable
-        onPress={handleEquals}
-        className="mt-1 py-3 rounded-lg items-center bg-primary/20"
-      >
-        <Text className="text-primary text-lg font-bold">=</Text>
-      </Pressable>
+      {/* Last row: 00 | 0 | Save (spans 2 columns) */}
+      <View className="flex-row mb-1">
+        <Pressable
+          onPress={() => handlePress('00')}
+          android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
+          className="flex-1 mx-1 py-4 rounded-full items-center justify-center bg-card"
+        >
+          <Text className="text-2xl font-bold text-foreground">00</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => handlePress('0')}
+          android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
+          className="flex-1 mx-1 py-4 rounded-full items-center justify-center bg-card"
+        >
+          <Text className="text-2xl font-bold text-foreground">0</Text>
+        </Pressable>
+        <Pressable
+          onPress={handleSavePress}
+          disabled={saveDisabled}
+          android_ripple={{ color: 'rgba(255,255,255,0.2)' }}
+          style={{ flex: 2 }}
+          className={`mx-1 py-4 rounded-full items-center justify-center ${saveBgClass} ${saveDisabled ? 'opacity-50' : ''}`}
+        >
+          <Text className="text-white text-xl font-bold">{saveLabel}</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }

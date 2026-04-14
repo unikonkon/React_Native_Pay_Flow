@@ -5,6 +5,7 @@ import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { useWalletStore } from '@/lib/stores/wallet-store';
 import type { Category, Transaction, TransactionType, Wallet } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
+import { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -12,12 +13,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   Text,
-  TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { CategoryPicker } from './CategoryPicker';
 
 interface TransactionFormProps {
@@ -104,7 +102,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <View className="flex-1 bg-background">
       {/* Header — type toggle + close */}
       <View className="flex-row items-center px-4 py-3 border-b border-border">
         <View className="flex-1 flex-row items-center justify-center">
@@ -138,7 +136,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView
+        <BottomSheetScrollView
           contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
           keyboardShouldPersistTaps="handled"
         >
@@ -188,35 +186,29 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           {/* Note + Amount */}
           <View className="flex-row items-center border border-border rounded-xl px-3 py-2 mb-4">
             <Ionicons name="create-outline" size={16} color="#999" />
-            <TextInput
+            <BottomSheetTextInput
               value={note}
               onChangeText={setNote}
               placeholder="บันทึก..."
               placeholderTextColor="#999"
-              className="flex-1 text-foreground ml-2 text-sm"
+              style={{ flex: 1, marginLeft: 8, fontSize: 14, color: '#0a0a0a' }}
             />
             <Text className={`text-xl font-bold ${type === 'income' ? 'text-income' : 'text-expense'}`}>
               {amount > 0 ? `฿${amount.toLocaleString('th-TH')}` : '฿0'}
             </Text>
           </View>
 
-          {/* Calculator Keypad */}
-          <CalculatorPad value={amount} onChange={setAmount} type={type} />
-
-          {/* Save Button */}
-          <Pressable
-            onPress={handleSave}
-            className={`mt-4 py-4 rounded-xl items-center ${
-              type === 'income' ? 'bg-income' : 'bg-expense'
-            } ${!amount || !selectedCategory ? 'opacity-50' : ''}`}
-            disabled={!amount || !selectedCategory}
-          >
-            <Text className="text-white font-bold text-lg">
-              {isEditMode ? 'อัพเดท' : 'บันทึก'}
-            </Text>
-          </Pressable>
-        </ScrollView>
+          {/* Calculator Keypad + Save Button */}
+          <CalculatorPad
+            value={amount}
+            onChange={setAmount}
+            type={type}
+            onSave={handleSave}
+            saveLabel={isEditMode ? 'อัพเดท' : 'บันทึก'}
+            saveDisabled={!amount || !selectedCategory}
+          />
+        </BottomSheetScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }

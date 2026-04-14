@@ -104,9 +104,9 @@ export default function RootLayout() {
         <Stack.Screen
           name="transaction/add"
           options={{
-            presentation: 'fullScreenModal',
+            presentation: 'transparentModal',
             headerShown: false,
-            animation: 'slide_from_bottom',
+            animation: 'none',
           }}
         />
         <Stack.Screen name="settings/wallets" options={{ title: 'กระเป๋าเงิน', headerBackTitle: 'กลับ' }} />

@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import type { Category } from '@/types';
@@ -10,8 +10,6 @@ interface CategoryPickerProps {
 }
 
 const COLUMNS = 6;
-const ROWS_VISIBLE = 2;
-const ITEM_HEIGHT = 78; // icon (56) + name + gap
 
 export function CategoryPicker({ categories, selectedId, onSelect }: CategoryPickerProps) {
   const selectedCat = categories.find(c => c.id === selectedId);
@@ -34,50 +32,44 @@ export function CategoryPicker({ categories, selectedId, onSelect }: CategoryPic
         )}
       </View>
 
-      {/* Grid — vertical scrollable */}
-      <ScrollView
-        style={{ maxHeight: ITEM_HEIGHT * ROWS_VISIBLE + 8 }}
-        showsVerticalScrollIndicator={false}
-        nestedScrollEnabled
-      >
-        <View className="flex-row flex-wrap">
-          {categories.map((cat) => {
-            const isSelected = cat.id === selectedId;
-            return (
-              <Pressable
-                key={cat.id}
-                onPress={() => {
-                  Haptics.selectionAsync();
-                  onSelect(cat);
-                }}
-                style={{ width: `${100 / COLUMNS}%` }}
-                className="items-center mb-3"
+      {/* Grid — outer BottomSheetScrollView handles vertical scroll */}
+      <View className="flex-row flex-wrap">
+        {categories.map((cat) => {
+          const isSelected = cat.id === selectedId;
+          return (
+            <Pressable
+              key={cat.id}
+              onPress={() => {
+                Haptics.selectionAsync();
+                onSelect(cat);
+              }}
+              style={{ width: `${100 / COLUMNS}%` }}
+              className="items-center mb-3"
+            >
+              <View
+                className={`w-14 h-14 rounded-full items-center justify-center ${
+                  isSelected ? 'border-2 border-primary' : ''
+                }`}
+                style={{ backgroundColor: cat.color }}
               >
-                <View
-                  className={`w-14 h-14 rounded-full items-center justify-center ${
-                    isSelected ? 'border-2 border-primary' : ''
-                  }`}
-                  style={{ backgroundColor: cat.color }}
-                >
-                  <Ionicons
-                    name={cat.icon as keyof typeof Ionicons.glyphMap}
-                    size={26}
-                    color="white"
-                  />
-                </View>
-                <Text
-                  className={`text-xs text-center mt-1 px-0.5 ${
-                    isSelected ? 'text-primary font-semibold' : 'text-foreground'
-                  }`}
-                  numberOfLines={1}
-                >
-                  {cat.name}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </ScrollView>
+                <Ionicons
+                  name={cat.icon as keyof typeof Ionicons.glyphMap}
+                  size={26}
+                  color="white"
+                />
+              </View>
+              <Text
+                className={`text-xs text-center mt-1 px-0.5 ${
+                  isSelected ? 'text-primary font-semibold' : 'text-foreground'
+                }`}
+                numberOfLines={1}
+              >
+                {cat.name}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
   );
 }
