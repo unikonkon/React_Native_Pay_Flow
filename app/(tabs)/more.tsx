@@ -182,6 +182,7 @@ export default function SettingsScreen() {
         />
 
         <SectionHeader title="ข้อมูล" />
+        <SettingsRow icon="swap-horizontal-outline" label="ส่งออก / นำเข้าข้อมูลทั้งหมด" onPress={() => router.push('/settings/data-transfer')} />
         <SettingsRow icon="download-outline" label="ส่งออก Excel" onPress={handleExport} />
         <SettingsRow icon="trash-outline" label="ล้างข้อมูลทั้งหมด" onPress={handleClearData} />
 
