@@ -1,7 +1,7 @@
 import { SectionList } from 'react-native';
 import { useMemo } from 'react';
 import type { Transaction } from '@/types';
-import { TransactionItem } from './TransactionItem';
+import { TransactionGroupItem } from './TransactionGroupItem';
 import { DayGroupHeader } from './DayGroupHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
 
@@ -15,25 +15,33 @@ interface DaySection {
   date: string;
   income: number;
   expense: number;
-  data: Transaction[];
+  data: Transaction[][];
 }
 
 export function TransactionList({ transactions, onItemPress, onItemLongPress }: TransactionListProps) {
   const sections: DaySection[] = useMemo(() => {
-    const map = new Map<string, Transaction[]>();
-
+    const byDay = new Map<string, Transaction[]>();
     for (const tx of transactions) {
       const day = tx.date;
-      if (!map.has(day)) map.set(day, []);
-      map.get(day)!.push(tx);
+      if (!byDay.has(day)) byDay.set(day, []);
+      byDay.get(day)!.push(tx);
     }
 
-    return Array.from(map.entries()).map(([date, txs]) => ({
-      date,
-      income: txs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0),
-      expense: txs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0),
-      data: txs,
-    }));
+    return Array.from(byDay.entries()).map(([date, txs]) => {
+      // Group by category + type within the day, preserving first-seen order.
+      const groups = new Map<string, Transaction[]>();
+      for (const t of txs) {
+        const key = `${t.type}:${t.categoryId}`;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push(t);
+      }
+      return {
+        date,
+        income: txs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0),
+        expense: txs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0),
+        data: Array.from(groups.values()),
+      };
+    });
   }, [transactions]);
 
   if (transactions.length === 0) {
@@ -43,12 +51,12 @@ export function TransactionList({ transactions, onItemPress, onItemLongPress }: 
   return (
     <SectionList
       sections={sections}
-      keyExtractor={(tx) => tx.id}
+      keyExtractor={(group) => group[0]?.id ?? Math.random().toString()}
       renderItem={(info: any) => (
-        <TransactionItem
-          item={info.item}
-          onPress={onItemPress}
-          onLongPress={onItemLongPress}
+        <TransactionGroupItem
+          items={info.item as Transaction[]}
+          onItemPress={onItemPress}
+          onItemLongPress={onItemLongPress}
         />
       )}
       renderSectionHeader={({ section }: any) => (
