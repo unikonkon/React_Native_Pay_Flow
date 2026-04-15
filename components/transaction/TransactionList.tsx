@@ -9,6 +9,9 @@ interface TransactionListProps {
   transactions: Transaction[];
   onItemPress?: (item: Transaction) => void;
   onItemLongPress?: (item: Transaction) => void;
+  onDeleteItem?: (item: Transaction) => void;
+  onDeleteGroup?: (items: Transaction[]) => void;
+  onCopyItem?: (item: Transaction) => void;
 }
 
 interface DaySection {
@@ -18,7 +21,14 @@ interface DaySection {
   data: Transaction[][];
 }
 
-export function TransactionList({ transactions, onItemPress, onItemLongPress }: TransactionListProps) {
+export function TransactionList({
+  transactions,
+  onItemPress,
+  onItemLongPress,
+  onDeleteItem,
+  onDeleteGroup,
+  onCopyItem,
+}: TransactionListProps) {
   const sections: DaySection[] = useMemo(() => {
     const byDay = new Map<string, Transaction[]>();
     for (const tx of transactions) {
@@ -28,7 +38,6 @@ export function TransactionList({ transactions, onItemPress, onItemLongPress }: 
     }
 
     return Array.from(byDay.entries()).map(([date, txs]) => {
-      // Group by category + type within the day, preserving first-seen order.
       const groups = new Map<string, Transaction[]>();
       for (const t of txs) {
         const key = `${t.type}:${t.categoryId}`;
@@ -57,6 +66,9 @@ export function TransactionList({ transactions, onItemPress, onItemLongPress }: 
           items={info.item as Transaction[]}
           onItemPress={onItemPress}
           onItemLongPress={onItemLongPress}
+          onDeleteItem={onDeleteItem}
+          onDeleteGroup={onDeleteGroup}
+          onCopyItem={onCopyItem}
         />
       )}
       renderSectionHeader={({ section }: any) => (

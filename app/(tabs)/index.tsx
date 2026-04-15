@@ -69,6 +69,47 @@ export default function TransactionsScreen() {
     );
   }, [deleteTransaction]);
 
+  const handleDeleteItem = useCallback((item: Transaction) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert(
+      'ลบรายการ',
+      `ต้องการลบ "${item.category?.name}" ${formatCurrency(item.amount)} ?`,
+      [
+        { text: 'ยกเลิก', style: 'cancel' },
+        {
+          text: 'ลบ',
+          style: 'destructive',
+          onPress: () => deleteTransaction(item.id),
+        },
+      ]
+    );
+  }, [deleteTransaction]);
+
+  const handleDeleteGroup = useCallback((items: Transaction[]) => {
+    Alert.alert(
+      'ลบรายการทั้งกลุ่ม',
+      `ต้องการลบทั้ง ${items.length} รายการ?`,
+      [
+        { text: 'ยกเลิก', style: 'cancel' },
+        {
+          text: 'ลบทั้งหมด',
+          style: 'destructive',
+          onPress: async () => {
+            for (const item of items) {
+              await deleteTransaction(item.id);
+            }
+          },
+        },
+      ]
+    );
+  }, [deleteTransaction]);
+
+  const handleCopyItem = useCallback((item: Transaction) => {
+    const copy = { ...item, id: '' } as Transaction;
+    setEditingTransaction(copy);
+    openForm();
+  }, [setEditingTransaction, openForm]);
+
   const handleAddNew = useCallback(() => {
     setEditingTransaction(null);
     openForm();
@@ -139,6 +180,9 @@ export default function TransactionsScreen() {
           transactions={filteredTransactions}
           onItemPress={handleItemPress}
           onItemLongPress={handleItemLongPress}
+          onDeleteItem={handleDeleteItem}
+          onDeleteGroup={handleDeleteGroup}
+          onCopyItem={handleCopyItem}
         />
       </View>
 
