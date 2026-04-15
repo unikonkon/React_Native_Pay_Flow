@@ -2,7 +2,16 @@ import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import type { Transaction } from '@/types';
-import { formatCurrency, formatDateThai } from '@/lib/utils/format';
+import { formatCurrency } from '@/lib/utils/format';
+
+function formatTime(iso?: string): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
 
 interface TransactionItemProps {
   item: Transaction;
@@ -50,7 +59,7 @@ export function TransactionItem({ item, onPress, onLongPress }: TransactionItemP
         <Text className={`font-bold text-base ${isIncome ? 'text-income' : 'text-expense'}`}>
           {isIncome ? '+' : '-'}{formatCurrency(item.amount)}
         </Text>
-        <Text className="text-muted-foreground text-xs">{formatDateThai(item.date)}</Text>
+        <Text className="text-muted-foreground text-xs">{formatTime(item.createdAt)}</Text>
       </View>
     </Pressable>
   );

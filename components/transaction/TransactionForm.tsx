@@ -90,7 +90,6 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
       });
     }
 
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     onClose();
   }, [amount, selectedCategory, selectedWallet, defaultWalletId, type, note, date, isEditMode, editTransaction, addTransaction, updateTransaction, onClose]);
 

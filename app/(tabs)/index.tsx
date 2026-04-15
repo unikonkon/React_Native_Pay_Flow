@@ -12,6 +12,7 @@ import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { formatCurrency } from '@/lib/utils/format';
 import type { Analysis, Transaction } from '@/types';
 import { router } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Alert, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,6 +27,7 @@ export default function TransactionsScreen() {
     setSelectedWalletId,
     deleteTransaction,
     setEditingTransaction,
+    addTransaction,
   } = useTransactionStore();
 
   const categories = useCategoryStore(s => s.categories);
@@ -72,21 +74,17 @@ export default function TransactionsScreen() {
     openForm();
   }, [setEditingTransaction, openForm]);
 
-  const handleFrequentSelect = useCallback((analysis: Analysis) => {
-    const cat = categories.find(c => c.id === analysis.categoryId);
-    setEditingTransaction({
-      id: '', // empty id = pre-fill mode (add, not edit)
+  const handleFrequentSelect = useCallback(async (analysis: Analysis) => {
+    await addTransaction({
       type: analysis.type,
       amount: analysis.amount,
       categoryId: analysis.categoryId,
       walletId: analysis.walletId,
-      category: cat,
       note: analysis.note,
       date: new Date().toISOString().split('T')[0],
-      createdAt: '',
     });
-    openForm();
-  }, [categories, setEditingTransaction, openForm]);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, [addTransaction]);
 
   return (
     <SafeAreaView className="flex-1 bg-background">

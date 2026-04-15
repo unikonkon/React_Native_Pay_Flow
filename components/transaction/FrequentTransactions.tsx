@@ -2,7 +2,6 @@ import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { Analysis, Category } from '@/types';
 import { formatCurrency } from '@/lib/utils/format';
-import * as Haptics from 'expo-haptics';
 
 interface FrequentTransactionsProps {
   analyses: Analysis[];
@@ -16,7 +15,6 @@ export function FrequentTransactions({ analyses, categories, onSelect }: Frequen
   const getCategoryById = (id: string) => categories.find(c => c.id === id);
 
   const handleSelect = (analysis: Analysis) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onSelect(analysis);
   };
 
