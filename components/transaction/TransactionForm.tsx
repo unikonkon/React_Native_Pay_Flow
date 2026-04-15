@@ -159,6 +159,12 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             selectedId={selectedCategory?.id}
             onSelect={setSelectedCategory}
             type={type}
+            walletId={selectedWallet?.id ?? null}
+            onRecommendSelect={({ category, amount, note }) => {
+              setSelectedCategory(category);
+              setAmount(amount);
+              if (note) setNote(note);
+            }}
           />
 
           {/* Date + Wallet chips — inline selector */}

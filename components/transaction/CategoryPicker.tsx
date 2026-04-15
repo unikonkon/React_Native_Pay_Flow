@@ -1,11 +1,13 @@
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
 import { useCategoryStore } from '@/lib/stores/category-store';
+import { getDb, getTopAnalysesByWallet, getTopCategoryIdsByWallet } from '@/lib/stores/db';
 import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
-import type { Category, TransactionType } from '@/types';
+import { formatCurrency } from '@/lib/utils/format';
+import type { Analysis, Category, TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { AddCategoryModal } from './AddCategoryModal';
@@ -15,9 +17,11 @@ interface CategoryPickerProps {
   selectedId?: string;
   onSelect: (category: Category) => void;
   type: TransactionType;
+  walletId?: string | null;
+  onRecommendSelect?: (data: { category: Category; amount: number; note?: string }) => void;
 }
 
-type Tab = 'select' | 'manage';
+type Tab = 'recommend' | 'select' | 'manage';
 
 // Per-item height: icon 56 + mt-1 (4) + text (~16) + mb-2 (8) = 84
 const ITEM_HEIGHT = 84;
@@ -26,10 +30,12 @@ const MAX_COLS = 8;
 const MIN_ROWS = 2;
 const MAX_ROWS = 6;
 
-export function CategoryPicker({ categories, selectedId, onSelect, type }: CategoryPickerProps) {
-  const [tab, setTab] = useState<Tab>('select');
+export function CategoryPicker({ categories, selectedId, onSelect, type, walletId, onRecommendSelect }: CategoryPickerProps) {
+  const [tab, setTab] = useState<Tab>('recommend');
   const [addVisible, setAddVisible] = useState(false);
   const [pickedId, setPickedId] = useState<string | null>(null);
+  const [topCategoryIds, setTopCategoryIds] = useState<string[]>([]);
+  const [topAnalyses, setTopAnalyses] = useState<Analysis[]>([]);
 
   const deleteCategory = useCategoryStore(s => s.deleteCategory);
   const reorderCategories = useCategoryStore(s => s.reorderCategories);
@@ -89,6 +95,53 @@ export function CategoryPicker({ categories, selectedId, onSelect, type }: Categ
     setPickedId(null);
   };
 
+  useEffect(() => {
+    if (tab !== 'recommend' || !walletId) {
+      setTopCategoryIds([]);
+      setTopAnalyses([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const db = getDb();
+        const [cats, ans] = await Promise.all([
+          getTopCategoryIdsByWallet(db, walletId, type, 6),
+          getTopAnalysesByWallet(db, walletId, type, 12),
+        ]);
+        if (cancelled) return;
+        setTopCategoryIds(cats.map(c => c.categoryId));
+        setTopAnalyses(ans);
+      } catch {
+        if (!cancelled) {
+          setTopCategoryIds([]);
+          setTopAnalyses([]);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [tab, walletId, type, categories.length]);
+
+  const topCategories = useMemo(
+    () => topCategoryIds
+      .map(id => categories.find(c => c.id === id))
+      .filter((c): c is Category => !!c),
+    [topCategoryIds, categories]
+  );
+
+  const handleRecommendTx = (a: Analysis) => {
+    const cat = categories.find(c => c.id === a.categoryId);
+    if (!cat) return;
+    Haptics.selectionAsync();
+    if (onRecommendSelect) {
+      onRecommendSelect({ category: cat, amount: a.amount, note: a.note });
+    } else {
+      onSelect(cat);
+    }
+  };
+
   const handleDelete = (cat: Category) => {
     if (!cat.isCustom) return;
     Alert.alert(
@@ -114,7 +167,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type }: Categ
     <View className="mb-3">
       <View className="flex-row items-center justify-between mb-2">
         <Text className="text-foreground font-semibold">
-          {tab === 'select' ? 'เลือกหมวดหมู่' : 'ตั้งค่าหมวดหมู่'}
+          {tab === 'select' ? 'เลือกหมวดหมู่' : tab === 'manage' ? 'ตั้งค่าหมวดหมู่' : 'รายการที่ใช้บ่อย'}
         </Text>
         {tab === 'select' && selectedCat && (
           <View className="flex-row items-center px-3 py-1 rounded-full bg-primary/10 border border-primary">
@@ -130,6 +183,14 @@ export function CategoryPicker({ categories, selectedId, onSelect, type }: Categ
       </View>
 
       <View className="flex-row bg-secondary rounded-xl p-1 mb-2">
+        <Pressable
+          onPress={() => setTab('recommend')}
+          className={`flex-1 py-1.5 rounded-lg items-center ${tab === 'recommend' ? 'bg-primary' : ''}`}
+        >
+          <Text className={`text-xs font-semibold ${tab === 'recommend' ? 'text-primary-foreground' : 'text-foreground'}`}>
+            แนะนำ
+          </Text>
+        </Pressable>
         <Pressable
           onPress={() => setTab('select')}
           className={`flex-1 py-1.5 rounded-lg items-center ${tab === 'select' ? 'bg-primary' : ''}`}
@@ -210,7 +271,108 @@ export function CategoryPicker({ categories, selectedId, onSelect, type }: Categ
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          {tab === 'select' ? (
+          {tab === 'recommend' ? (
+            <View>
+              {!walletId ? (
+                <View className="items-center py-6">
+                  <Ionicons name="wallet-outline" size={28} color="#999" />
+                  <Text className="text-muted-foreground text-xs mt-1">เลือกกระเป๋าเพื่อดูรายการที่ใช้บ่อย</Text>
+                </View>
+              ) : (
+                <>
+                  <Text className="text-muted-foreground text-[11px] font-semibold mb-1">หมวดที่ใช้บ่อย</Text>
+                  {topCategories.length === 0 ? (
+                    <View className="items-center py-3">
+                      <Text className="text-muted-foreground text-xs">ยังไม่มีข้อมูลในกระเป๋านี้</Text>
+                    </View>
+                  ) : (
+                    <View className="flex-row flex-wrap mb-2">
+                      {topCategories.map((cat) => {
+                        const isSelected = cat.id === selectedId;
+                        return (
+                          <Pressable
+                            key={cat.id}
+                            onPress={() => {
+                              Haptics.selectionAsync();
+                              onSelect(cat);
+                            }}
+                            style={{ width: `${100 / 6}%` }}
+                            className="items-center mb-2"
+                          >
+                            <View
+                              className={`w-12 h-12 rounded-full items-center justify-center ${isSelected ? 'border-2 border-primary' : ''}`}
+                              style={{ backgroundColor: cat.color }}
+                            >
+                              <Ionicons
+                                name={cat.icon as keyof typeof Ionicons.glyphMap}
+                                size={22}
+                                color="white"
+                              />
+                            </View>
+                            <Text
+                              className={`text-[11px] text-center mt-1 px-0.5 ${isSelected ? 'text-primary font-semibold' : 'text-foreground'}`}
+                              numberOfLines={1}
+                            >
+                              {cat.name}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  )}
+
+                  <Text className="text-muted-foreground text-[11px] font-semibold mb-1 mt-1">รายการที่ใช้บ่อย</Text>
+                  {topAnalyses.length === 0 ? (
+                    <View className="items-center py-3">
+                      <Text className="text-muted-foreground text-xs">ยังไม่มีรายการซ้ำในกระเป๋านี้</Text>
+                    </View>
+                  ) : (
+                    <View className="flex-row flex-wrap -mx-0.5">
+                      {topAnalyses.map((a) => {
+                        const cat = categories.find(c => c.id === a.categoryId);
+                        if (!cat) return null;
+                        return (
+                          <View key={a.id} className="w-1/2 px-0.5 mb-1.5">
+                            <Pressable
+                              onPress={() => handleRecommendTx(a)}
+                              className="flex-row items-center py-1.5 px-2 bg-card rounded-xl border border-border"
+                            >
+                              <View
+                                className="w-8 h-8 rounded-full items-center justify-center mr-2"
+                                style={{ backgroundColor: cat.color }}
+                              >
+                                <Ionicons
+                                  name={cat.icon as keyof typeof Ionicons.glyphMap}
+                                  size={16}
+                                  color="white"
+                                />
+                              </View>
+                              <View className="flex-1">
+                                <Text className="text-foreground text-xs font-semibold" numberOfLines={1}>
+                                  {cat.name}
+                                </Text>
+                                <Text
+                                  className={`text-[11px] font-bold ${type === 'income' ? 'text-income' : 'text-expense'}`}
+                                  numberOfLines={1}
+                                >
+                                  {formatCurrency(a.amount)}
+                                </Text>
+                              </View>
+                              {a.count > 1 && (
+                                <View className="px-1.5 py-0.5 rounded-full bg-primary/10">
+                                  <Text className="text-primary text-[10px] font-bold">×{a.count}</Text>
+                                </View>
+                              )}
+                            </Pressable>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )}
+                </>
+              )}
+            </View>
+          ) : tab === 'select' ? (
             <View className="flex-row flex-wrap">
               {categories.map((cat) => {
                 const isSelected = cat.id === selectedId;

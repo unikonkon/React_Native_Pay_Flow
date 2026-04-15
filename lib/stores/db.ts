@@ -756,6 +756,57 @@ export async function upsertAnalysis(
   }
 }
 
+export async function getTopCategoryIdsByWallet(
+  db: SQLiteDatabase,
+  walletId: string,
+  type: TransactionType,
+  limit: number = 6
+): Promise<{ categoryId: string; total: number }[]> {
+  const rows = await db.getAllAsync<{ category_id: string; total: number }>(
+    `SELECT category_id, SUM(count) as total FROM analysis
+     WHERE wallet_id = ? AND type = ?
+     GROUP BY category_id
+     ORDER BY total DESC
+     LIMIT ?`,
+    [walletId, type, limit]
+  );
+  return rows.map(r => ({ categoryId: r.category_id, total: r.total }));
+}
+
+export async function getTopAnalysesByWallet(
+  db: SQLiteDatabase,
+  walletId: string,
+  type: TransactionType,
+  limit: number = 12
+): Promise<Analysis[]> {
+  const rows = await db.getAllAsync<{
+    id: string; wallet_id: string; type: string; category_id: string;
+    amount: number; note: string | null; match_type: string;
+    count: number; last_transaction_id: string;
+    created_at: string; updated_at: string;
+  }>(
+    `SELECT * FROM analysis
+     WHERE wallet_id = ? AND type = ?
+     ORDER BY count DESC, updated_at DESC
+     LIMIT ?`,
+    [walletId, type, limit]
+  );
+
+  return rows.map(r => ({
+    id: r.id,
+    walletId: r.wallet_id,
+    type: r.type as TransactionType,
+    categoryId: r.category_id,
+    amount: r.amount,
+    note: r.note ?? undefined,
+    matchType: r.match_type as MatchType,
+    count: r.count,
+    lastTransactionId: r.last_transaction_id,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  }));
+}
+
 export async function getTopAnalyses(db: SQLiteDatabase, limit: number = 6): Promise<Analysis[]> {
   const rows = await db.getAllAsync<{
     id: string; wallet_id: string; type: string; category_id: string;
