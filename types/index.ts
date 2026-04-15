@@ -50,6 +50,8 @@ export interface Settings {
   defaultTab: number;
   theme: 'light' | 'dark' | 'system';
   defaultWalletId: string;
+  categoryColumns: number;
+  categoryRows: number;
 }
 
 // ===== Wallet Types =====

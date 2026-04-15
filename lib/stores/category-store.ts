@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Category, TransactionType } from '@/types';
-import { getDb, getAllCategories, insertCategory, deleteCategory as deleteCat, updateCategory as updateCat } from '@/lib/stores/db';
+import { getDb, getAllCategories, insertCategory, deleteCategory as deleteCat, updateCategory as updateCat, reorderCategories as reorderCats } from '@/lib/stores/db';
 
 interface CategoryStore {
   categories: Category[];
@@ -11,6 +11,7 @@ interface CategoryStore {
   addCategory: (data: { name: string; icon: string; color: string; type: TransactionType }) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
   updateCategory: (id: string, updates: Partial<{ name: string; icon: string; color: string }>) => Promise<void>;
+  reorderCategories: (type: TransactionType, orderedIds: string[]) => Promise<void>;
 }
 
 export const useCategoryStore = create<CategoryStore>((set, get) => ({
@@ -43,6 +44,12 @@ export const useCategoryStore = create<CategoryStore>((set, get) => ({
   updateCategory: async (id, updates) => {
     const db = getDb();
     await updateCat(db, id, updates);
+    await get().loadCategories();
+  },
+
+  reorderCategories: async (type, orderedIds) => {
+    const db = getDb();
+    await reorderCats(db, type, orderedIds);
     await get().loadCategories();
   },
 }));

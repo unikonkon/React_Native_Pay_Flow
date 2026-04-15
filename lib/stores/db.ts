@@ -478,6 +478,21 @@ export async function updateCategory(
   await db.runAsync(`UPDATE categories SET ${sets.join(', ')} WHERE id = ? AND is_custom = 1`, values);
 }
 
+export async function reorderCategories(
+  db: SQLiteDatabase,
+  type: TransactionType,
+  orderedIds: string[]
+): Promise<void> {
+  await db.withTransactionAsync(async () => {
+    for (let i = 0; i < orderedIds.length; i++) {
+      await db.runAsync(
+        'UPDATE categories SET sort_order = ? WHERE id = ? AND type = ?',
+        [i, orderedIds[i], type]
+      );
+    }
+  });
+}
+
 // ===== Monthly Summary Queries =====
 
 export async function getMonthlySummaries(
