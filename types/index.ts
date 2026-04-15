@@ -56,6 +56,7 @@ export interface Settings {
   recCategoryRows: number;
   recTxColumns: number;
   recTxRows: number;
+  defaultCategoryTab: 'recommend' | 'select';
 }
 
 // ===== Wallet Types =====

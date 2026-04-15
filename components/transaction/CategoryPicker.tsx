@@ -77,7 +77,15 @@ function StepperRow({ label, cols, rows, colMin, colMax, rowMin, rowMax, onCol, 
 }
 
 export function CategoryPicker({ categories, selectedId, onSelect, type, walletId, onRecommendSelect }: CategoryPickerProps) {
-  const [tab, setTab] = useState<Tab>('recommend');
+  const {
+    categoryColumns, categoryRows,
+    recCategoryColumns, recCategoryRows,
+    recTxColumns, recTxRows,
+    defaultCategoryTab,
+    updateSettings,
+  } = useSettingsStore();
+
+  const [tab, setTab] = useState<Tab>(defaultCategoryTab === 'recommend' ? 'recommend' : 'select');
   const [addVisible, setAddVisible] = useState(false);
   const [pickedId, setPickedId] = useState<string | null>(null);
   const [topCategoryIds, setTopCategoryIds] = useState<string[]>([]);
@@ -87,13 +95,6 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
   const reorderCategories = useCategoryStore(s => s.reorderCategories);
   const loadTransactions = useTransactionStore(s => s.loadTransactions);
   const loadAnalysis = useAnalysisStore(s => s.loadAnalysis);
-
-  const {
-    categoryColumns, categoryRows,
-    recCategoryColumns, recCategoryRows,
-    recTxColumns, recTxRows,
-    updateSettings,
-  } = useSettingsStore();
   const columns = Math.min(MAX_COLS, Math.max(MIN_COLS, categoryColumns || 6));
   const rows = Math.min(MAX_ROWS, Math.max(MIN_ROWS, categoryRows || 3));
   const recCatCols = Math.min(REC_CAT_MAX_COLS, Math.max(REC_CAT_MIN_COLS, recCategoryColumns || 6));
@@ -328,6 +329,40 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
               rowMin={REC_TX_MIN_ROWS} rowMax={REC_TX_MAX_ROWS}
               onCol={adjustRecTxCols} onRow={adjustRecTxRows}
             />
+            <View className="h-px bg-border/60 my-2" />
+            <View className="flex-row items-center justify-between">
+              <Text className="text-foreground text-xs font-semibold flex-1" numberOfLines={1}>
+                แท็บเริ่มต้น
+              </Text>
+              <View className="flex-row bg-card rounded-full p-0.5 border border-border">
+                <Pressable
+                  onPress={() => {
+                    if (defaultCategoryTab !== 'recommend') {
+                      Haptics.selectionAsync();
+                      updateSettings({ defaultCategoryTab: 'recommend' });
+                    }
+                  }}
+                  className={`px-3 py-1 rounded-full ${defaultCategoryTab === 'recommend' ? 'bg-primary' : ''}`}
+                >
+                  <Text className={`text-[11px] font-semibold ${defaultCategoryTab === 'recommend' ? 'text-primary-foreground' : 'text-foreground'}`}>
+                    แนะนำ
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    if (defaultCategoryTab !== 'select') {
+                      Haptics.selectionAsync();
+                      updateSettings({ defaultCategoryTab: 'select' });
+                    }
+                  }}
+                  className={`px-3 py-1 rounded-full ${defaultCategoryTab === 'select' ? 'bg-primary' : ''}`}
+                >
+                  <Text className={`text-[11px] font-semibold ${defaultCategoryTab === 'select' ? 'text-primary-foreground' : 'text-foreground'}`}>
+                    เลือก
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
           </View>
         )
       )}
