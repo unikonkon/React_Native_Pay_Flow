@@ -12,6 +12,10 @@ const DEFAULT_SETTINGS: Settings = {
   defaultWalletId: 'wallet-cash',
   categoryColumns: 6,
   categoryRows: 3,
+  recCategoryColumns: 6,
+  recCategoryRows: 1,
+  recTxColumns: 2,
+  recTxRows: 2,
 };
 
 interface SettingsStore extends Settings {
@@ -43,6 +47,10 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       defaultWalletId: get().defaultWalletId,
       categoryColumns: get().categoryColumns,
       categoryRows: get().categoryRows,
+      recCategoryColumns: get().recCategoryColumns,
+      recCategoryRows: get().recCategoryRows,
+      recTxColumns: get().recTxColumns,
+      recTxRows: get().recTxRows,
     };
     const updated = { ...current, ...partial };
     await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));

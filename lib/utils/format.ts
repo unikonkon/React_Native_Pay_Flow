@@ -1,5 +1,5 @@
 export function formatCurrency(amount: number, currency = "THB"): string {
-  const symbol = currency === "THB" ? "฿" : currency;
+  const symbol = currency === "THB" ? "" : currency;
   return `${symbol}${amount.toLocaleString("th-TH", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 

@@ -29,6 +29,52 @@ const MIN_COLS = 3;
 const MAX_COLS = 8;
 const MIN_ROWS = 2;
 const MAX_ROWS = 6;
+const REC_CAT_MIN_COLS = 3;
+const REC_CAT_MAX_COLS = 8;
+const REC_CAT_MIN_ROWS = 1;
+const REC_CAT_MAX_ROWS = 3;
+const REC_TX_MIN_COLS = 1;
+const REC_TX_MAX_COLS = 4;
+const REC_TX_MIN_ROWS = 1;
+const REC_TX_MAX_ROWS = 4;
+
+interface StepperRowProps {
+  label: string;
+  cols: number; rows: number;
+  colMin: number; colMax: number;
+  rowMin: number; rowMax: number;
+  onCol: (delta: number) => void;
+  onRow: (delta: number) => void;
+}
+
+function StepperRow({ label, cols, rows, colMin, colMax, rowMin, rowMax, onCol, onRow }: StepperRowProps) {
+  const btn = 'w-8 h-8 rounded-full items-center justify-center bg-card border border-border';
+  return (
+    <View className="flex-row items-center justify-between">
+      <Text className="text-foreground text-xs font-semibold flex-1" numberOfLines={1}>{label}</Text>
+      <View className="flex-row items-center mr-3">
+        <Text className="text-muted-foreground text-[10px] mr-1.5">คอลัมน์</Text>
+        <Pressable onPress={() => onCol(-1)} disabled={cols <= colMin} className={`${btn} ${cols <= colMin ? 'opacity-40' : ''}`}>
+          <Ionicons name="remove" size={12} color="#666" />
+        </Pressable>
+        <Text className="text-foreground text-xs font-bold mx-1.5 w-4 text-center">{cols}</Text>
+        <Pressable onPress={() => onCol(1)} disabled={cols >= colMax} className={`${btn} ${cols >= colMax ? 'opacity-40' : ''}`}>
+          <Ionicons name="add" size={12} color="#666" />
+        </Pressable>
+      </View>
+      <View className="flex-row items-center ml-3">
+        <Text className="text-muted-foreground text-[10px] mr-1.5">แถว</Text>
+        <Pressable onPress={() => onRow(-1)} disabled={rows <= rowMin} className={`${btn} ${rows <= rowMin ? 'opacity-40' : ''}`}>
+          <Ionicons name="remove" size={12} color="#666" />
+        </Pressable>
+        <Text className="text-foreground text-xs font-bold mx-1.5 w-4 text-center">{rows}</Text>
+        <Pressable onPress={() => onRow(1)} disabled={rows >= rowMax} className={`${btn} ${rows >= rowMax ? 'opacity-40' : ''}`}>
+          <Ionicons name="add" size={12} color="#666" />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
 
 export function CategoryPicker({ categories, selectedId, onSelect, type, walletId, onRecommendSelect }: CategoryPickerProps) {
   const [tab, setTab] = useState<Tab>('recommend');
@@ -42,9 +88,20 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
   const loadTransactions = useTransactionStore(s => s.loadTransactions);
   const loadAnalysis = useAnalysisStore(s => s.loadAnalysis);
 
-  const { categoryColumns, categoryRows, updateSettings } = useSettingsStore();
+  const {
+    categoryColumns, categoryRows,
+    recCategoryColumns, recCategoryRows,
+    recTxColumns, recTxRows,
+    updateSettings,
+  } = useSettingsStore();
   const columns = Math.min(MAX_COLS, Math.max(MIN_COLS, categoryColumns || 6));
   const rows = Math.min(MAX_ROWS, Math.max(MIN_ROWS, categoryRows || 3));
+  const recCatCols = Math.min(REC_CAT_MAX_COLS, Math.max(REC_CAT_MIN_COLS, recCategoryColumns || 6));
+  const recCatRows = Math.min(REC_CAT_MAX_ROWS, Math.max(REC_CAT_MIN_ROWS, recCategoryRows || 1));
+  const recTxCols = Math.min(REC_TX_MAX_COLS, Math.max(REC_TX_MIN_COLS, recTxColumns || 2));
+  const recTxRowsN = Math.min(REC_TX_MAX_ROWS, Math.max(REC_TX_MIN_ROWS, recTxRows || 2));
+  const recCatLimit = recCatCols * recCatRows;
+  const recTxLimit = recTxCols * recTxRowsN;
 
   const selectedCat = categories.find(c => c.id === selectedId);
 
@@ -66,6 +123,35 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
     if (next !== rows) {
       Haptics.selectionAsync();
       updateSettings({ categoryRows: next });
+    }
+  };
+
+  const adjustRecCatCols = (delta: number) => {
+    const next = Math.min(REC_CAT_MAX_COLS, Math.max(REC_CAT_MIN_COLS, recCatCols + delta));
+    if (next !== recCatCols) {
+      Haptics.selectionAsync();
+      updateSettings({ recCategoryColumns: next });
+    }
+  };
+  const adjustRecCatRows = (delta: number) => {
+    const next = Math.min(REC_CAT_MAX_ROWS, Math.max(REC_CAT_MIN_ROWS, recCatRows + delta));
+    if (next !== recCatRows) {
+      Haptics.selectionAsync();
+      updateSettings({ recCategoryRows: next });
+    }
+  };
+  const adjustRecTxCols = (delta: number) => {
+    const next = Math.min(REC_TX_MAX_COLS, Math.max(REC_TX_MIN_COLS, recTxCols + delta));
+    if (next !== recTxCols) {
+      Haptics.selectionAsync();
+      updateSettings({ recTxColumns: next });
+    }
+  };
+  const adjustRecTxRows = (delta: number) => {
+    const next = Math.min(REC_TX_MAX_ROWS, Math.max(REC_TX_MIN_ROWS, recTxRowsN + delta));
+    if (next !== recTxRowsN) {
+      Haptics.selectionAsync();
+      updateSettings({ recTxRows: next });
     }
   };
 
@@ -106,8 +192,8 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
       try {
         const db = getDb();
         const [cats, ans] = await Promise.all([
-          getTopCategoryIdsByWallet(db, walletId, type, 6),
-          getTopAnalysesByWallet(db, walletId, type, 12),
+          getTopCategoryIdsByWallet(db, walletId, type, recCatLimit),
+          getTopAnalysesByWallet(db, walletId, type, recTxLimit),
         ]);
         if (cancelled) return;
         setTopCategoryIds(cats.map(c => c.categoryId));
@@ -122,7 +208,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
     return () => {
       cancelled = true;
     };
-  }, [tab, walletId, type, categories.length]);
+  }, [tab, walletId, type, categories.length, recCatLimit, recTxLimit]);
 
   const topCategories = useMemo(
     () => topCategoryIds
@@ -210,58 +296,40 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
       </View>
 
       {tab === 'manage' && (
-        <View className="flex-row items-center justify-between mb-2 px-2 py-2 bg-secondary/50 rounded-xl">
-          {pickedId ? (
-            <View className="flex-1 flex-row items-center justify-center py-0.5">
-              <Ionicons name="move" size={14} color="#0891b2" />
-              <Text
-                className="text-primary text-xs font-semibold ml-1 flex-shrink"
-                numberOfLines={1}
-              >
-                แตะปลายทางเพื่อวาง · แตะเดิมเพื่อยกเลิก
-              </Text>
-            </View>
-          ) : (
-            <>
-              <View className="flex-row items-center">
-                <Text className="text-foreground text-xs font-semibold mr-2">คอลัมน์</Text>
-                <Pressable
-                  onPress={() => adjustColumns(-1)}
-                  disabled={columns <= MIN_COLS}
-                  className={`w-7 h-7 rounded-full items-center justify-center bg-card border border-border ${columns <= MIN_COLS ? 'opacity-40' : ''}`}
-                >
-                  <Ionicons name="remove" size={14} color="#666" />
-                </Pressable>
-                <Text className="text-foreground text-sm font-bold mx-2 w-5 text-center">{columns}</Text>
-                <Pressable
-                  onPress={() => adjustColumns(1)}
-                  disabled={columns >= MAX_COLS}
-                  className={`w-7 h-7 rounded-full items-center justify-center bg-card border border-border ${columns >= MAX_COLS ? 'opacity-40' : ''}`}
-                >
-                  <Ionicons name="add" size={14} color="#666" />
-                </Pressable>
-              </View>
-              <View className="flex-row items-center">
-                <Text className="text-foreground text-xs font-semibold mr-2">แถว</Text>
-                <Pressable
-                  onPress={() => adjustRows(-1)}
-                  disabled={rows <= MIN_ROWS}
-                  className={`w-7 h-7 rounded-full items-center justify-center bg-card border border-border ${rows <= MIN_ROWS ? 'opacity-40' : ''}`}
-                >
-                  <Ionicons name="remove" size={14} color="#666" />
-                </Pressable>
-                <Text className="text-foreground text-sm font-bold mx-2 w-5 text-center">{rows}</Text>
-                <Pressable
-                  onPress={() => adjustRows(1)}
-                  disabled={rows >= MAX_ROWS}
-                  className={`w-7 h-7 rounded-full items-center justify-center bg-card border border-border ${rows >= MAX_ROWS ? 'opacity-40' : ''}`}
-                >
-                  <Ionicons name="add" size={14} color="#666" />
-                </Pressable>
-              </View>
-            </>
-          )}
-        </View>
+        pickedId ? (
+          <View className="flex-row items-center justify-center mb-2 px-2 py-2 bg-secondary/50 rounded-xl">
+            <Ionicons name="move" size={14} color="#0891b2" />
+            <Text className="text-primary text-xs font-semibold ml-1 flex-shrink" numberOfLines={1}>
+              แตะปลายทางเพื่อวาง · แตะเดิมเพื่อยกเลิก
+            </Text>
+          </View>
+        ) : (
+          <View className="mb-2 px-2 py-2 bg-secondary/50 rounded-xl">
+            <StepperRow
+              label="หมวดหมู่ ในเมนูเลือก"
+              cols={columns} rows={rows}
+              colMin={MIN_COLS} colMax={MAX_COLS}
+              rowMin={MIN_ROWS} rowMax={MAX_ROWS}
+              onCol={adjustColumns} onRow={adjustRows}
+            />
+            <View className="h-px bg-border/60 my-2" />
+            <StepperRow
+              label="หมวดใช้บ่อย"
+              cols={recCatCols} rows={recCatRows}
+              colMin={REC_CAT_MIN_COLS} colMax={REC_CAT_MAX_COLS}
+              rowMin={REC_CAT_MIN_ROWS} rowMax={REC_CAT_MAX_ROWS}
+              onCol={adjustRecCatCols} onRow={adjustRecCatRows}
+            />
+            <View className="h-px bg-border/60 my-1.5" />
+            <StepperRow
+              label="รายการใช้บ่อย"
+              cols={recTxCols} rows={recTxRowsN}
+              colMin={REC_TX_MIN_COLS} colMax={REC_TX_MAX_COLS}
+              rowMin={REC_TX_MIN_ROWS} rowMax={REC_TX_MAX_ROWS}
+              onCol={adjustRecTxCols} onRow={adjustRecTxRows}
+            />
+          </View>
+        )
       )}
 
       <GestureDetector gesture={blockSheetPan}>
@@ -296,7 +364,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                               Haptics.selectionAsync();
                               onSelect(cat);
                             }}
-                            style={{ width: `${100 / 6}%` }}
+                            style={{ width: `${100 / recCatCols}%` }}
                             className="items-center mb-2"
                           >
                             <View
@@ -332,10 +400,10 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                         const cat = categories.find(c => c.id === a.categoryId);
                         if (!cat) return null;
                         return (
-                          <View key={a.id} className="w-1/2 px-0.5 mb-1.5">
+                          <View key={a.id} style={{ width: `${100 / recTxCols}%`, paddingHorizontal: 2, marginBottom: 6 }}>
                             <Pressable
                               onPress={() => handleRecommendTx(a)}
-                              className="flex-row items-center py-1.5 px-2 bg-card rounded-xl border border-border"
+                              className="flex-row items-center py-1.5 px-1 bg-card rounded-xl border border-border"
                             >
                               <View
                                 className="w-8 h-8 rounded-full items-center justify-center mr-2"
@@ -358,11 +426,11 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                                   {formatCurrency(a.amount)}
                                 </Text>
                               </View>
-                              {a.count > 1 && (
+                              {/* {a.count > 1 && (
                                 <View className="px-1.5 py-0.5 rounded-full bg-primary/10">
                                   <Text className="text-primary text-[10px] font-bold">×{a.count}</Text>
                                 </View>
-                              )}
+                              )} */}
                             </Pressable>
                           </View>
                         );

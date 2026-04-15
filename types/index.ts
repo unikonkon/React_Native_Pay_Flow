@@ -52,6 +52,10 @@ export interface Settings {
   defaultWalletId: string;
   categoryColumns: number;
   categoryRows: number;
+  recCategoryColumns: number;
+  recCategoryRows: number;
+  recTxColumns: number;
+  recTxRows: number;
 }
 
 // ===== Wallet Types =====
