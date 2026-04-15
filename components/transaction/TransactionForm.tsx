@@ -158,6 +158,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             categories={filteredCategories}
             selectedId={selectedCategory?.id}
             onSelect={setSelectedCategory}
+            type={type}
           />
 
           {/* Date + Wallet chips — inline selector */}
