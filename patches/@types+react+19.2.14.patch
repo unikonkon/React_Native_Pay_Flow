@@ -1,8 +1,8 @@
 diff --git a/node_modules/@types/react/index.d.ts b/node_modules/@types/react/index.d.ts
-index 788ad15..1465059 100644
+index 750b493..7dfa1ae 100644
 --- a/node_modules/@types/react/index.d.ts
 +++ b/node_modules/@types/react/index.d.ts
-@@ -134,8 +134,8 @@ declare namespace React {
+@@ -135,8 +135,8 @@ declare namespace React {
          | ((
              props: P,
          ) => ReactNode | Promise<ReactNode>)
@@ -13,7 +13,7 @@ index 788ad15..1465059 100644
  
      /**
       * Created by {@link createRef}, or {@link useRef} when passed `null`.
-@@ -4039,8 +4039,9 @@ declare namespace React {
+@@ -4144,8 +4144,9 @@ declare namespace React {
          // TODO: Check impact of making React.ElementType<P = any> = React.JSXElementConstructor<P>
          type ElementType = string | React.JSXElementConstructor<any>;
          interface Element extends React.ReactElement<any, any> {}
