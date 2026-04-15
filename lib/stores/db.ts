@@ -456,7 +456,11 @@ export async function insertCategory(
 }
 
 export async function deleteCategory(db: SQLiteDatabase, id: string) {
-  await db.runAsync('DELETE FROM categories WHERE id = ? AND is_custom = 1', [id]);
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('DELETE FROM analysis WHERE category_id = ?', [id]);
+    await db.runAsync('DELETE FROM transactions WHERE category_id = ?', [id]);
+    await db.runAsync('DELETE FROM categories WHERE id = ? AND is_custom = 1', [id]);
+  });
 }
 
 export async function updateCategory(
