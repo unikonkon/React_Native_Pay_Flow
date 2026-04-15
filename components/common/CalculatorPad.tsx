@@ -1,8 +1,8 @@
-import { View, Text, Pressable } from 'react-native';
+import type { TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useState, useCallback } from 'react';
-import type { TransactionType } from '@/types';
+import { useCallback, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 
 interface CalculatorPadProps {
   value: number;

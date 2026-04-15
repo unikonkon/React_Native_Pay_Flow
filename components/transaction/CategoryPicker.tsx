@@ -18,13 +18,14 @@ interface CategoryPickerProps {
   onSelect: (category: Category) => void;
   type: TransactionType;
   walletId?: string | null;
+  selectedAmount?: number;
   onRecommendSelect?: (data: { category: Category; amount: number; note?: string }) => void;
 }
 
 type Tab = 'recommend' | 'select' | 'manage';
 
 // Per-item height: icon 56 + mt-1 (4) + text (~16) + mb-2 (8) = 84
-const ITEM_HEIGHT = 84;
+const ITEM_HEIGHT = 94;
 const MIN_COLS = 3;
 const MAX_COLS = 8;
 const MIN_ROWS = 2;
@@ -76,7 +77,7 @@ function StepperRow({ label, cols, rows, colMin, colMax, rowMin, rowMax, onCol, 
   );
 }
 
-export function CategoryPicker({ categories, selectedId, onSelect, type, walletId, onRecommendSelect }: CategoryPickerProps) {
+export function CategoryPicker({ categories, selectedId, onSelect, type, walletId, selectedAmount, onRecommendSelect }: CategoryPickerProps) {
   const {
     categoryColumns, categoryRows,
     recCategoryColumns, recCategoryRows,
@@ -434,14 +435,15 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                       {topAnalyses.map((a) => {
                         const cat = categories.find(c => c.id === a.categoryId);
                         if (!cat) return null;
+                        const isActive = selectedId === cat.id && selectedAmount === a.amount;
                         return (
                           <View key={a.id} style={{ width: `${100 / recTxCols}%`, paddingHorizontal: 2, marginBottom: 6 }}>
                             <Pressable
                               onPress={() => handleRecommendTx(a)}
-                              className="flex-row items-center py-1.5 px-1 bg-card rounded-xl border border-border"
+                              className={`flex-row items-center py-1.5 px-1 rounded-xl border ${isActive ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
                             >
                               <View
-                                className="w-8 h-8 rounded-full items-center justify-center mr-2"
+                                className={`w-8 h-8 rounded-full items-center justify-center mr-2 ${isActive ? 'border-2 border-primary' : ''}`}
                                 style={{ backgroundColor: cat.color }}
                               >
                                 <Ionicons
@@ -451,16 +453,22 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                                 />
                               </View>
                               <View className="flex-1">
-                                <Text className="text-foreground text-xs font-semibold" numberOfLines={1}>
+                                <Text
+                                  className={`text-[9px] font-semibold ${isActive ? 'text-primary' : 'text-foreground'}`}
+                                  numberOfLines={1}
+                                >
                                   {cat.name}
                                 </Text>
                                 <Text
-                                  className={`text-[11px] font-bold ${type === 'income' ? 'text-income' : 'text-expense'}`}
+                                  className={`text-[16px] font-bold ${type === 'income' ? 'text-income' : 'text-expense'}`}
                                   numberOfLines={1}
                                 >
                                   {formatCurrency(a.amount)}
                                 </Text>
                               </View>
+                              {isActive && (
+                                <Ionicons name="checkmark-circle" size={16} color="#0891b2" style={{ marginLeft: 2 }} />
+                              )}
                               {/* {a.count > 1 && (
                                 <View className="px-1.5 py-0.5 rounded-full bg-primary/10">
                                   <Text className="text-primary text-[10px] font-bold">×{a.count}</Text>
