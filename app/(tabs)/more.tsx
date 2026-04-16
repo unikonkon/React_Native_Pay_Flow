@@ -5,8 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
-import { getDb, getAllTransactions } from '@/lib/stores/db';
-import { exportToCSV } from '@/lib/utils/export';
+import { getDb } from '@/lib/stores/db';
 import { getApiKey, setApiKey, deleteApiKey } from '@/lib/api/ai';
 import { isBiometricAvailable, getBiometricEnabled, setBiometricEnabled } from '@/lib/utils/auth';
 import { getNotificationsEnabled, setNotificationsEnabled } from '@/lib/utils/notifications';
@@ -107,20 +106,6 @@ export default function SettingsScreen() {
 
   const themeLabel = theme === 'light' ? 'สว่าง' : theme === 'dark' ? 'มืด' : 'ตามระบบ';
 
-  const handleExport = async () => {
-    try {
-      const db = getDb();
-      const allTx = await getAllTransactions(db);
-      if (allTx.length === 0) {
-        Alert.alert('ไม่มีข้อมูล', 'ยังไม่มีรายการสำหรับส่งออก');
-        return;
-      }
-      await exportToCSV(allTx);
-    } catch {
-      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถส่งออกข้อมูลได้');
-    }
-  };
-
   const handleClearData = () => {
     Alert.alert(
       'ล้างข้อมูลทั้งหมด',
@@ -183,8 +168,7 @@ export default function SettingsScreen() {
         />
 
         <SectionHeader title="ข้อมูล" />
-        <SettingsRow icon="swap-horizontal-outline" label="ส่งออก / นำเข้าข้อมูลทั้งหมด" onPress={() => router.push('/settings/data-transfer')} />
-        <SettingsRow icon="download-outline" label="ส่งออก Excel" onPress={handleExport} />
+        <SettingsRow icon="swap-horizontal-outline" label="ส่งออก / นำเข้าข้อมูล" onPress={() => router.push('/settings/data-transfer')} />
         <SettingsRow icon="trash-outline" label="ล้างข้อมูลทั้งหมด" onPress={handleClearData} />
 
         <SectionHeader title="เกี่ยวกับ" />

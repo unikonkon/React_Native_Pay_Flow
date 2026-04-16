@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"try { const E = require\\('exceljs'\\); console.log\\('default:', typeof E, Object.keys\\(E\\).slice\\(0,5\\)\\); console.log\\('Workbook:', typeof E.Workbook\\); } catch\\(e\\) { console.log\\('error:', e.message\\); }\")"
+    ]
+  }
+}

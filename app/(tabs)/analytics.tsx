@@ -8,7 +8,7 @@ import { useSummary } from '@/hooks/useSummary';
 import { getAllTransactions, getDb, getSummariesByBuckets } from '@/lib/stores/db';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { useWalletStore } from '@/lib/stores/wallet-store';
-import { exportToCSV } from '@/lib/utils/export';
+import { exportToCSV } from '@/lib/utils/data-transfer';
 import { getBarChartBuckets } from '@/lib/utils/period';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
