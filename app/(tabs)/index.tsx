@@ -2,6 +2,7 @@ import { FrequentTransactions } from '@/components/transaction/FrequentTransacti
 import { TransactionList } from '@/components/transaction/TransactionList';
 import { AlertBanner } from '@/components/ui/AlertBanner';
 import { FAB } from '@/components/ui/FAB';
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
 import { PeriodSelector } from '@/components/ui/PeriodSelector';
 import { WalletFilter } from '@/components/wallet/WalletFilter';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
@@ -27,6 +28,7 @@ export default function TransactionsScreen() {
   const deleteTransactions = useTransactionStore(s => s.deleteTransactions);
   const setEditingTransaction = useTransactionStore(s => s.setEditingTransaction);
   const addTransaction = useTransactionStore(s => s.addTransaction);
+  const isLoading = useTransactionStore(s => s.isLoading);
   const totalIncome = useTransactionStore(s => s.totalIncome);
   const totalExpense = useTransactionStore(s => s.totalExpense);
 
@@ -172,14 +174,18 @@ export default function TransactionsScreen() {
       />
 
       <View className="flex-1">
-        <TransactionList
-          transactions={transactions}
-          onItemPress={handleItemPress}
-          onItemLongPress={handleItemLongPress}
-          onDeleteItem={handleDeleteItem}
-          onDeleteGroup={handleDeleteGroup}
-          onCopyItem={handleCopyItem}
-        />
+        {isLoading && transactions.length === 0 ? (
+          <LoadingOverlay visible rows={6} />
+        ) : (
+          <TransactionList
+            transactions={transactions}
+            onItemPress={handleItemPress}
+            onItemLongPress={handleItemLongPress}
+            onDeleteItem={handleDeleteItem}
+            onDeleteGroup={handleDeleteGroup}
+            onCopyItem={handleCopyItem}
+          />
+        )}
       </View>
 
       <FAB onPress={handleAddNew} />
