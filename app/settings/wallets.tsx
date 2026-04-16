@@ -1,14 +1,14 @@
-import { View, Text, Pressable, FlatList, Alert, Modal } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useWalletStore } from '@/lib/stores/wallet-store';
+import { getDb, getWalletTransactionCount } from '@/lib/stores/db';
 import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
-import { getDb, getWalletTransactionCount } from '@/lib/stores/db';
+import { useWalletStore } from '@/lib/stores/wallet-store';
 import type { Wallet, WalletType } from '@/types';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { Alert, FlatList, Modal, Pressable, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const WALLET_TYPES: { value: WalletType; label: string; icon: string }[] = [
   { value: 'cash', label: 'เงินสด', icon: 'cash-outline' },
@@ -115,6 +115,54 @@ export default function WalletsScreen() {
     );
   }, [deleteWallet, defaultWalletId, reloadTransactions]);
 
+  const handleClearWalletData = useCallback(async (wallet: Wallet) => {
+    const txCount = await getWalletTransactionCount(getDb(), wallet.id);
+    if (txCount === 0) {
+      Alert.alert('ไม่มีข้อมูล', `กระเป๋า "${wallet.name}" ไม่มีรายการรายรับ-รายจ่าย`);
+      return;
+    }
+    Alert.alert(
+      'ล้างข้อมูลกระเป๋า',
+      `ต้องการลบรายการรายรับ-รายจ่ายทั้งหมด ${txCount} รายการ ของ "${wallet.name}" ?`,
+      [
+        { text: 'ยกเลิก', style: 'cancel' },
+        {
+          text: 'ล้างข้อมูล',
+          style: 'destructive',
+          onPress: async () => {
+            const db = getDb();
+            await db.runAsync('DELETE FROM transactions WHERE wallet_id = ?', [wallet.id]);
+            await db.runAsync('DELETE FROM analysis WHERE wallet_id = ?', [wallet.id]);
+            await reloadTransactions();
+            setActionWallet(null);
+            Alert.alert('สำเร็จ', `ล้างข้อมูล "${wallet.name}" เรียบร้อยแล้ว`);
+          },
+        },
+      ]
+    );
+  }, [reloadTransactions]);
+
+  const handleClearAllData = useCallback(() => {
+    Alert.alert(
+      'ล้างข้อมูลทั้งหมด',
+      'รายการรายรับ-รายจ่ายทั้งหมดจะถูกลบ ดำเนินการต่อ?',
+      [
+        { text: 'ยกเลิก', style: 'cancel' },
+        {
+          text: 'ล้างข้อมูล',
+          style: 'destructive',
+          onPress: async () => {
+            const db = getDb();
+            await db.runAsync('DELETE FROM transactions');
+            await db.runAsync('DELETE FROM analysis');
+            await reloadTransactions();
+            Alert.alert('สำเร็จ', 'ล้างข้อมูลเรียบร้อยแล้ว');
+          },
+        },
+      ]
+    );
+  }, [reloadTransactions]);
+
   const renderWalletItem = ({ item }: { item: Wallet }) => {
     const isDefault = item.id === defaultWalletId;
     const isSystem = item.id === 'wallet-cash';
@@ -158,6 +206,14 @@ export default function WalletsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderWalletItem}
       />
+
+      <Pressable
+        onPress={handleClearAllData}
+        className="flex-row items-center justify-center py-3 mx-32 mb-4 rounded-xl border border-destructive"
+      >
+        <Ionicons name="trash-outline" size={18} color="#EF4444" />
+        <Text className="text-destructive font-semibold ml-2">ล้างข้อมูลทั้งหมด</Text>
+      </Pressable>
 
       <Pressable
         onPress={openAddForm}
@@ -297,6 +353,14 @@ export default function WalletsScreen() {
                 >
                   <Ionicons name="create-outline" size={20} color="#666" />
                   <Text className="text-foreground ml-3 flex-1">แก้ไข</Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => handleClearWalletData(actionWallet)}
+                  className="flex-row items-center py-3 px-3 rounded-xl mb-2 active:bg-amber-50"
+                >
+                  <Ionicons name="document-text-outline" size={20} color="#F59E0B" />
+                  <Text className="text-foreground ml-3 flex-1">ล้างรายการในกระเป๋า</Text>
                 </Pressable>
 
                 <Pressable

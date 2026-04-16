@@ -4,8 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSettingsStore } from '@/lib/stores/settings-store';
-import { useTransactionStore } from '@/lib/stores/transaction-store';
-import { getDb } from '@/lib/stores/db';
 import { getApiKey, setApiKey, deleteApiKey } from '@/lib/api/ai';
 import { isBiometricAvailable, getBiometricEnabled, setBiometricEnabled } from '@/lib/utils/auth';
 import { getNotificationsEnabled, setNotificationsEnabled } from '@/lib/utils/notifications';
@@ -46,7 +44,6 @@ function SectionHeader({ title }: { title: string }) {
 
 export default function SettingsScreen() {
   const { theme, currency, updateSettings } = useSettingsStore();
-  const loadTransactions = useTransactionStore(s => s.loadTransactions);
 
   const [apiKeyStatus, setApiKeyStatus] = useState('ตรวจสอบ...');
 
@@ -106,26 +103,6 @@ export default function SettingsScreen() {
 
   const themeLabel = theme === 'light' ? 'สว่าง' : theme === 'dark' ? 'มืด' : 'ตามระบบ';
 
-  const handleClearData = () => {
-    Alert.alert(
-      'ล้างข้อมูลทั้งหมด',
-      'รายการรายรับ-รายจ่ายทั้งหมดจะถูกลบ ดำเนินการต่อ?',
-      [
-        { text: 'ยกเลิก', style: 'cancel' },
-        {
-          text: 'ล้างข้อมูล',
-          style: 'destructive',
-          onPress: async () => {
-            const db = getDb();
-            await db.runAsync('DELETE FROM transactions');
-            await loadTransactions();
-            Alert.alert('สำเร็จ', 'ล้างข้อมูลเรียบร้อยแล้ว');
-          },
-        },
-      ]
-    );
-  };
-
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
 
   return (
@@ -169,7 +146,6 @@ export default function SettingsScreen() {
 
         <SectionHeader title="ข้อมูล" />
         <SettingsRow icon="swap-horizontal-outline" label="ส่งออก / นำเข้าข้อมูล" onPress={() => router.push('/settings/data-transfer')} />
-        <SettingsRow icon="trash-outline" label="ล้างข้อมูลทั้งหมด" onPress={handleClearData} />
 
         <SectionHeader title="เกี่ยวกับ" />
         <SettingsRow icon="information-circle-outline" label="เวอร์ชัน" value={appVersion} />
