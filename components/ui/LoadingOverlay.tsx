@@ -1,21 +1,14 @@
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
-  useSharedValue,
+  Easing,
+  interpolate,
   useAnimatedStyle,
+  useSharedValue,
+  withDelay,
   withRepeat,
   withTiming,
-  interpolate,
-  Easing,
-  withDelay,
-  FadeIn,
-  FadeOut,
 } from 'react-native-reanimated';
-
-interface Props {
-  visible: boolean;
-  rows?: number;
-}
 
 function ShimmerRow({ index }: { index: number }) {
   const shimmer = useSharedValue(0);
@@ -42,22 +35,6 @@ function ShimmerRow({ index }: { index: number }) {
       </View>
       <Animated.View style={[styles.amountBar, animatedStyle]} />
     </View>
-  );
-}
-
-export function LoadingOverlay({ visible, rows = 5 }: Props) {
-  if (!visible) return null;
-
-  return (
-    <Animated.View
-      entering={FadeIn.duration(150)}
-      exiting={FadeOut.duration(200)}
-      style={styles.container}
-    >
-      {Array.from({ length: rows }, (_, i) => (
-        <ShimmerRow key={i} index={i} />
-      ))}
-    </Animated.View>
   );
 }
 
