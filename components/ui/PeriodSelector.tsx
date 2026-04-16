@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import type { Period, PeriodType } from '@/types';
@@ -48,11 +49,13 @@ export function PeriodSelector({ period, onChange, className }: Props) {
   };
 
   const handlePickType = (t: PeriodType) => {
+    Haptics.selectionAsync();
     onChange(getCurrentPeriod(t));
     setOpen(false);
   };
 
   const handlePickAnchor = (p: Period) => {
+    Haptics.selectionAsync();
     onChange(p);
     setOpen(false);
   };
@@ -69,7 +72,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
     <View className={className}>
       <View className="flex-row items-center justify-between">
         <Pressable
-          onPress={() => canShift && onChange(shiftPeriod(period, -1))}
+          onPress={() => { if (canShift) { Haptics.selectionAsync(); onChange(shiftPeriod(period, -1)); } }}
           disabled={!canShift}
           className="p-2"
         >
@@ -85,7 +88,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
           <Ionicons name="chevron-down" size={18} color="#666" style={{ marginLeft: 4 }} />
         </Pressable>
         <Pressable
-          onPress={() => canShift && onChange(shiftPeriod(period, 1))}
+          onPress={() => { if (canShift) { Haptics.selectionAsync(); onChange(shiftPeriod(period, 1)); } }}
           disabled={!canShift}
           className="p-2"
         >
@@ -113,7 +116,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
               {(Object.keys(TAB_LABEL) as TabKey[]).map((t) => (
                 <Pressable
                   key={t}
-                  onPress={() => setTab(t)}
+                  onPress={() => { Haptics.selectionAsync(); setTab(t); }}
                   className={`flex-1 py-2 rounded-lg items-center ${tab === t ? 'bg-primary' : ''}`}
                 >
                   <Text

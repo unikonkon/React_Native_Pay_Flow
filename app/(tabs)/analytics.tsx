@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,26 +18,30 @@ import { exportToCSV } from '@/lib/utils/export';
 type ChartTab = 'overview' | 'category' | 'wallets';
 
 export default function AnalyticsScreen() {
-  const {
-    transactions,
-    currentPeriod,
-    setCurrentPeriod,
-    loadTransactions,
-    selectedWalletId,
-    setSelectedWalletId,
-  } = useTransactionStore();
+  const transactions = useTransactionStore(s => s.transactions);
+  const currentPeriod = useTransactionStore(s => s.currentPeriod);
+  const setCurrentPeriod = useTransactionStore(s => s.setCurrentPeriod);
+  const loadTransactions = useTransactionStore(s => s.loadTransactions);
+  const selectedWalletId = useTransactionStore(s => s.selectedWalletId);
+  const setSelectedWalletId = useTransactionStore(s => s.setSelectedWalletId);
+  const totalIncome = useTransactionStore(s => s.totalIncome);
+  const totalExpense = useTransactionStore(s => s.totalExpense);
+
   const wallets = useWalletStore(s => s.wallets);
   const [chartTab, setChartTab] = useState<ChartTab>('overview');
 
-  const filteredTransactions = useMemo(() => {
-    if (!selectedWalletId) return transactions;
-    return transactions.filter(t => t.walletId === selectedWalletId);
-  }, [transactions, selectedWalletId]);
+  const balance = totalIncome - totalExpense;
+  const { expenseByCategory } = useSummary(transactions);
 
-  const { totalIncome, totalExpense, balance, expenseByCategory } = useSummary(filteredTransactions);
-
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    loadTransactions(currentPeriod);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      loadTransactions(currentPeriod);
+    }, 150);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [currentPeriod, loadTransactions]);
 
   const [barData, setBarData] = useState<{ labels: string[]; incomeData: number[]; expenseData: number[] }>({

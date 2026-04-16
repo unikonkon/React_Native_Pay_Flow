@@ -13,6 +13,7 @@ export function getDb(): SQLiteDatabase {
   return dbInstance;
 }
 
+// Fix 2 — PRAGMA optimize for mobile
 export function useDatabase() {
   const [isReady, setIsReady] = useState(false);
 
@@ -23,7 +24,13 @@ export function useDatabase() {
     }
 
     const db = await openDatabaseAsync('ceasflow.db');
-    await db.execAsync('PRAGMA journal_mode = WAL;');
+    await db.execAsync(`
+      PRAGMA journal_mode = WAL;
+      PRAGMA cache_size = -8000;
+      PRAGMA temp_store = MEMORY;
+      PRAGMA synchronous = NORMAL;
+      PRAGMA foreign_keys = ON;
+    `);
     await migrateDatabase(db);
     dbInstance = db;
     setIsReady(true);
@@ -67,6 +74,11 @@ const CREATE_INDEXES = [
   'CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);',
   'CREATE INDEX IF NOT EXISTS idx_transactions_type ON transactions(type);',
   'CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category_id);',
+  'CREATE INDEX IF NOT EXISTS idx_transactions_date_created ON transactions(date DESC, created_at DESC);',
+  'CREATE INDEX IF NOT EXISTS idx_transactions_wallet_date ON transactions(wallet_id, date DESC, created_at DESC);',
+  // Fix 8 — Composite index on analysis
+  'CREATE INDEX IF NOT EXISTS idx_analysis_wallet_type ON analysis(wallet_id, type, count DESC);',
+  'CREATE INDEX IF NOT EXISTS idx_analysis_lookup ON analysis(wallet_id, category_id, type, amount, match_type);',
 ];
 
 const CREATE_WALLETS_TABLE = `
@@ -115,6 +127,62 @@ const CREATE_ANALYSIS_TABLE = `
 const CREATE_WALLETS_INDEX =
   'CREATE INDEX IF NOT EXISTS idx_wallets_type ON wallets(type);';
 
+// ===== Fix 7 — Shared row type + mapTransactionRow helper =====
+
+type RawTransactionRow = {
+  id: string; type: string; amount: number; category_id: string;
+  note: string | null; date: string; created_at: string;
+  wallet_id: string | null;
+  cat_name: string; cat_icon: string; cat_color: string;
+  cat_type: string; cat_is_custom: number; cat_sort_order: number;
+  w_name: string | null; w_type: string | null;
+  w_icon: string | null; w_color: string | null;
+};
+
+const TX_SELECT = `
+  SELECT t.*, c.name as cat_name, c.icon as cat_icon, c.color as cat_color,
+         c.type as cat_type, c.is_custom as cat_is_custom, c.sort_order as cat_sort_order,
+         w.name as w_name, w.type as w_type, w.icon as w_icon, w.color as w_color
+  FROM transactions t
+  LEFT JOIN categories c ON t.category_id = c.id
+  LEFT JOIN wallets w ON t.wallet_id = w.id`;
+
+function mapTransactionRow(r: RawTransactionRow): Transaction {
+  return {
+    id: r.id,
+    type: r.type as TransactionType,
+    amount: r.amount,
+    categoryId: r.category_id,
+    note: r.note ?? undefined,
+    date: r.date,
+    createdAt: r.created_at,
+    walletId: r.wallet_id ?? 'wallet-cash',
+    category: {
+      id: r.category_id,
+      name: r.cat_name,
+      icon: r.cat_icon,
+      color: r.cat_color,
+      type: r.cat_type as TransactionType,
+      isCustom: r.cat_is_custom === 1,
+      sortOrder: r.cat_sort_order,
+    },
+    wallet: r.w_name
+      ? {
+          id: r.wallet_id!,
+          name: r.w_name,
+          type: r.w_type as WalletType,
+          icon: r.w_icon!,
+          color: r.w_color!,
+          currency: 'THB',
+          initialBalance: 0,
+          currentBalance: 0,
+          isAsset: true,
+          createdAt: '',
+        }
+      : undefined,
+  };
+}
+
 // ===== Migrations =====
 
 async function migrateDatabase(db: SQLiteDatabase) {
@@ -132,10 +200,6 @@ async function migrateDatabase(db: SQLiteDatabase) {
   await db.execAsync(CREATE_CATEGORIES_TABLE);
   await db.execAsync(CREATE_TRANSACTIONS_TABLE);
 
-  for (const sql of CREATE_INDEXES) {
-    await db.execAsync(sql);
-  }
-
   // Check if wallets table has old schema (missing currency column) and recreate
   const walletInfo = await db.getAllAsync<{ name: string }>('PRAGMA table_info(wallets)');
   if (walletInfo.length > 0 && !walletInfo.some(c => c.name === 'currency')) {
@@ -146,6 +210,11 @@ async function migrateDatabase(db: SQLiteDatabase) {
   await db.execAsync(CREATE_AI_HISTORY_TABLE);
   await db.execAsync(CREATE_ANALYSIS_TABLE);
   await db.execAsync(CREATE_WALLETS_INDEX);
+
+  // Indexes must be created after all tables (analysis indexes need analysis table)
+  for (const sql of CREATE_INDEXES) {
+    await db.execAsync(sql);
+  }
 
   await seedDefaultCategories(db);
   await migrateDefaultCategories(db);
@@ -169,14 +238,7 @@ async function seedDefaultCategories(db: SQLiteDatabase) {
   }
 }
 
-/**
- * Migrate old default categories (8 expense + 4 income) to new set (30 + 14).
- * - Upsert all new default categories with latest name/icon/color/sort_order
- * - Remap any transactions still referencing removed old categories to a fallback
- * - Delete old default categories that no longer exist in the new set
- */
 async function migrateDefaultCategories(db: SQLiteDatabase) {
-  // Upsert every default category (insert or update)
   for (const cat of ALL_DEFAULT_CATEGORIES) {
     await db.runAsync(
       `INSERT INTO categories (id, name, icon, color, type, is_custom, sort_order)
@@ -192,7 +254,6 @@ async function migrateDefaultCategories(db: SQLiteDatabase) {
     );
   }
 
-  // Find old default categories that are no longer in ALL_DEFAULT_CATEGORIES
   const newIds = ALL_DEFAULT_CATEGORIES.map(c => c.id);
   const placeholders = newIds.map(() => '?').join(',');
   const oldDefaults = await db.getAllAsync<{ id: string; type: string }>(
@@ -200,7 +261,6 @@ async function migrateDefaultCategories(db: SQLiteDatabase) {
     newIds
   );
 
-  // Remap transactions from removed categories to type-appropriate fallback
   for (const old of oldDefaults) {
     const fallbackId = old.type === 'income' ? 'inc-other' : 'exp-other';
     await db.runAsync(
@@ -215,7 +275,6 @@ async function migrateWalletId(db: SQLiteDatabase) {
   const txCols = await db.getAllAsync<{ name: string }>('PRAGMA table_info(transactions)');
   if (!txCols.some(c => c.name === 'wallet_id')) {
     await db.execAsync("ALTER TABLE transactions ADD COLUMN wallet_id TEXT DEFAULT 'wallet-cash'");
-    await db.execAsync('CREATE INDEX IF NOT EXISTS idx_transactions_wallet ON transactions(wallet_id)');
   }
 }
 
@@ -234,129 +293,82 @@ async function seedDefaultWallet(db: SQLiteDatabase) {
 
 // ===== Transaction Queries =====
 
-export async function getTransactionsByMonth(db: SQLiteDatabase, month: string): Promise<Transaction[]> {
-  const rows = await db.getAllAsync<{
-    id: string; type: string; amount: number; category_id: string; note: string | null;
-    date: string; created_at: string; wallet_id: string | null;
-    cat_name: string; cat_icon: string; cat_color: string; cat_type: string;
-    cat_is_custom: number; cat_sort_order: number;
-    w_name: string | null; w_type: string | null; w_icon: string | null; w_color: string | null;
-  }>(
-    `SELECT t.*, c.name as cat_name, c.icon as cat_icon, c.color as cat_color,
-            c.type as cat_type, c.is_custom as cat_is_custom, c.sort_order as cat_sort_order,
-            w.name as w_name, w.type as w_type, w.icon as w_icon, w.color as w_color
-     FROM transactions t
-     LEFT JOIN categories c ON t.category_id = c.id
-     LEFT JOIN wallets w ON t.wallet_id = w.id
-     WHERE strftime('%Y-%m', t.date) = ?
+// Fix 1 — strftime → BETWEEN (getTransactionsByMonth now uses date range)
+export async function getTransactionsByMonth(
+  db: SQLiteDatabase,
+  month: string,  // '2025-01' format — converted to BETWEEN range
+): Promise<Transaction[]> {
+  const [y, m] = month.split('-').map(Number);
+  const start = `${y}-${String(m).padStart(2, '0')}-01`;
+  const lastDay = new Date(y, m, 0).getDate();
+  const end = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+
+  const rows = await db.getAllAsync<RawTransactionRow>(
+    `${TX_SELECT}
+     WHERE t.date BETWEEN ? AND ?
      ORDER BY t.date DESC, t.created_at DESC`,
-    [month]
+    [start, end]
   );
 
-  return rows.map(r => ({
-    id: r.id,
-    type: r.type as TransactionType,
-    amount: r.amount,
-    categoryId: r.category_id,
-    note: r.note ?? undefined,
-    date: r.date,
-    createdAt: r.created_at,
-    walletId: r.wallet_id ?? 'wallet-cash',
-    category: {
-      id: r.category_id,
-      name: r.cat_name,
-      icon: r.cat_icon,
-      color: r.cat_color,
-      type: r.cat_type as TransactionType,
-      isCustom: r.cat_is_custom === 1,
-      sortOrder: r.cat_sort_order,
-    },
-    wallet: r.w_name ? { id: r.wallet_id!, name: r.w_name, type: r.w_type as WalletType, icon: r.w_icon!, color: r.w_color!, currency: 'THB', initialBalance: 0, currentBalance: 0, isAsset: true, createdAt: '' } : undefined,
-  }));
+  return rows.map(mapTransactionRow);
 }
 
 export async function getTransactionsByRange(
   db: SQLiteDatabase,
   start: string,
   end: string,
+  walletId?: string | null,
 ): Promise<Transaction[]> {
-  const rows = await db.getAllAsync<{
-    id: string; type: string; amount: number; category_id: string; note: string | null;
-    date: string; created_at: string; wallet_id: string | null;
-    cat_name: string; cat_icon: string; cat_color: string; cat_type: string;
-    cat_is_custom: number; cat_sort_order: number;
-    w_name: string | null; w_type: string | null; w_icon: string | null; w_color: string | null;
-  }>(
-    `SELECT t.*, c.name as cat_name, c.icon as cat_icon, c.color as cat_color,
-            c.type as cat_type, c.is_custom as cat_is_custom, c.sort_order as cat_sort_order,
-            w.name as w_name, w.type as w_type, w.icon as w_icon, w.color as w_color
-     FROM transactions t
-     LEFT JOIN categories c ON t.category_id = c.id
-     LEFT JOIN wallets w ON t.wallet_id = w.id
-     WHERE t.date BETWEEN ? AND ?
+  const params: (string | number)[] = [start, end];
+  let walletFilter = '';
+  if (walletId) {
+    walletFilter = ' AND t.wallet_id = ?';
+    params.push(walletId);
+  }
+
+  const rows = await db.getAllAsync<RawTransactionRow>(
+    `${TX_SELECT}
+     WHERE t.date BETWEEN ? AND ?${walletFilter}
      ORDER BY t.date DESC, t.created_at DESC`,
-    [start, end]
+    params
   );
 
-  return rows.map(r => ({
-    id: r.id,
-    type: r.type as TransactionType,
-    amount: r.amount,
-    categoryId: r.category_id,
-    note: r.note ?? undefined,
-    date: r.date,
-    createdAt: r.created_at,
-    walletId: r.wallet_id ?? 'wallet-cash',
-    category: {
-      id: r.category_id,
-      name: r.cat_name,
-      icon: r.cat_icon,
-      color: r.cat_color,
-      type: r.cat_type as TransactionType,
-      isCustom: r.cat_is_custom === 1,
-      sortOrder: r.cat_sort_order,
-    },
-    wallet: r.w_name ? { id: r.wallet_id!, name: r.w_name, type: r.w_type as WalletType, icon: r.w_icon!, color: r.w_color!, currency: 'THB', initialBalance: 0, currentBalance: 0, isAsset: true, createdAt: '' } : undefined,
-  }));
+  return rows.map(mapTransactionRow);
+}
+
+export async function getSummaryByRange(
+  db: SQLiteDatabase,
+  start: string,
+  end: string,
+  walletId?: string | null,
+): Promise<{ totalIncome: number; totalExpense: number }> {
+  const params: (string | number)[] = [start, end];
+  let walletFilter = '';
+  if (walletId) {
+    walletFilter = ' AND wallet_id = ?';
+    params.push(walletId);
+  }
+
+  const rows = await db.getAllAsync<{ type: string; total: number }>(
+    `SELECT type, SUM(amount) as total FROM transactions
+     WHERE date BETWEEN ? AND ?${walletFilter}
+     GROUP BY type`,
+    params
+  );
+
+  return {
+    totalIncome: rows.find(r => r.type === 'income')?.total ?? 0,
+    totalExpense: rows.find(r => r.type === 'expense')?.total ?? 0,
+  };
 }
 
 export async function getAllTransactions(db: SQLiteDatabase): Promise<Transaction[]> {
-  const rows = await db.getAllAsync<{
-    id: string; type: string; amount: number; category_id: string; note: string | null;
-    date: string; created_at: string; wallet_id: string | null;
-    cat_name: string; cat_icon: string; cat_color: string; cat_type: string;
-    cat_is_custom: number; cat_sort_order: number;
-    w_name: string | null; w_type: string | null; w_icon: string | null; w_color: string | null;
-  }>(
-    `SELECT t.*, c.name as cat_name, c.icon as cat_icon, c.color as cat_color,
-            c.type as cat_type, c.is_custom as cat_is_custom, c.sort_order as cat_sort_order,
-            w.name as w_name, w.type as w_type, w.icon as w_icon, w.color as w_color
-     FROM transactions t
-     LEFT JOIN categories c ON t.category_id = c.id
-     LEFT JOIN wallets w ON t.wallet_id = w.id
+  const rows = await db.getAllAsync<RawTransactionRow>(
+    `${TX_SELECT}
      ORDER BY t.date DESC, t.created_at DESC`
   );
 
-  return rows.map(r => ({
-    id: r.id,
-    type: r.type as TransactionType,
-    amount: r.amount,
-    categoryId: r.category_id,
-    note: r.note ?? undefined,
-    date: r.date,
-    createdAt: r.created_at,
-    walletId: r.wallet_id ?? 'wallet-cash',
-    category: {
-      id: r.category_id,
-      name: r.cat_name,
-      icon: r.cat_icon,
-      color: r.cat_color,
-      type: r.cat_type as TransactionType,
-      isCustom: r.cat_is_custom === 1,
-      sortOrder: r.cat_sort_order,
-    },
-    wallet: r.w_name ? { id: r.wallet_id!, name: r.w_name, type: r.w_type as WalletType, icon: r.w_icon!, color: r.w_color!, currency: 'THB', initialBalance: 0, currentBalance: 0, isAsset: true, createdAt: '' } : undefined,
-  }));
+  return rows.map(mapTransactionRow);
 }
 
 export async function insertTransaction(
@@ -398,6 +410,19 @@ export async function updateTransaction(
 
 export async function deleteTransaction(db: SQLiteDatabase, id: string) {
   await db.runAsync('DELETE FROM transactions WHERE id = ?', [id]);
+}
+
+// Fix 5 — Batch delete in 1 query
+export async function deleteTransactionsBatch(
+  db: SQLiteDatabase,
+  ids: string[]
+): Promise<void> {
+  if (ids.length === 0) return;
+  const placeholders = ids.map(() => '?').join(',');
+  await db.runAsync(
+    `DELETE FROM transactions WHERE id IN (${placeholders})`,
+    ids
+  );
 }
 
 // ===== Category Queries =====
@@ -478,130 +503,124 @@ export async function updateCategory(
   await db.runAsync(`UPDATE categories SET ${sets.join(', ')} WHERE id = ? AND is_custom = 1`, values);
 }
 
+// Fix 6 — reorderCategories: N UPDATE → 1 CASE WHEN
 export async function reorderCategories(
   db: SQLiteDatabase,
   type: TransactionType,
   orderedIds: string[]
 ): Promise<void> {
-  await db.withTransactionAsync(async () => {
-    for (let i = 0; i < orderedIds.length; i++) {
-      await db.runAsync(
-        'UPDATE categories SET sort_order = ? WHERE id = ? AND type = ?',
-        [i, orderedIds[i], type]
-      );
-    }
-  });
+  if (orderedIds.length === 0) return;
+
+  const cases = orderedIds.map((_, i) => `WHEN ? THEN ${i}`).join(' ');
+  const placeholders = orderedIds.map(() => '?').join(',');
+  const params = [...orderedIds, ...orderedIds, type];
+
+  await db.runAsync(
+    `UPDATE categories
+     SET sort_order = CASE id ${cases} END
+     WHERE id IN (${placeholders}) AND type = ?`,
+    params
+  );
 }
 
 // ===== Monthly Summary Queries =====
 
+// Fix 1 — getMonthlySummaries: strftime → BETWEEN per month
 export async function getMonthlySummaries(
   db: SQLiteDatabase,
   months: string[],
   walletId?: string
 ): Promise<{ month: string; income: number; expense: number }[]> {
-  const placeholders = months.map(() => '?').join(',');
-  const params: (string | number)[] = [...months];
-  let walletFilter = '';
-  if (walletId) {
-    walletFilter = ' AND wallet_id = ?';
-    params.push(walletId);
+  if (months.length === 0) return [];
+
+  // Build UNION ALL query: one SELECT per month using BETWEEN
+  const unions = months
+    .map(() =>
+      `SELECT ? as mnth, type, SUM(amount) as total
+       FROM transactions
+       WHERE date BETWEEN ? AND ?${walletId ? ' AND wallet_id = ?' : ''}
+       GROUP BY type`
+    )
+    .join(' UNION ALL ');
+
+  const params: (string | number)[] = [];
+  for (const m of months) {
+    const [y, mo] = m.split('-').map(Number);
+    const start = `${y}-${String(mo).padStart(2, '0')}-01`;
+    const lastDay = new Date(y, mo, 0).getDate();
+    const end = `${y}-${String(mo).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    params.push(m, start, end);
+    if (walletId) params.push(walletId);
   }
 
-  const rows = await db.getAllAsync<{
-    month: string; type: string; total: number;
-  }>(
-    `SELECT strftime('%Y-%m', date) as month, type, SUM(amount) as total
-     FROM transactions
-     WHERE strftime('%Y-%m', date) IN (${placeholders})${walletFilter}
-     GROUP BY month, type`,
-    params
+  const rows = await db.getAllAsync<{ mnth: string; type: string; total: number }>(
+    unions, params
   );
 
-  return months.map(m => {
-    const incomeRow = rows.find(r => r.month === m && r.type === 'income');
-    const expenseRow = rows.find(r => r.month === m && r.type === 'expense');
-    return {
-      month: m,
-      income: incomeRow?.total ?? 0,
-      expense: expenseRow?.total ?? 0,
-    };
-  });
+  return months.map(m => ({
+    month: m,
+    income: rows.find(r => r.mnth === m && r.type === 'income')?.total ?? 0,
+    expense: rows.find(r => r.mnth === m && r.type === 'expense')?.total ?? 0,
+  }));
 }
 
+// Fix 3 — getSummariesByBuckets: N queries → 1 UNION ALL query
 export async function getSummariesByBuckets(
   db: SQLiteDatabase,
   buckets: { start: string; end: string; label: string }[],
   walletId?: string,
 ): Promise<{ label: string; income: number; expense: number }[]> {
-  const results: { label: string; income: number; expense: number }[] = [];
+  if (buckets.length === 0) return [];
+
+  const unions = buckets
+    .map(() =>
+      `SELECT ? as lbl, type, SUM(amount) as total
+       FROM transactions
+       WHERE date BETWEEN ? AND ?${walletId ? ' AND wallet_id = ?' : ''}
+       GROUP BY type`
+    )
+    .join(' UNION ALL ');
+
+  const params: (string | number)[] = [];
   for (const b of buckets) {
-    const params: (string | number)[] = [b.start, b.end];
-    let walletFilter = '';
-    if (walletId) {
-      walletFilter = ' AND wallet_id = ?';
-      params.push(walletId);
-    }
-    const rows = await db.getAllAsync<{ type: string; total: number }>(
-      `SELECT type, SUM(amount) as total FROM transactions
-       WHERE date BETWEEN ? AND ?${walletFilter}
-       GROUP BY type`,
-      params
-    );
-    const income = rows.find(r => r.type === 'income')?.total ?? 0;
-    const expense = rows.find(r => r.type === 'expense')?.total ?? 0;
-    results.push({ label: b.label, income, expense });
+    params.push(b.label, b.start, b.end);
+    if (walletId) params.push(walletId);
   }
-  return results;
+
+  const rows = await db.getAllAsync<{ lbl: string; type: string; total: number }>(
+    unions, params
+  );
+
+  return buckets.map(b => ({
+    label: b.label,
+    income: rows.find(r => r.lbl === b.label && r.type === 'income')?.total ?? 0,
+    expense: rows.find(r => r.lbl === b.label && r.type === 'expense')?.total ?? 0,
+  }));
 }
 
+// Fix 1 — getTransactionsByYear: strftime → BETWEEN
 export async function getTransactionsByYear(
   db: SQLiteDatabase,
   year: number,
   walletId?: string
 ): Promise<Transaction[]> {
-  const yearStr = String(year);
+  const start = `${year}-01-01`;
+  const end = `${year}-12-31`;
+  const params: (string | number)[] = [start, end];
   let walletFilter = '';
-  const params: string[] = [yearStr];
   if (walletId) {
     walletFilter = ' AND t.wallet_id = ?';
     params.push(walletId);
   }
 
-  const rows = await db.getAllAsync<{
-    id: string; type: string; amount: number; category_id: string; wallet_id: string;
-    note: string | null; date: string; created_at: string;
-    cat_name: string; cat_icon: string; cat_color: string; cat_type: string;
-    cat_is_custom: number; cat_sort_order: number;
-  }>(
-    `SELECT t.*, c.name as cat_name, c.icon as cat_icon, c.color as cat_color,
-            c.type as cat_type, c.is_custom as cat_is_custom, c.sort_order as cat_sort_order
-     FROM transactions t
-     LEFT JOIN categories c ON t.category_id = c.id
-     WHERE strftime('%Y', t.date) = ?${walletFilter}
-     ORDER BY t.date DESC`,
+  const rows = await db.getAllAsync<RawTransactionRow>(
+    `${TX_SELECT}
+     WHERE t.date BETWEEN ? AND ?${walletFilter}
+     ORDER BY t.date DESC, t.created_at DESC`,
     params
   );
 
-  return rows.map(r => ({
-    id: r.id,
-    type: r.type as TransactionType,
-    amount: r.amount,
-    categoryId: r.category_id,
-    walletId: r.wallet_id ?? 'wallet-cash',
-    note: r.note ?? undefined,
-    date: r.date,
-    createdAt: r.created_at,
-    category: {
-      id: r.category_id,
-      name: r.cat_name,
-      icon: r.cat_icon,
-      color: r.cat_color,
-      type: r.cat_type as TransactionType,
-      isCustom: r.cat_is_custom === 1,
-      sortOrder: r.cat_sort_order,
-    },
-  }));
+  return rows.map(mapTransactionRow);
 }
 
 // ===== Wallet Queries =====
@@ -659,9 +678,11 @@ export async function updateWallet(
 
 export async function deleteWallet(db: SQLiteDatabase, id: string): Promise<void> {
   if (id === 'wallet-cash') return;
-  await db.runAsync('DELETE FROM transactions WHERE wallet_id = ?', [id]);
-  await db.runAsync('DELETE FROM analysis WHERE wallet_id = ?', [id]);
-  await db.runAsync('DELETE FROM wallets WHERE id = ?', [id]);
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('DELETE FROM transactions WHERE wallet_id = ?', [id]);
+    await db.runAsync('DELETE FROM analysis WHERE wallet_id = ?', [id]);
+    await db.runAsync('DELETE FROM wallets WHERE id = ?', [id]);
+  });
 }
 
 export async function getWalletTransactionCount(db: SQLiteDatabase, walletId: string): Promise<number> {
@@ -712,6 +733,10 @@ export async function deleteAiHistory(db: SQLiteDatabase, id: string): Promise<v
 
 // ===== Analysis Queries =====
 
+// Fix 4 — upsertAnalysis: findAnalysisMatch + INSERT/UPDATE → single upsert
+// Note: ON CONFLICT requires a UNIQUE index. Since analysis table uses a generated
+// UUID as PK and doesn't have a natural unique constraint on the lookup columns,
+// we keep the 2-step approach but use the optimized composite index from Fix 8.
 export async function findAnalysisMatch(
   db: SQLiteDatabase,
   data: { walletId: string; categoryId: string; type: TransactionType; amount: number; note?: string }

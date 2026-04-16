@@ -79,6 +79,10 @@ export function TransactionList({
         />
       )}
       stickySectionHeadersEnabled={false}
+      initialNumToRender={15}
+      maxToRenderPerBatch={10}
+      windowSize={5}
+      removeClippedSubviews
     />
   );
 }

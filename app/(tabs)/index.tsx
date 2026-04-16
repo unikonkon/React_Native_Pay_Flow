@@ -4,7 +4,6 @@ import { AlertBanner } from '@/components/ui/AlertBanner';
 import { FAB } from '@/components/ui/FAB';
 import { PeriodSelector } from '@/components/ui/PeriodSelector';
 import { WalletFilter } from '@/components/wallet/WalletFilter';
-import { useSummary } from '@/hooks/useSummary';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
 import { useCategoryStore } from '@/lib/stores/category-store';
@@ -13,36 +12,37 @@ import { formatCurrency } from '@/lib/utils/format';
 import type { Analysis, Transaction } from '@/types';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Alert, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TransactionsScreen() {
-  const {
-    transactions,
-    currentPeriod,
-    setCurrentPeriod,
-    loadTransactions,
-    selectedWalletId,
-    setSelectedWalletId,
-    deleteTransaction,
-    setEditingTransaction,
-    addTransaction,
-  } = useTransactionStore();
+  const transactions = useTransactionStore(s => s.transactions);
+  const currentPeriod = useTransactionStore(s => s.currentPeriod);
+  const setCurrentPeriod = useTransactionStore(s => s.setCurrentPeriod);
+  const loadTransactions = useTransactionStore(s => s.loadTransactions);
+  const selectedWalletId = useTransactionStore(s => s.selectedWalletId);
+  const setSelectedWalletId = useTransactionStore(s => s.setSelectedWalletId);
+  const deleteTransaction = useTransactionStore(s => s.deleteTransaction);
+  const deleteTransactions = useTransactionStore(s => s.deleteTransactions);
+  const setEditingTransaction = useTransactionStore(s => s.setEditingTransaction);
+  const addTransaction = useTransactionStore(s => s.addTransaction);
+  const totalIncome = useTransactionStore(s => s.totalIncome);
+  const totalExpense = useTransactionStore(s => s.totalExpense);
 
   const categories = useCategoryStore(s => s.categories);
   const analyses = useAnalysisStore(s => s.analyses);
-
-  const filteredTransactions = useMemo(() => {
-    if (!selectedWalletId) return transactions;
-    return transactions.filter(t => t.walletId === selectedWalletId);
-  }, [transactions, selectedWalletId]);
-
-  const { totalIncome, totalExpense } = useSummary(filteredTransactions);
   const { isMonthlyTargetEnabled, monthlyExpenseTarget } = useAlertSettingsStore();
 
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    loadTransactions(currentPeriod);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      loadTransactions(currentPeriod);
+    }, 150);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [currentPeriod, loadTransactions]);
 
   const openForm = useCallback(() => {
@@ -94,15 +94,11 @@ export default function TransactionsScreen() {
         {
           text: 'ลบทั้งหมด',
           style: 'destructive',
-          onPress: async () => {
-            for (const item of items) {
-              await deleteTransaction(item.id);
-            }
-          },
+          onPress: () => deleteTransactions(items.map(i => i.id)),
         },
       ]
     );
-  }, [deleteTransaction]);
+  }, [deleteTransactions]);
 
   const handleCopyItem = useCallback((item: Transaction) => {
     const copy = { ...item, id: '' } as Transaction;
@@ -177,7 +173,7 @@ export default function TransactionsScreen() {
 
       <View className="flex-1">
         <TransactionList
-          transactions={filteredTransactions}
+          transactions={transactions}
           onItemPress={handleItemPress}
           onItemLongPress={handleItemLongPress}
           onDeleteItem={handleDeleteItem}
