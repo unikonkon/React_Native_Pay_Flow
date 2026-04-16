@@ -34,6 +34,7 @@ export default function TransactionsScreen() {
 
   const categories = useCategoryStore(s => s.categories);
   const analyses = useAnalysisStore(s => s.analyses);
+  const loadAnalysis = useAnalysisStore(s => s.loadAnalysis);
   const { isMonthlyTargetEnabled, monthlyExpenseTarget } = useAlertSettingsStore();
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -46,6 +47,11 @@ export default function TransactionsScreen() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [currentPeriod, loadTransactions]);
+
+  // Reload frequent analyses only when wallet filter changes
+  useEffect(() => {
+    loadAnalysis(selectedWalletId);
+  }, [selectedWalletId, loadAnalysis]);
 
   const openForm = useCallback(() => {
     router.push('/transaction/add');
@@ -118,12 +124,12 @@ export default function TransactionsScreen() {
       type: analysis.type,
       amount: analysis.amount,
       categoryId: analysis.categoryId,
-      walletId: analysis.walletId,
+      walletId: selectedWalletId ?? analysis.walletId,
       note: analysis.note,
       date: new Date().toISOString().split('T')[0],
     });
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  }, [addTransaction]);
+  }, [addTransaction, selectedWalletId]);
 
   return (
     <SafeAreaView className="flex-1 bg-background">

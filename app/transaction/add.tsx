@@ -1,5 +1,4 @@
 import { TransactionForm } from '@/components/transaction/TransactionForm';
-import { useAnalysisStore } from '@/lib/stores/analysis-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -23,15 +22,13 @@ export default function AddTransactionScreen() {
 
   const editingTransaction = useTransactionStore(s => s.editingTransaction);
   const setEditingTransaction = useTransactionStore(s => s.setEditingTransaction);
-  const loadAnalysis = useAnalysisStore(s => s.loadAnalysis);
 
-  // Clear editing state + reload analysis when screen unmounts
+  // Clear editing state when screen unmounts
   useEffect(() => {
     return () => {
       setEditingTransaction(null);
-      loadAnalysis();
     };
-  }, [setEditingTransaction, loadAnalysis]);
+  }, [setEditingTransaction]);
 
   // On save / X button — dismiss instantly, skip sheet slide-down animation
   const handleRequestClose = useCallback(() => {

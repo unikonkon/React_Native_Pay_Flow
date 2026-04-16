@@ -43,6 +43,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   const categories = useCategoryStore(s => s.categories);
   const wallets = useWalletStore(s => s.wallets);
   const defaultWalletId = useSettingsStore(s => s.defaultWalletId);
+  const selectedWalletId = useTransactionStore(s => s.selectedWalletId);
   const addTransaction = useTransactionStore(s => s.addTransaction);
   const updateTransaction = useTransactionStore(s => s.updateTransaction);
 
@@ -71,23 +72,28 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
     getDistinctNotesByCategory(getDb(), selectedCategory.id).then(setPastNotes);
   }, [selectedCategory]);
 
-  // Default wallet if none selected
+  // Default wallet: prefer wallet selected on main screen, then defaultWalletId
   useEffect(() => {
     if (!selectedWallet && wallets.length > 0) {
-      const preferred = wallets.find(w => w.id === defaultWalletId) ?? wallets[0];
+      const preferred =
+        wallets.find(w => w.id === selectedWalletId) ??
+        wallets.find(w => w.id === defaultWalletId) ??
+        wallets[0];
       setSelectedWallet(preferred);
     }
-  }, [wallets, selectedWallet, defaultWalletId]);
+  }, [wallets, selectedWallet, selectedWalletId, defaultWalletId]);
 
   const handleSave = useCallback(async () => {
     if (!amount || !selectedCategory) return;
+
+    const walletId = selectedWallet?.id ?? defaultWalletId;
 
     if (isEditMode && editTransaction) {
       await updateTransaction(editTransaction.id, {
         type,
         amount,
         categoryId: selectedCategory.id,
-        walletId: selectedWallet?.id ?? defaultWalletId,
+        walletId,
         note: note.trim() || undefined,
         date: date.toISOString().split('T')[0],
       });
@@ -96,7 +102,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
         type,
         amount,
         categoryId: selectedCategory.id,
-        walletId: selectedWallet?.id ?? defaultWalletId,
+        walletId,
         note: note.trim() || undefined,
         date: date.toISOString().split('T')[0],
       });
