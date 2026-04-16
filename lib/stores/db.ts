@@ -211,14 +211,16 @@ async function migrateDatabase(db: SQLiteDatabase) {
   await db.execAsync(CREATE_ANALYSIS_TABLE);
   await db.execAsync(CREATE_WALLETS_INDEX);
 
-  // Indexes must be created after all tables (analysis indexes need analysis table)
+  // wallet_id column must exist before creating indexes that reference it
+  await migrateWalletId(db);
+
+  // Indexes must be created after all tables AND after wallet_id column exists
   for (const sql of CREATE_INDEXES) {
     await db.execAsync(sql);
   }
 
   await seedDefaultCategories(db);
   await migrateDefaultCategories(db);
-  await migrateWalletId(db);
   await seedDefaultWallet(db);
 }
 
@@ -535,8 +537,8 @@ export async function getMonthlySummaries(
 
   // Build UNION ALL query: one SELECT per month using BETWEEN
   const unions = months
-    .map(() =>
-      `SELECT ? as mnth, type, SUM(amount) as total
+    .map((_, i) =>
+      `SELECT ${i} as idx, type, SUM(amount) as total
        FROM transactions
        WHERE date BETWEEN ? AND ?${walletId ? ' AND wallet_id = ?' : ''}
        GROUP BY type`
@@ -549,18 +551,18 @@ export async function getMonthlySummaries(
     const start = `${y}-${String(mo).padStart(2, '0')}-01`;
     const lastDay = new Date(y, mo, 0).getDate();
     const end = `${y}-${String(mo).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-    params.push(m, start, end);
+    params.push(start, end);
     if (walletId) params.push(walletId);
   }
 
-  const rows = await db.getAllAsync<{ mnth: string; type: string; total: number }>(
+  const rows = await db.getAllAsync<{ idx: number; type: string; total: number }>(
     unions, params
   );
 
-  return months.map(m => ({
+  return months.map((m, i) => ({
     month: m,
-    income: rows.find(r => r.mnth === m && r.type === 'income')?.total ?? 0,
-    expense: rows.find(r => r.mnth === m && r.type === 'expense')?.total ?? 0,
+    income: rows.find(r => r.idx === i && r.type === 'income')?.total ?? 0,
+    expense: rows.find(r => r.idx === i && r.type === 'expense')?.total ?? 0,
   }));
 }
 
@@ -573,8 +575,8 @@ export async function getSummariesByBuckets(
   if (buckets.length === 0) return [];
 
   const unions = buckets
-    .map(() =>
-      `SELECT ? as lbl, type, SUM(amount) as total
+    .map((_, i) =>
+      `SELECT ${i} as idx, type, SUM(amount) as total
        FROM transactions
        WHERE date BETWEEN ? AND ?${walletId ? ' AND wallet_id = ?' : ''}
        GROUP BY type`
@@ -583,18 +585,18 @@ export async function getSummariesByBuckets(
 
   const params: (string | number)[] = [];
   for (const b of buckets) {
-    params.push(b.label, b.start, b.end);
+    params.push(b.start, b.end);
     if (walletId) params.push(walletId);
   }
 
-  const rows = await db.getAllAsync<{ lbl: string; type: string; total: number }>(
+  const rows = await db.getAllAsync<{ idx: number; type: string; total: number }>(
     unions, params
   );
 
-  return buckets.map(b => ({
+  return buckets.map((b, i) => ({
     label: b.label,
-    income: rows.find(r => r.lbl === b.label && r.type === 'income')?.total ?? 0,
-    expense: rows.find(r => r.lbl === b.label && r.type === 'expense')?.total ?? 0,
+    income: rows.find(r => r.idx === i && r.type === 'income')?.total ?? 0,
+    expense: rows.find(r => r.idx === i && r.type === 'expense')?.total ?? 0,
   }));
 }
 

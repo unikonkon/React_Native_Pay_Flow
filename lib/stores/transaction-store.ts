@@ -64,22 +64,29 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
   loadTransactions: async (period) => {
     const id = ++_loadId;
     set({ isLoading: true });
-    const p = period ?? get().currentPeriod;
-    const walletId = get().selectedWalletId;
-    const { start, end } = getPeriodRange(p);
-    const db = getDb();
-    const [transactions, summary] = await Promise.all([
-      getTransactionsByRange(db, start, end, walletId),
-      getSummaryByRange(db, start, end, walletId),
-    ]);
-    // Stale guard: discard result if a newer load was started
-    if (id !== _loadId) return;
-    set({
-      transactions,
-      isLoading: false,
-      totalIncome: summary.totalIncome,
-      totalExpense: summary.totalExpense,
-    });
+    try {
+      const p = period ?? get().currentPeriod;
+      const walletId = get().selectedWalletId;
+      const { start, end } = getPeriodRange(p);
+      const db = getDb();
+      const [transactions, summary] = await Promise.all([
+        getTransactionsByRange(db, start, end, walletId),
+        getSummaryByRange(db, start, end, walletId),
+      ]);
+      // Stale guard: discard result if a newer load was started
+      if (id !== _loadId) return;
+      set({
+        transactions,
+        totalIncome: summary.totalIncome,
+        totalExpense: summary.totalExpense,
+      });
+    } catch (err) {
+      console.error('[loadTransactions]', err);
+    } finally {
+      if (id === _loadId) {
+        set({ isLoading: false });
+      }
+    }
   },
 
   addTransaction: async (data) => {
