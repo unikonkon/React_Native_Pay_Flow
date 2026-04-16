@@ -20,6 +20,7 @@ interface CategoryPickerProps {
   walletId?: string | null;
   selectedAmount?: number;
   onRecommendSelect?: (data: { category: Category; amount: number; note?: string }) => void;
+  onTabChange?: (tab: 'recommend' | 'select' | 'manage') => void;
 }
 
 type Tab = 'recommend' | 'select' | 'manage';
@@ -77,7 +78,7 @@ function StepperRow({ label, cols, rows, colMin, colMax, rowMin, rowMax, onCol, 
   );
 }
 
-export function CategoryPicker({ categories, selectedId, onSelect, type, walletId, selectedAmount, onRecommendSelect }: CategoryPickerProps) {
+export function CategoryPicker({ categories, selectedId, onSelect, type, walletId, selectedAmount, onRecommendSelect, onTabChange }: CategoryPickerProps) {
   const {
     categoryColumns, categoryRows,
     recCategoryColumns, recCategoryRows,
@@ -272,7 +273,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
 
       <View className="flex-row bg-secondary rounded-xl p-1 mb-2">
         <Pressable
-          onPress={() => setTab('recommend')}
+          onPress={() => { setTab('recommend'); onTabChange?.('recommend'); }}
           className={`flex-1 py-1.5 rounded-lg items-center ${tab === 'recommend' ? 'bg-primary' : ''}`}
         >
           <Text className={`text-xs font-semibold ${tab === 'recommend' ? 'text-primary-foreground' : 'text-foreground'}`}>
@@ -280,7 +281,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
           </Text>
         </Pressable>
         <Pressable
-          onPress={() => setTab('select')}
+          onPress={() => { setTab('select'); onTabChange?.('select'); }}
           className={`flex-1 py-1.5 rounded-lg items-center ${tab === 'select' ? 'bg-primary' : ''}`}
         >
           <Text className={`text-xs font-semibold ${tab === 'select' ? 'text-primary-foreground' : 'text-foreground'}`}>
@@ -288,7 +289,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
           </Text>
         </Pressable>
         <Pressable
-          onPress={() => setTab('manage')}
+          onPress={() => { setTab('manage'); onTabChange?.('manage'); }}
           className={`flex-1 py-1.5 rounded-lg items-center ${tab === 'manage' ? 'bg-primary' : ''}`}
         >
           <Text className={`text-xs font-semibold ${tab === 'manage' ? 'text-primary-foreground' : 'text-foreground'}`}>
@@ -370,7 +371,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
 
       <GestureDetector gesture={blockSheetPan}>
         <ScrollView
-          style={{ maxHeight: ITEM_HEIGHT * rows }}
+          style={tab !== 'manage' ? { maxHeight: ITEM_HEIGHT * rows } : undefined}
           nestedScrollEnabled
           showsVerticalScrollIndicator={false}
           bounces={false}

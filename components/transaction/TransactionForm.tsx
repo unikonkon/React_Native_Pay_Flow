@@ -1,7 +1,7 @@
 import { CalculatorPad } from '@/components/common/CalculatorPad';
 import { useCategoryStore } from '@/lib/stores/category-store';
-import { useSettingsStore } from '@/lib/stores/settings-store';
 import { getDb, getDistinctNotesByCategory } from '@/lib/stores/db';
+import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { useWalletStore } from '@/lib/stores/wallet-store';
 import type { Category, Transaction, TransactionType, Wallet } from '@/types';
@@ -36,6 +36,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [noteFocused, setNoteFocused] = useState(false);
   const [pastNotes, setPastNotes] = useState<string[]>([]);
+  const [categoryTab, setCategoryTab] = useState<'recommend' | 'select' | 'manage'>('recommend');
 
   // Only treat as edit mode if editing an existing transaction (has real id)
   const isEditMode = !!(editTransaction && editTransaction.id);
@@ -133,7 +134,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   return (
     <View className="flex-1 bg-background">
       {/* Header — type toggle + close */}
-      <View className="flex-row items-center px-4 py-2 border-b border-border">
+      <View className="flex-row items-center px-4 pb-2 border-b border-border">
         <View className="flex-1 flex-row items-center justify-center">
           <View className="flex-row rounded-full overflow-hidden border border-border">
             <Pressable
@@ -141,7 +142,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               className={`flex-row items-center px-4 py-1.5 ${type === 'expense' ? 'bg-expense' : 'bg-card'}`}
             >
               <Ionicons name="remove-circle-outline" size={14} color={type === 'expense' ? 'white' : '#666'} />
-              <Text className={`font-bold ml-1 text-sm ${type === 'expense' ? 'text-white' : 'text-foreground'}`}>
+              <Text className={`font-bold ml-1 text-md ${type === 'expense' ? 'text-white' : 'text-foreground'}`}>
                 รายจ่าย
               </Text>
             </Pressable>
@@ -150,7 +151,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               className={`flex-row items-center px-4 py-1.5 ${type === 'income' ? 'bg-income' : 'bg-card'}`}
             >
               <Ionicons name="add-circle-outline" size={14} color={type === 'income' ? 'white' : '#666'} />
-              <Text className={`font-bold ml-1 text-sm ${type === 'income' ? 'text-white' : 'text-foreground'}`}>
+              <Text className={`font-bold ml-1 text-md ${type === 'income' ? 'text-white' : 'text-foreground'}`}>
                 รายรับ
               </Text>
             </Pressable>
@@ -183,9 +184,11 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               setAmount(amount);
               if (note) setNote(note);
             }}
+            onTabChange={setCategoryTab}
           />
 
-          {/* Date + Wallet chips — inline selector */}
+          {/* Date + Wallet + Note + Calculator — hidden in manage tab */}
+          {categoryTab !== 'manage' && (<>
           <View className="flex-row items-center mb-2">
             <Pressable
               onPress={() => setShowDatePicker(true)}
@@ -340,14 +343,17 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           )}
 
           {/* Calculator Keypad + Save Button */}
-          <CalculatorPad
-            value={amount}
-            onChange={setAmount}
-            type={type}
-            onSave={handleSave}
-            saveLabel={isEditMode ? 'อัพเดท' : 'บันทึก'}
-            saveDisabled={!amount || !selectedCategory}
-          />
+          </>)}
+          {categoryTab !== 'manage' && (
+            <CalculatorPad
+              value={amount}
+              onChange={setAmount}
+              type={type}
+              onSave={handleSave}
+              saveLabel={isEditMode ? 'อัพเดท' : 'บันทึก'}
+              saveDisabled={!amount || !selectedCategory}
+            />
+          )}
         </BottomSheetScrollView>
       </KeyboardAvoidingView>
     </View>
