@@ -1,9 +1,10 @@
 export type TransactionType = 'income' | 'expense';
 
-export type PeriodType = 'week' | 'month' | '3months' | '6months' | 'year' | 'all';
+export type PeriodType = 'week' | 'month' | '3months' | '6months' | 'year' | 'all' | 'custom';
 export interface Period {
   type: PeriodType;
   anchor: string; // YYYY-MM-DD — start of the unit
+  endDate?: string; // YYYY-MM-DD — only used for 'custom' type
 }
 
 export interface Category {

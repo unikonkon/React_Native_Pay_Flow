@@ -38,7 +38,13 @@ export function getCurrentPeriod(type: PeriodType): Period {
       return { type, anchor: `${now.getFullYear()}-01-01` };
     case 'all':
       return { type, anchor: ALL_START };
+    case 'custom':
+      return { type, anchor: toISO(firstOfMonth(now)), endDate: toISO(now) };
   }
+}
+
+export function createCustomPeriod(start: string, end: string): Period {
+  return { type: 'custom', anchor: start, endDate: end };
 }
 
 export function getPeriodRange(p: Period): { start: string; end: string } {
@@ -65,11 +71,13 @@ export function getPeriodRange(p: Period): { start: string; end: string } {
       return { start: `${a.getFullYear()}-01-01`, end: `${a.getFullYear()}-12-31` };
     case 'all':
       return { start: ALL_START, end: toISO(new Date()) };
+    case 'custom':
+      return { start: p.anchor, end: p.endDate ?? toISO(new Date()) };
   }
 }
 
 export function canShiftPeriod(p: Period): boolean {
-  return p.type !== 'all';
+  return p.type !== 'all' && p.type !== 'custom';
 }
 
 export function shiftPeriod(p: Period, dir: -1 | 1): Period {
@@ -94,6 +102,7 @@ export function shiftPeriod(p: Period, dir: -1 | 1): Period {
     case 'year':
       return { type: 'year', anchor: `${a.getFullYear() + dir}-01-01` };
     case 'all':
+    case 'custom':
       return p;
   }
 }
@@ -117,6 +126,11 @@ export function formatPeriodLabel(p: Period): string {
       return `ปี ${new Date(p.anchor).getFullYear() + 543}`;
     case 'all':
       return 'ทั้งหมด';
+    case 'custom': {
+      const cs = new Date(start);
+      const ce = new Date(end);
+      return formatDateRangeThai(toISO(cs), toISO(ce));
+    }
   }
 }
 
@@ -189,10 +203,21 @@ export function getBarChartBuckets(
       }
       return buckets;
     }
-    case 'all': {
+    case 'all':
+    case 'custom': {
       const { start, end } = getPeriodRange(p);
       const s = new Date(start);
       const e = new Date(end);
+      const diffDays = Math.round((e.getTime() - s.getTime()) / 86400000);
+      if (diffDays <= 31) {
+        // Day buckets for short custom ranges
+        for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+          const iso = toISO(d);
+          buckets.push({ start: iso, end: iso, label: String(d.getDate()) });
+        }
+        return buckets;
+      }
+      // Month buckets for longer ranges
       const months: { y: number; m: number }[] = [];
       let cy = s.getFullYear();
       let cm = s.getMonth();

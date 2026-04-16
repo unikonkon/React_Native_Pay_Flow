@@ -1,16 +1,18 @@
-import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import { useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
-import type { Period, PeriodType } from '@/types';
 import {
   canShiftPeriod,
+  createCustomPeriod,
   formatPeriodLabel,
   getCurrentPeriod,
   listRecentAnchors,
   periodsEqual,
   shiftPeriod,
 } from '@/lib/utils/period';
+import type { Period, PeriodType } from '@/types';
+import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import * as Haptics from 'expo-haptics';
+import { useMemo, useState } from 'react';
+import { Modal, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 
 interface Props {
   period: Period;
@@ -18,12 +20,13 @@ interface Props {
   className?: string;
 }
 
-type TabKey = 'week' | 'month' | 'long';
+type TabKey = 'week' | 'month' | 'long' | 'custom';
 
 const TAB_LABEL: Record<TabKey, string> = {
-  week: '1 สัปดาห์',
-  month: '1 เดือน',
+  week: 'สัปดาห์',
+  month: 'เดือน',
   long: 'สรุปยาว',
+  custom: 'กำหนดเอง',
 };
 
 const LONG_OPTIONS: { type: Extract<PeriodType, '3months' | '6months' | 'year' | 'all'>; label: string }[] = [
@@ -36,6 +39,7 @@ const LONG_OPTIONS: { type: Extract<PeriodType, '3months' | '6months' | 'year' |
 function tabFromType(type: PeriodType): TabKey {
   if (type === 'week') return 'week';
   if (type === 'month') return 'month';
+  if (type === 'custom') return 'custom';
   return 'long';
 }
 
@@ -43,8 +47,26 @@ export function PeriodSelector({ period, onChange, className }: Props) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<TabKey>(tabFromType(period.type));
 
+  // Custom date range state
+  const [customStart, setCustomStart] = useState(() => {
+    if (period.type === 'custom') return new Date(period.anchor);
+    const d = new Date();
+    d.setMonth(d.getMonth() - 1);
+    return d;
+  });
+  const [customEnd, setCustomEnd] = useState(() => {
+    if (period.type === 'custom' && period.endDate) return new Date(period.endDate);
+    return new Date();
+  });
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+
   const handleOpen = () => {
     setTab(tabFromType(period.type));
+    if (period.type === 'custom') {
+      setCustomStart(new Date(period.anchor));
+      if (period.endDate) setCustomEnd(new Date(period.endDate));
+    }
     setOpen(true);
   };
 
@@ -60,6 +82,16 @@ export function PeriodSelector({ period, onChange, className }: Props) {
     setOpen(false);
   };
 
+  const handleApplyCustom = () => {
+    Haptics.selectionAsync();
+    const toISO = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const start = customStart <= customEnd ? customStart : customEnd;
+    const end = customStart <= customEnd ? customEnd : customStart;
+    onChange(createCustomPeriod(toISO(start), toISO(end)));
+    setOpen(false);
+  };
+
   const anchors = useMemo(() => {
     if (tab === 'month') return listRecentAnchors('month', 12);
     if (tab === 'week') return listRecentAnchors('week', 8);
@@ -67,6 +99,10 @@ export function PeriodSelector({ period, onChange, className }: Props) {
   }, [tab]);
 
   const canShift = canShiftPeriod(period);
+
+  const formatThaiDate = (d: Date) => {
+    return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+  };
 
   return (
     <View className={className}>
@@ -120,7 +156,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                   className={`flex-1 py-2 rounded-lg items-center ${tab === t ? 'bg-primary' : ''}`}
                 >
                   <Text
-                    className={`text-xs font-semibold ${tab === t ? 'text-primary-foreground' : 'text-foreground'}`}
+                    className={`text-[11px] font-semibold ${tab === t ? 'text-primary-foreground' : 'text-foreground'}`}
                   >
                     {TAB_LABEL[t]}
                   </Text>
@@ -204,6 +240,86 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                     </Pressable>
                   );
                 })}
+              </View>
+            )}
+
+            {tab === 'custom' && (
+              <View>
+                {/* Start Date */}
+                {showStartPicker ? (
+                  <View className="bg-white rounded-xl mb-2 overflow-hidden">
+                    <View className="px-4 pt-2">
+                      <Text className="text-gray-500 text-xs font-semibold">วันเริ่มต้น</Text>
+                    </View>
+                    <DateTimePicker
+                      value={customStart}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      maximumDate={customEnd}
+                      onChange={(_, date) => {
+                        if (Platform.OS === 'android') setShowStartPicker(false);
+                        if (date) setCustomStart(date);
+                      }}
+                      locale="th"
+                      themeVariant="light"
+                    />
+                    {Platform.OS === 'ios' && (
+                      <Pressable onPress={() => setShowStartPicker(false)} className="py-2 items-center">
+                        <Text className="text-primary font-semibold text-sm">ตกลง</Text>
+                      </Pressable>
+                    )}
+                  </View>
+                ) : (
+                  <Pressable
+                    onPress={() => { setShowStartPicker(true); setShowEndPicker(false); }}
+                    className="px-4 py-3 rounded-xl mb-2 border border-border bg-background flex-row items-center justify-between"
+                  >
+                    <Text className="text-muted-foreground text-sm">วันเริ่มต้น</Text>
+                    <Text className="text-foreground font-semibold text-sm">{formatThaiDate(customStart)}</Text>
+                  </Pressable>
+                )}
+
+                {/* End Date */}
+                {showEndPicker ? (
+                  <View className="bg-white rounded-xl mb-2 overflow-hidden">
+                    <View className="px-4 pt-2">
+                      <Text className="text-gray-500 text-xs font-semibold">วันสิ้นสุด</Text>
+                    </View>
+                    <DateTimePicker
+                      value={customEnd}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      minimumDate={customStart}
+                      onChange={(_, date) => {
+                        if (Platform.OS === 'android') setShowEndPicker(false);
+                        if (date) setCustomEnd(date);
+                      }}
+                      locale="th"
+                      themeVariant="light"
+                    />
+                    {Platform.OS === 'ios' && (
+                      <Pressable onPress={() => setShowEndPicker(false)} className="py-2 items-center">
+                        <Text className="text-primary font-semibold text-sm">ตกลง</Text>
+                      </Pressable>
+                    )}
+                  </View>
+                ) : (
+                  <Pressable
+                    onPress={() => { setShowEndPicker(true); setShowStartPicker(false); }}
+                    className="px-4 py-3 rounded-xl mb-2 border border-border bg-background flex-row items-center justify-between"
+                  >
+                    <Text className="text-muted-foreground text-sm">วันสิ้นสุด</Text>
+                    <Text className="text-foreground font-semibold text-sm">{formatThaiDate(customEnd)}</Text>
+                  </Pressable>
+                )}
+
+                {/* Apply Button */}
+                <Pressable
+                  onPress={handleApplyCustom}
+                  className="bg-primary py-3 rounded-xl items-center mt-2"
+                >
+                  <Text className="text-primary-foreground font-bold text-sm">ใช้ช่วงเวลานี้</Text>
+                </Pressable>
               </View>
             )}
           </Pressable>
