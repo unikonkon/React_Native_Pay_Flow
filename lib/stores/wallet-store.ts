@@ -49,7 +49,6 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
   },
 
   deleteWallet: async (id) => {
-    if (id === 'wallet-cash') return false;
     const db = getDb();
     await deleteW(db, id);
     await get().loadWallets();

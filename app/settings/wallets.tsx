@@ -89,12 +89,8 @@ export default function WalletsScreen() {
   }, [name, selectedType, selectedColor, isEditing, editingWallet, addWallet, updateWallet, resetForm]);
 
   const handleDelete = useCallback(async (wallet: Wallet) => {
-    if (wallet.id === 'wallet-cash') {
-      Alert.alert('ไม่สามารถลบได้', 'กระเป๋าเงินสดเป็นกระเป๋าพื้นฐานของระบบ');
-      return;
-    }
     if (wallet.id === defaultWalletId) {
-      Alert.alert('ไม่สามารถลบได้', 'กระเป๋านี้เป็นค่าเริ่มต้น กรุณาเปลี่ยนค่าเริ่มต้นก่อน');
+      Alert.alert('ไม่สามารถลบได้', 'กระเป๋านี้ถูกตั้งเป็นค่าเริ่มต้น กรุณาเปลี่ยนค่าเริ่มต้นก่อน');
       return;
     }
     const txCount = await getWalletTransactionCount(getDb(), wallet.id);
@@ -305,8 +301,8 @@ export default function WalletsScreen() {
 
                 <Pressable
                   onPress={() => handleDelete(actionWallet)}
-                  disabled={actionWallet.id === 'wallet-cash' || actionWallet.id === defaultWalletId}
-                  className={`flex-row items-center py-3 px-3 rounded-xl ${actionWallet.id === 'wallet-cash' || actionWallet.id === defaultWalletId ? 'opacity-50' : 'active:bg-destructive/10'}`}
+                  disabled={actionWallet.id === defaultWalletId}
+                  className={`flex-row items-center py-3 px-3 rounded-xl ${actionWallet.id === defaultWalletId ? 'opacity-50' : 'active:bg-destructive/10'}`}
                 >
                   <Ionicons name="trash-outline" size={20} color="#EF4444" />
                   <Text className="text-destructive ml-3 flex-1">ลบกระเป๋า</Text>

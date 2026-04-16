@@ -721,7 +721,6 @@ export async function updateWallet(
 }
 
 export async function deleteWallet(db: SQLiteDatabase, id: string): Promise<void> {
-  if (id === 'wallet-cash') return;
   await db.withTransactionAsync(async () => {
     await db.runAsync('DELETE FROM transactions WHERE wallet_id = ?', [id]);
     await db.runAsync('DELETE FROM analysis WHERE wallet_id = ?', [id]);
