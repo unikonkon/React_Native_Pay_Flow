@@ -33,25 +33,36 @@ export async function exportToCSV(transactions: Transaction[]) {
 }
 
 export async function exportToExcel(transactions: Transaction[]) {
-  const XLSX = require('xlsx');
+  const ExcelJS = require('exceljs');
 
-  const data = transactions.map(t => ({
-    'วันที่': t.date,
-    'ประเภท': t.type === 'income' ? 'รายรับ' : 'รายจ่าย',
-    'หมวดหมู่': t.category?.name ?? '',
-    'กระเป๋าเงิน': t.wallet?.name ?? 'เงินสด',
-    'จำนวนเงิน': t.amount,
-    'หมายเหตุ': t.note ?? '',
-  }));
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Transactions');
 
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Transactions');
+  worksheet.columns = [
+    { header: 'วันที่', key: 'date', width: 15 },
+    { header: 'ประเภท', key: 'type', width: 10 },
+    { header: 'หมวดหมู่', key: 'category', width: 20 },
+    { header: 'กระเป๋าเงิน', key: 'wallet', width: 15 },
+    { header: 'จำนวนเงิน', key: 'amount', width: 15 },
+    { header: 'หมายเหตุ', key: 'note', width: 25 },
+  ];
 
-  const wbout = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' });
+  for (const t of transactions) {
+    worksheet.addRow({
+      date: t.date,
+      type: t.type === 'income' ? 'รายรับ' : 'รายจ่าย',
+      category: t.category?.name ?? '',
+      wallet: t.wallet?.name ?? 'เงินสด',
+      amount: t.amount,
+      note: t.note ?? '',
+    });
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
   const filePath = `${Paths.document}/expense_${Date.now()}.xlsx`;
   const file = new File(filePath);
-  file.write(wbout, { encoding: 'base64' });
+  file.write(base64, { encoding: 'base64' });
 
   await Sharing.shareAsync(file.uri, {
     mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
