@@ -1,19 +1,19 @@
-import { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, ScrollView, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useTransactionStore } from '@/lib/stores/transaction-store';
-import { useWalletStore } from '@/lib/stores/wallet-store';
-import { useSummary } from '@/hooks/useSummary';
 import { BalanceCard } from '@/components/analytics/BalanceCard';
-import { PieChartView } from '@/components/analytics/PieChartView';
 import { BarChartView } from '@/components/analytics/BarChartView';
+import { PieChartView } from '@/components/analytics/PieChartView';
 import { WalletsContent } from '@/components/analytics/WalletsContent';
 import { PeriodSelector } from '@/components/ui/PeriodSelector';
 import { WalletFilter } from '@/components/wallet/WalletFilter';
-import { getBarChartBuckets } from '@/lib/utils/period';
+import { useSummary } from '@/hooks/useSummary';
 import { getAllTransactions, getDb, getSummariesByBuckets } from '@/lib/stores/db';
+import { useTransactionStore } from '@/lib/stores/transaction-store';
+import { useWalletStore } from '@/lib/stores/wallet-store';
 import { exportToCSV } from '@/lib/utils/export';
+import { getBarChartBuckets } from '@/lib/utils/period';
+import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useRef, useState } from 'react';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type ChartTab = 'overview' | 'category' | 'wallets';
 
@@ -28,7 +28,7 @@ export default function AnalyticsScreen() {
   const totalExpense = useTransactionStore(s => s.totalExpense);
 
   const wallets = useWalletStore(s => s.wallets);
-  const [chartTab, setChartTab] = useState<ChartTab>('overview');
+  const [chartTab, setChartTab] = useState<ChartTab>('category');
 
   const balance = totalIncome - totalExpense;
   const { expenseByCategory } = useSummary(transactions);

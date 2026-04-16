@@ -6,24 +6,32 @@ import { formatCurrency, formatPercentage } from '@/lib/utils/format';
 interface AiResultViewProps {
   responseType: 'structured' | 'full' | 'text';
   responseData: string;
+  periodLabel?: string;
 }
 
-export function AiResultView({ responseType, responseData }: AiResultViewProps) {
+export function AiResultView({ responseType, responseData, periodLabel }: AiResultViewProps) {
   if (responseType === 'structured') {
     try {
       const data: StructuredResult = JSON.parse(responseData);
-      return <StructuredView data={data} />;
+      return <StructuredView data={data} periodLabel={periodLabel} />;
     } catch {
-      return <TextView text={responseData} />;
+      return <TextView text={responseData} periodLabel={periodLabel} />;
     }
   }
 
-  return <TextView text={responseData} />;
+  return <TextView text={responseData} periodLabel={periodLabel} />;
 }
 
-function StructuredView({ data }: { data: StructuredResult }) {
+function StructuredView({ data, periodLabel }: { data: StructuredResult; periodLabel?: string }) {
   return (
     <View className="gap-4">
+      {periodLabel && (
+        <View className="bg-primary/10 rounded-xl px-3 py-2 flex-row items-center">
+          <Ionicons name="calendar-outline" size={16} color="#0891b2" />
+          <Text className="text-primary font-semibold text-sm ml-2">{periodLabel}</Text>
+        </View>
+      )}
+
       {/* Health Score Card */}
       <View className="bg-card rounded-2xl p-4 border border-border">
         <View className="flex-row items-center mb-3">
@@ -134,10 +142,18 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function TextView({ text }: { text: string }) {
+function TextView({ text, periodLabel }: { text: string; periodLabel?: string }) {
   return (
-    <View className="bg-card rounded-2xl p-4 border border-border">
-      <Text className="text-foreground text-sm leading-6">{text}</Text>
+    <View className="gap-4">
+      {periodLabel && (
+        <View className="bg-primary/10 rounded-xl px-3 py-2 flex-row items-center">
+          <Ionicons name="calendar-outline" size={16} color="#0891b2" />
+          <Text className="text-primary font-semibold text-sm ml-2">{periodLabel}</Text>
+        </View>
+      )}
+      <View className="bg-card rounded-2xl p-4 border border-border">
+        <Text className="text-foreground text-sm leading-6">{text}</Text>
+      </View>
     </View>
   );
 }

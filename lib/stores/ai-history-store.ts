@@ -11,6 +11,7 @@ interface AiHistoryStore {
     walletId: string | null;
     promptType: AiPromptType;
     year: number;
+    month: number | null;
     responseType: 'structured' | 'full' | 'text';
     responseData: string;
   }) => Promise<void>;

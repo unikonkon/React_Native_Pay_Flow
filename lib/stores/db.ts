@@ -222,6 +222,7 @@ async function migrateDatabase(db: SQLiteDatabase) {
   await seedDefaultCategories(db);
   await migrateDefaultCategories(db);
   await seedDefaultWallet(db);
+  await migrateAiHistoryMonth(db);
 }
 
 async function seedDefaultCategories(db: SQLiteDatabase) {
@@ -625,6 +626,47 @@ export async function getTransactionsByYear(
   return rows.map(mapTransactionRow);
 }
 
+export async function getAvailableYears(
+  db: SQLiteDatabase,
+  walletId?: string | null,
+): Promise<number[]> {
+  const params: string[] = [];
+  let walletFilter = '';
+  if (walletId) {
+    walletFilter = ' WHERE wallet_id = ?';
+    params.push(walletId);
+  }
+
+  const rows = await db.getAllAsync<{ year: string }>(
+    `SELECT DISTINCT substr(date, 1, 4) as year FROM transactions${walletFilter} ORDER BY year DESC`,
+    params
+  );
+
+  return rows.map(r => parseInt(r.year, 10)).filter(y => !isNaN(y));
+}
+
+export async function getAvailableMonths(
+  db: SQLiteDatabase,
+  year: number,
+  walletId?: string | null,
+): Promise<number[]> {
+  const params: (string | number)[] = [`${year}-01-01`, `${year}-12-31`];
+  let walletFilter = '';
+  if (walletId) {
+    walletFilter = ' AND wallet_id = ?';
+    params.push(walletId);
+  }
+
+  const rows = await db.getAllAsync<{ m: string }>(
+    `SELECT DISTINCT substr(date, 6, 2) as m FROM transactions
+     WHERE date BETWEEN ? AND ?${walletFilter}
+     ORDER BY m`,
+    params
+  );
+
+  return rows.map(r => parseInt(r.m, 10)).filter(m => !isNaN(m));
+}
+
 // ===== Wallet Queries =====
 
 export async function getAllWallets(db: SQLiteDatabase): Promise<Wallet[]> {
@@ -700,7 +742,7 @@ export async function getWalletTransactionCount(db: SQLiteDatabase, walletId: st
 export async function getAllAiHistory(db: SQLiteDatabase): Promise<AiHistory[]> {
   const rows = await db.getAllAsync<{
     id: string; wallet_id: string | null; prompt_type: string;
-    year: number; response_type: string; response_data: string;
+    year: number; month: number | null; response_type: string; response_data: string;
     created_at: string;
   }>('SELECT * FROM ai_history ORDER BY created_at DESC');
 
@@ -709,6 +751,7 @@ export async function getAllAiHistory(db: SQLiteDatabase): Promise<AiHistory[]> 
     walletId: r.wallet_id,
     promptType: r.prompt_type as AiPromptType,
     year: r.year,
+    month: r.month,
     responseType: r.response_type as 'structured' | 'full' | 'text',
     responseData: r.response_data,
     createdAt: r.created_at,
@@ -717,20 +760,27 @@ export async function getAllAiHistory(db: SQLiteDatabase): Promise<AiHistory[]> 
 
 export async function insertAiHistory(
   db: SQLiteDatabase,
-  data: { walletId: string | null; promptType: AiPromptType; year: number; responseType: string; responseData: string }
+  data: { walletId: string | null; promptType: AiPromptType; year: number; month: number | null; responseType: string; responseData: string }
 ): Promise<string> {
   const id = generateId();
   const createdAt = new Date().toISOString();
   await db.runAsync(
-    `INSERT INTO ai_history (id, wallet_id, prompt_type, year, response_type, response_data, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [id, data.walletId, data.promptType, data.year, data.responseType, data.responseData, createdAt]
+    `INSERT INTO ai_history (id, wallet_id, prompt_type, year, month, response_type, response_data, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, data.walletId, data.promptType, data.year, data.month, data.responseType, data.responseData, createdAt]
   );
   return id;
 }
 
 export async function deleteAiHistory(db: SQLiteDatabase, id: string): Promise<void> {
   await db.runAsync('DELETE FROM ai_history WHERE id = ?', [id]);
+}
+
+async function migrateAiHistoryMonth(db: SQLiteDatabase) {
+  const cols = await db.getAllAsync<{ name: string }>('PRAGMA table_info(ai_history)');
+  if (!cols.some(c => c.name === 'month')) {
+    await db.execAsync('ALTER TABLE ai_history ADD COLUMN month INTEGER DEFAULT NULL');
+  }
 }
 
 // ===== Analysis Queries =====

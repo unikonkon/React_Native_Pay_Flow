@@ -153,6 +153,7 @@ export default function SettingsScreen() {
         <SectionHeader title="ทั่วไป" />
         <SettingsRow icon="color-palette-outline" label="ธีม" value={themeLabel} onPress={handleThemeToggle} />
         <SettingsRow icon="key-outline" label="Gemini API Key" value={apiKeyStatus} onPress={handleApiKey} />
+        <SettingsRow icon="sparkles-outline" label="AI วิเคราะห์" value={apiKeyStatus.startsWith('ตั้งค่าแล้ว') ? 'พร้อมใช้งาน' : 'ยังไม่ได้ตั้งค่า'} />
         {biometricAvailable && (
           <SettingsRow
             icon="finger-print-outline"

@@ -114,6 +114,7 @@ export interface AiHistory {
   walletId: string | null;
   promptType: AiPromptType;
   year: number;
+  month: number | null; // 1-12, null = full year
   responseType: 'structured' | 'full' | 'text';
   responseData: string;
   createdAt: string;

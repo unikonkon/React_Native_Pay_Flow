@@ -3,9 +3,11 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { Transaction } from '@/types';
 import { formatCurrency } from '@/lib/utils/format';
 
+// ===== Config =====
+
 const API_KEY_STORE = 'gemini_api_key';
 
-// ===== API Key Management =====
+// ===== API Key Management (SecureStore) =====
 
 export async function getApiKey(): Promise<string | null> {
   return SecureStore.getItemAsync(API_KEY_STORE);
@@ -21,7 +23,16 @@ export async function deleteApiKey(): Promise<void> {
 
 // ===== Prompt Builder =====
 
-function buildTransactionSummary(transactions: Transaction[]): string {
+const THAI_MONTHS = [
+  '', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+  'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
+];
+
+export function getThaiMonthName(month: number): string {
+  return THAI_MONTHS[month] ?? '';
+}
+
+function buildTransactionSummary(transactions: Transaction[], periodLabel: string): string {
   const income = transactions.filter(t => t.type === 'income');
   const expense = transactions.filter(t => t.type === 'expense');
 
@@ -64,7 +75,7 @@ function buildTransactionSummary(transactions: Transaction[]): string {
     .map(([m, v]) => `- ${m}: รายรับ ${formatCurrency(v.income)}, รายจ่าย ${formatCurrency(v.expense)}`)
     .join('\n');
 
-  return `ข้อมูลการเงิน:
+  return `ข้อมูลการเงิน (${periodLabel}):
 - รายรับรวม: ${formatCurrency(totalIncome)}
 - รายจ่ายรวม: ${formatCurrency(totalExpense)}
 - คงเหลือ: ${formatCurrency(totalIncome - totalExpense)}
@@ -130,37 +141,48 @@ ${summary}
 
 // ===== API Call =====
 
+export type PromptType = 'structured' | 'full';
+
 export async function analyzeFinances(data: {
   year: number;
+  month: number | null;
   walletId: string | null;
-  promptType: 'structured' | 'full';
+  promptType: PromptType;
   transactions: Transaction[];
-}): Promise<{ success: boolean; responseType: 'structured' | 'full' | 'text'; result: string }> {
+}): Promise<{ responseType: 'structured' | 'full' | 'text'; result: string }> {
   const apiKey = await getApiKey();
   if (!apiKey) {
-    throw new Error('ยังไม่ได้ตั้งค่า API Key กรุณาตั้งค่าในหน้าตั้งค่า');
+    throw new Error('ยังไม่ได้ตั้งค่า Gemini API Key กรุณาตั้งค่าในหน้าตั้งค่า');
   }
 
-  const summary = buildTransactionSummary(data.transactions);
+  const buddhistYear = data.year + 543;
+  const periodLabel = data.month
+    ? `${getThaiMonthName(data.month)} ${buddhistYear}`
+    : `ปี ${buddhistYear}`;
+
+  const summary = buildTransactionSummary(data.transactions, periodLabel);
   const prompt = data.promptType === 'structured'
     ? buildStructuredPrompt(summary)
     : buildFullPrompt(summary);
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
   const result = await model.generateContent(prompt);
   const text = result.response.text();
 
   if (data.promptType === 'structured') {
     try {
-      const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      JSON.parse(cleaned);
-      return { success: true, responseType: 'structured', result: cleaned };
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return { responseType: 'structured', result: JSON.stringify(parsed) };
+      }
     } catch {
-      return { success: true, responseType: 'text', result: text };
+      // JSON parse failed — fall through to text
     }
+    return { responseType: 'text', result: text };
   }
 
-  return { success: true, responseType: 'full', result: text };
+  return { responseType: 'full', result: text };
 }
