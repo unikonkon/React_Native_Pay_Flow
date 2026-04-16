@@ -1,6 +1,7 @@
 import { CalculatorPad } from '@/components/common/CalculatorPad';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { useSettingsStore } from '@/lib/stores/settings-store';
+import { getDb, getDistinctNotesByCategory } from '@/lib/stores/db';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { useWalletStore } from '@/lib/stores/wallet-store';
 import type { Category, Transaction, TransactionType, Wallet } from '@/types';
@@ -33,6 +34,8 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   const [date, setDate] = useState(new Date());
   const [note, setNote] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [noteFocused, setNoteFocused] = useState(false);
+  const [pastNotes, setPastNotes] = useState<string[]>([]);
 
   // Only treat as edit mode if editing an existing transaction (has real id)
   const isEditMode = !!(editTransaction && editTransaction.id);
@@ -58,6 +61,15 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
     setDate(editTransaction.date ? new Date(editTransaction.date) : new Date());
     setNote(editTransaction.note ?? '');
   }, [editTransaction, wallets, categories]);
+
+  // Load past notes when category changes
+  useEffect(() => {
+    if (!selectedCategory) {
+      setPastNotes([]);
+      return;
+    }
+    getDistinctNotesByCategory(getDb(), selectedCategory.id).then(setPastNotes);
+  }, [selectedCategory]);
 
   // Default wallet if none selected
   useEffect(() => {
@@ -281,12 +293,45 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               onChangeText={setNote}
               placeholder="บันทึก..."
               placeholderTextColor="#999"
+              onFocus={() => setNoteFocused(true)}
+              onBlur={() => setTimeout(() => setNoteFocused(false), 150)}
               style={{ flex: 1, marginLeft: 6, fontSize: 13, color: '#0a0a0a', paddingVertical: 2 }}
             />
             <Text className={`text-lg font-bold ${type === 'income' ? 'text-income' : 'text-expense'}`}>
               {amount > 0 ? `฿${amount.toLocaleString('th-TH')}` : '฿0'}
             </Text>
           </View>
+
+          {/* Past notes list — horizontal scroll, visible only when note input is focused */}
+          {noteFocused && pastNotes.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="mb-2"
+              keyboardShouldPersistTaps="handled"
+            >
+              <View className="flex-row gap-1.5">
+                {pastNotes
+                  .filter(n => !note || n.toLowerCase().includes(note.toLowerCase()))
+                  .map(n => (
+                    <Pressable
+                      key={n}
+                      onPress={() => {
+                        setNote(n);
+                        setNoteFocused(false);
+                        Haptics.selectionAsync();
+                      }}
+                      className="flex-row items-center px-3 py-1.5 rounded-full border border-border bg-secondary"
+                    >
+                      <Ionicons name="time-outline" size={12} color="#999" />
+                      <Text className="text-foreground text-xs ml-1" numberOfLines={1}>
+                        {n}
+                      </Text>
+                    </Pressable>
+                  ))}
+              </View>
+            </ScrollView>
+          )}
 
           {/* Calculator Keypad + Save Button */}
           <CalculatorPad

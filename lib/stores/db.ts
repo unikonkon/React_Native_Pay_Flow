@@ -913,3 +913,18 @@ export async function getTopAnalyses(db: SQLiteDatabase, limit: number = 6): Pro
 export async function deleteAnalysisByWalletId(db: SQLiteDatabase, walletId: string): Promise<void> {
   await db.runAsync('DELETE FROM analysis WHERE wallet_id = ?', [walletId]);
 }
+
+export async function getDistinctNotesByCategory(
+  db: SQLiteDatabase,
+  categoryId: string,
+  limit: number = 20
+): Promise<string[]> {
+  const rows = await db.getAllAsync<{ note: string }>(
+    `SELECT DISTINCT note FROM transactions
+     WHERE category_id = ? AND note IS NOT NULL AND note != ''
+     ORDER BY created_at DESC
+     LIMIT ?`,
+    [categoryId, limit]
+  );
+  return rows.map(r => r.note);
+}
