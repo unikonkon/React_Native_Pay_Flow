@@ -184,7 +184,7 @@ export default function WalletsScreen() {
           </Text>
         </View>
         {isDefault && (
-          <View className="bg-primary/10 px-2 py-1 rounded mr-2">
+          <View className="bg-primary/10 px-2 py-1 rounded-xl mr-2">
             <Text className="text-primary text-xs">ค่าเริ่มต้น</Text>
           </View>
         )}
@@ -193,7 +193,7 @@ export default function WalletsScreen() {
           hitSlop={8}
           className="p-1"
         >
-          <Ionicons name="ellipsis-vertical" size={18} color="#666" />
+          <Ionicons name="ellipsis-vertical" size={18} color="#6B5F52" />
         </Pressable>
       </Pressable>
     );
@@ -209,9 +209,9 @@ export default function WalletsScreen() {
 
       <Pressable
         onPress={handleClearAllData}
-        className="flex-row items-center justify-center py-3 mx-32 mb-4 rounded-xl border border-destructive"
+        className="flex-row items-center justify-center py-3 mx-32 mb-4 rounded-full border border-destructive"
       >
-        <Ionicons name="trash-outline" size={18} color="#EF4444" />
+        <Ionicons name="trash-outline" size={18} color="#E57373" />
         <Text className="text-destructive font-semibold ml-2">ล้างข้อมูลทั้งหมด</Text>
       </Pressable>
 
@@ -245,7 +245,7 @@ export default function WalletsScreen() {
             style={{
               borderWidth: 1,
               borderColor: '#e5e5e5',
-              borderRadius: 12,
+              borderRadius: 20,
               padding: 12,
               fontSize: 16,
               marginBottom: 16,
@@ -262,7 +262,7 @@ export default function WalletsScreen() {
                   selectedType === wt.value ? 'border-primary bg-primary/10' : 'border-border bg-card'
                 }`}
               >
-                <Ionicons name={wt.icon as keyof typeof Ionicons.glyphMap} size={16} color={selectedType === wt.value ? '#0891b2' : '#666'} />
+                <Ionicons name={wt.icon as keyof typeof Ionicons.glyphMap} size={16} color={selectedType === wt.value ? '#E87A3D' : '#666'} />
                 <Text className={`text-sm ml-1 ${selectedType === wt.value ? 'text-primary font-semibold' : 'text-foreground'}`}>
                   {wt.label}
                 </Text>
@@ -290,7 +290,7 @@ export default function WalletsScreen() {
 
           <Pressable
             onPress={handleSave}
-            className={`py-4 rounded-xl items-center bg-primary ${!name.trim() ? 'opacity-50' : ''}`}
+            className={`py-4 rounded-full items-center bg-primary ${!name.trim() ? 'opacity-50' : ''}`}
             disabled={!name.trim()}
           >
             <Text className="text-white font-bold text-lg">
@@ -337,7 +337,7 @@ export default function WalletsScreen() {
                   disabled={actionWallet.id === defaultWalletId}
                   className={`flex-row items-center py-3 px-3 rounded-xl mb-2 ${actionWallet.id === defaultWalletId ? 'opacity-50' : 'active:bg-secondary'}`}
                 >
-                  <Ionicons name="star-outline" size={20} color="#0891b2" />
+                  <Ionicons name="star-outline" size={20} color="#E87A3D" />
                   <Text className="text-foreground ml-3 flex-1">
                     {actionWallet.id === defaultWalletId ? 'เป็นค่าเริ่มต้นอยู่แล้ว' : 'ตั้งเป็นค่าเริ่มต้น'}
                   </Text>
@@ -351,7 +351,7 @@ export default function WalletsScreen() {
                   }}
                   className="flex-row items-center py-3 px-3 rounded-xl mb-2 active:bg-secondary"
                 >
-                  <Ionicons name="create-outline" size={20} color="#666" />
+                  <Ionicons name="create-outline" size={20} color="#6B5F52" />
                   <Text className="text-foreground ml-3 flex-1">แก้ไข</Text>
                 </Pressable>
 
@@ -368,7 +368,7 @@ export default function WalletsScreen() {
                   disabled={actionWallet.id === defaultWalletId}
                   className={`flex-row items-center py-3 px-3 rounded-xl ${actionWallet.id === defaultWalletId ? 'opacity-50' : 'active:bg-destructive/10'}`}
                 >
-                  <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                  <Ionicons name="trash-outline" size={20} color="#E57373" />
                   <Text className="text-destructive ml-3 flex-1">ลบกระเป๋า</Text>
                 </Pressable>
               </>

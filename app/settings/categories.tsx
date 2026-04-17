@@ -8,9 +8,10 @@ import BottomSheet, { BottomSheetScrollView, BottomSheetTextInput } from '@gorho
 import * as Haptics from 'expo-haptics';
 
 const CATEGORY_COLORS = [
-  '#FF6B6B', '#F59E0B', '#FACC15', '#84CC16', '#22C55E', '#10B981', '#14B8A6', '#06B6D4',
-  '#0EA5E9', '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899', '#F43F5E',
-  '#4ECDC4', '#45B7D1', '#96CEB4', '#DDA0DD', '#B0B0B0', '#64748B', '#78716C', '#D97706',
+  '#F5A185', '#B8856B', '#8AC5C5', '#F0A830', '#F59FB8',
+  '#9FC9A8', '#F5D988', '#B5A8DB', '#F5B8BC', '#FFB3C7',
+  '#E8B547', '#6B4A9E', '#4A7FC1', '#5CB88A', '#D4A544',
+  '#A39685',
 ];
 
 const CATEGORY_ICONS = [
@@ -111,7 +112,7 @@ export default function CategoriesScreen() {
       </View>
       <Text className="text-foreground font-medium flex-1">{item.name}</Text>
       {item.isCustom && (
-        <View className="bg-secondary px-2 py-0.5 rounded">
+        <View className="bg-secondary px-2 py-0.5 rounded-xl">
           <Text className="text-muted-foreground text-xs">กำหนดเอง</Text>
         </View>
       )}
@@ -159,13 +160,13 @@ export default function CategoriesScreen() {
             onChangeText={setName}
             placeholder="ชื่อหมวดหมู่"
             placeholderTextColor="#999"
-            style={{ borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, padding: 12, fontSize: 16, marginBottom: 16 }}
+            style={{ borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 20, padding: 12, fontSize: 16, marginBottom: 16 }}
           />
 
           {!isEditing && (
             <>
               <Text className="text-foreground font-semibold mb-2">ประเภท</Text>
-              <View className="flex-row mb-4 rounded-xl overflow-hidden border border-border">
+              <View className="flex-row mb-4 rounded-2xl overflow-hidden border border-border">
                 <Pressable onPress={() => setSelectedType('expense')} className={`flex-1 py-2.5 items-center ${selectedType === 'expense' ? 'bg-expense' : 'bg-card'}`}>
                   <Text className={`font-semibold ${selectedType === 'expense' ? 'text-white' : 'text-foreground'}`}>รายจ่าย</Text>
                 </Pressable>
@@ -180,7 +181,7 @@ export default function CategoriesScreen() {
           <View className="flex-row flex-wrap gap-2 mb-4">
             {CATEGORY_ICONS.map(icon => (
               <Pressable key={icon} onPress={() => setSelectedIcon(icon)} className={`w-10 h-10 rounded-full items-center justify-center ${selectedIcon === icon ? 'border-2 border-primary' : 'bg-secondary'}`}>
-                <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={20} color={selectedIcon === icon ? '#0891b2' : '#666'} />
+                <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={20} color={selectedIcon === icon ? '#E87A3D' : '#666'} />
               </Pressable>
             ))}
           </View>
@@ -194,7 +195,7 @@ export default function CategoriesScreen() {
             ))}
           </View>
 
-          <Pressable onPress={handleSave} className={`py-4 rounded-xl items-center bg-primary ${!name.trim() ? 'opacity-50' : ''}`} disabled={!name.trim()}>
+          <Pressable onPress={handleSave} className={`py-4 rounded-full items-center bg-primary ${!name.trim() ? 'opacity-50' : ''}`} disabled={!name.trim()}>
             <Text className="text-white font-bold text-lg">{isEditing ? 'อัพเดท' : 'เพิ่ม'}</Text>
           </Pressable>
         </BottomSheetScrollView>

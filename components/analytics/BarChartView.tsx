@@ -58,7 +58,7 @@ export function BarChartView({ labels, incomeData, expenseData }: BarChartViewPr
             stroke: '#f0f0f0',
           },
         }}
-        style={{ borderRadius: 12, marginHorizontal: 16 }}
+        style={{ borderRadius: 20, marginHorizontal: 16 }}
       />
     </View>
   );

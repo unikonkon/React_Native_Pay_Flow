@@ -9,7 +9,7 @@ export default function NotFoundScreen() {
         <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
           ไม่พบหน้าที่ต้องการ
         </Text>
-        <Link href="/" style={{ color: '#0891b2', fontSize: 16 }}>
+        <Link href="/" style={{ color: '#E87A3D', fontSize: 16 }}>
           กลับหน้าหลัก
         </Link>
       </View>

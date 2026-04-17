@@ -112,23 +112,23 @@ export function PeriodSelector({ period, onChange, className }: Props) {
           disabled={!canShift}
           className="p-2"
         >
-          <Ionicons name="chevron-back" size={24} color={canShift ? '#666' : '#ccc'} />
+          <Ionicons name="chevron-back" size={24} color={canShift ? '#666' : '#A39685'} />
         </Pressable>
         <Pressable
           onPress={handleOpen}
-          className="flex-row items-center px-3 py-1.5 rounded-lg bg-secondary/60 flex-shrink"
+          className="flex-row items-center px-3 py-1.5 rounded-xl bg-secondary/60 flex-shrink"
         >
           <Text className="text-foreground font-bold text-lg" numberOfLines={1}>
             {formatPeriodLabel(period)}
           </Text>
-          <Ionicons name="chevron-down" size={18} color="#666" style={{ marginLeft: 4 }} />
+          <Ionicons name="chevron-down" size={18} color="#6B5F52" style={{ marginLeft: 4 }} />
         </Pressable>
         <Pressable
           onPress={() => { if (canShift) { Haptics.selectionAsync(); onChange(shiftPeriod(period, 1)); } }}
           disabled={!canShift}
           className="p-2"
         >
-          <Ionicons name="chevron-forward" size={24} color={canShift ? '#666' : '#ccc'} />
+          <Ionicons name="chevron-forward" size={24} color={canShift ? '#666' : '#A39685'} />
         </Pressable>
       </View>
 
@@ -144,16 +144,16 @@ export function PeriodSelector({ period, onChange, className }: Props) {
             <View className="flex-row items-center justify-between mb-3">
               <Text className="text-foreground font-bold text-lg">เลือกช่วงเวลา</Text>
               <Pressable onPress={() => setOpen(false)} className="p-1">
-                <Ionicons name="close" size={22} color="#666" />
+                <Ionicons name="close" size={22} color="#6B5F52" />
               </Pressable>
             </View>
 
-            <View className="flex-row bg-secondary rounded-xl p-1 mb-4">
+            <View className="flex-row bg-secondary rounded-2xl p-1 mb-4">
               {(Object.keys(TAB_LABEL) as TabKey[]).map((t) => (
                 <Pressable
                   key={t}
                   onPress={() => { Haptics.selectionAsync(); setTab(t); }}
-                  className={`flex-1 py-2 rounded-lg items-center ${tab === t ? 'bg-primary' : ''}`}
+                  className={`flex-1 py-2 rounded-xl items-center ${tab === t ? 'bg-primary' : ''}`}
                 >
                   <Text
                     className={`text-[11px] font-semibold ${tab === t ? 'text-primary-foreground' : 'text-foreground'}`}
@@ -174,7 +174,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                       <View key={p.anchor} className="w-1/3 p-1">
                         <Pressable
                           onPress={() => handlePickAnchor(p)}
-                          className={`px-2 py-3 rounded-xl border items-center ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
+                          className={`px-2 py-3 rounded-2xl border items-center ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
                         >
                           <Text
                             className={`text-sm font-semibold ${selected ? 'text-primary-foreground' : 'text-foreground'}`}
@@ -205,7 +205,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                     <Pressable
                       key={p.anchor}
                       onPress={() => handlePickAnchor(p)}
-                      className={`px-3 py-3 rounded-xl mb-2 border ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
+                      className={`px-3 py-3 rounded-2xl mb-2 border ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
                     >
                       <Text
                         className={`text-sm font-semibold ${selected ? 'text-primary-foreground' : 'text-foreground'}`}
@@ -227,7 +227,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                     <Pressable
                       key={opt.type}
                       onPress={() => handlePickType(opt.type)}
-                      className={`px-4 py-3 rounded-xl mb-2 border flex-row items-center justify-between ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
+                      className={`px-4 py-3 rounded-2xl mb-2 border flex-row items-center justify-between ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
                     >
                       <Text
                         className={`text-sm font-semibold ${selected ? 'text-primary-foreground' : 'text-foreground'}`}
@@ -247,7 +247,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
               <View>
                 {/* Start Date */}
                 {showStartPicker ? (
-                  <View className="bg-white rounded-xl mb-2 overflow-hidden">
+                  <View className="bg-white rounded-2xl mb-2 overflow-hidden">
                     <View className="px-4 pt-2">
                       <Text className="text-gray-500 text-xs font-semibold">วันเริ่มต้น</Text>
                     </View>
@@ -272,7 +272,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                 ) : (
                   <Pressable
                     onPress={() => { setShowStartPicker(true); setShowEndPicker(false); }}
-                    className="px-4 py-3 rounded-xl mb-2 border border-border bg-background flex-row items-center justify-between"
+                    className="px-4 py-3 rounded-2xl mb-2 border border-border bg-background flex-row items-center justify-between"
                   >
                     <Text className="text-muted-foreground text-sm">วันเริ่มต้น</Text>
                     <Text className="text-foreground font-semibold text-sm">{formatThaiDate(customStart)}</Text>
@@ -281,7 +281,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
 
                 {/* End Date */}
                 {showEndPicker ? (
-                  <View className="bg-white rounded-xl mb-2 overflow-hidden">
+                  <View className="bg-white rounded-2xl mb-2 overflow-hidden">
                     <View className="px-4 pt-2">
                       <Text className="text-gray-500 text-xs font-semibold">วันสิ้นสุด</Text>
                     </View>
@@ -306,7 +306,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                 ) : (
                   <Pressable
                     onPress={() => { setShowEndPicker(true); setShowStartPicker(false); }}
-                    className="px-4 py-3 rounded-xl mb-2 border border-border bg-background flex-row items-center justify-between"
+                    className="px-4 py-3 rounded-2xl mb-2 border border-border bg-background flex-row items-center justify-between"
                   >
                     <Text className="text-muted-foreground text-sm">วันสิ้นสุด</Text>
                     <Text className="text-foreground font-semibold text-sm">{formatThaiDate(customEnd)}</Text>
@@ -316,7 +316,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                 {/* Apply Button */}
                 <Pressable
                   onPress={handleApplyCustom}
-                  className="bg-primary py-3 rounded-xl items-center mt-2"
+                  className="bg-primary py-3 rounded-full items-center mt-2"
                 >
                   <Text className="text-primary-foreground font-bold text-sm">ใช้ช่วงเวลานี้</Text>
                 </Pressable>

@@ -57,21 +57,21 @@ function StepperRow({ label, cols, rows, colMin, colMax, rowMin, rowMax, onCol, 
       <View className="flex-row items-center mr-3">
         <Text className="text-muted-foreground text-[10px] mr-1.5">คอลัมน์</Text>
         <Pressable onPress={() => onCol(-1)} disabled={cols <= colMin} className={`${btn} ${cols <= colMin ? 'opacity-40' : ''}`}>
-          <Ionicons name="remove" size={12} color="#666" />
+          <Ionicons name="remove" size={12} color="#6B5F52" />
         </Pressable>
         <Text className="text-foreground text-xs font-bold mx-1.5 w-4 text-center">{cols}</Text>
         <Pressable onPress={() => onCol(1)} disabled={cols >= colMax} className={`${btn} ${cols >= colMax ? 'opacity-40' : ''}`}>
-          <Ionicons name="add" size={12} color="#666" />
+          <Ionicons name="add" size={12} color="#6B5F52" />
         </Pressable>
       </View>
       <View className="flex-row items-center ml-3">
         <Text className="text-muted-foreground text-[10px] mr-1.5">แถว</Text>
         <Pressable onPress={() => onRow(-1)} disabled={rows <= rowMin} className={`${btn} ${rows <= rowMin ? 'opacity-40' : ''}`}>
-          <Ionicons name="remove" size={12} color="#666" />
+          <Ionicons name="remove" size={12} color="#6B5F52" />
         </Pressable>
         <Text className="text-foreground text-xs font-bold mx-1.5 w-4 text-center">{rows}</Text>
         <Pressable onPress={() => onRow(1)} disabled={rows >= rowMax} className={`${btn} ${rows >= rowMax ? 'opacity-40' : ''}`}>
-          <Ionicons name="add" size={12} color="#666" />
+          <Ionicons name="add" size={12} color="#6B5F52" />
         </Pressable>
       </View>
     </View>
@@ -271,10 +271,10 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
         )}
       </View>
 
-      <View className="flex-row bg-secondary rounded-xl p-1 mb-2">
+      <View className="flex-row bg-secondary rounded-2xl p-1 mb-2">
         <Pressable
           onPress={() => { setTab('recommend'); onTabChange?.('recommend'); }}
-          className={`flex-1 py-1.5 rounded-lg items-center ${tab === 'recommend' ? 'bg-primary' : ''}`}
+          className={`flex-1 py-1.5 rounded-xl items-center ${tab === 'recommend' ? 'bg-primary' : ''}`}
         >
           <Text className={`text-xs font-semibold ${tab === 'recommend' ? 'text-primary-foreground' : 'text-foreground'}`}>
             แนะนำ
@@ -282,7 +282,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
         </Pressable>
         <Pressable
           onPress={() => { setTab('select'); onTabChange?.('select'); }}
-          className={`flex-1 py-1.5 rounded-lg items-center ${tab === 'select' ? 'bg-primary' : ''}`}
+          className={`flex-1 py-1.5 rounded-xl items-center ${tab === 'select' ? 'bg-primary' : ''}`}
         >
           <Text className={`text-xs font-semibold ${tab === 'select' ? 'text-primary-foreground' : 'text-foreground'}`}>
             เลือก
@@ -290,7 +290,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
         </Pressable>
         <Pressable
           onPress={() => { setTab('manage'); onTabChange?.('manage'); }}
-          className={`flex-1 py-1.5 rounded-lg items-center ${tab === 'manage' ? 'bg-primary' : ''}`}
+          className={`flex-1 py-1.5 rounded-xl items-center ${tab === 'manage' ? 'bg-primary' : ''}`}
         >
           <Text className={`text-xs font-semibold ${tab === 'manage' ? 'text-primary-foreground' : 'text-foreground'}`}>
             ตั้งค่า
@@ -300,14 +300,14 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
 
       {tab === 'manage' && (
         pickedId ? (
-          <View className="flex-row items-center justify-center mb-2 px-2 py-2 bg-secondary/50 rounded-xl">
-            <Ionicons name="move" size={14} color="#0891b2" />
+          <View className="flex-row items-center justify-center mb-2 px-2 py-2 bg-secondary/50 rounded-2xl">
+            <Ionicons name="move" size={14} color="#E87A3D" />
             <Text className="text-primary text-xs font-semibold ml-1 flex-shrink" numberOfLines={1}>
               แตะปลายทางเพื่อวาง · แตะเดิมเพื่อยกเลิก
             </Text>
           </View>
         ) : (
-          <View className="mb-2 px-2 py-2 bg-secondary/50 rounded-xl">
+          <View className="mb-2 px-2 py-2 bg-secondary/50 rounded-2xl">
             <StepperRow
               label="หมวดหมู่ ในเมนูเลือก"
               cols={columns} rows={rows}
@@ -380,7 +380,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
             <View>
               {!walletId ? (
                 <View className="items-center py-6">
-                  <Ionicons name="wallet-outline" size={28} color="#999" />
+                  <Ionicons name="wallet-outline" size={28} color="#A39685" />
                   <Text className="text-muted-foreground text-xs mt-1">เลือกกระเป๋าเพื่อดูรายการที่ใช้บ่อย</Text>
                 </View>
               ) : (
@@ -441,7 +441,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                           <View key={a.id} style={{ width: `${100 / recTxCols}%`, paddingHorizontal: 2, marginBottom: 6 }}>
                             <Pressable
                               onPress={() => handleRecommendTx(a)}
-                              className={`flex-row items-center py-1.5 px-1 rounded-xl border ${isActive ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+                              className={`flex-row items-center py-1.5 px-1 rounded-2xl border ${isActive ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
                             >
                               <View
                                 className={`w-8 h-8 rounded-full items-center justify-center mr-2 ${isActive ? 'border-2 border-primary' : ''}`}
@@ -468,7 +468,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                                 </Text>
                               </View>
                               {isActive && (
-                                <Ionicons name="checkmark-circle" size={16} color="#0891b2" style={{ marginLeft: 2 }} />
+                                <Ionicons name="checkmark-circle" size={16} color="#E87A3D" style={{ marginLeft: 2 }} />
                               )}
                               {/* {a.count > 1 && (
                                 <View className="px-1.5 py-0.5 rounded-full bg-primary/10">
@@ -555,7 +555,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                           </Pressable>
                         ) : (
                           <View className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-muted items-center justify-center border-2 border-background">
-                            <Ionicons name="lock-closed" size={10} color="#999" />
+                            <Ionicons name="lock-closed" size={10} color="#A39685" />
                           </View>
                         )}
                       </View>
@@ -575,7 +575,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                   className="items-center mb-2"
                 >
                   <View className="w-14 h-14 rounded-full items-center justify-center border-2 border-dashed border-primary/60 bg-primary/5">
-                    <Ionicons name="add" size={26} color="#0891b2" />
+                    <Ionicons name="add" size={26} color="#E87A3D" />
                   </View>
                   <Text className="text-xs text-center mt-1 px-0.5 text-primary font-semibold" numberOfLines={1}>
                     เพิ่ม

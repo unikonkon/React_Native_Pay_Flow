@@ -169,7 +169,7 @@ export function CalculatorPad({
                 className={`flex-1 mx-1 py-3 rounded-full items-center justify-center ${bgClass}`}
               >
                 {btn.icon ? (
-                  <Ionicons name="backspace-outline" size={22} color="#666" />
+                  <Ionicons name="backspace-outline" size={22} color="#6B5F52" />
                 ) : (
                   <Text className={`text-2xl font-bold ${textColor}`}>
                     {btn.label}

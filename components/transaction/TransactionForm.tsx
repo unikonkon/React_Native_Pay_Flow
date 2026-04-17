@@ -158,7 +158,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           </View>
         </View>
         <Pressable onPress={onClose} className="p-1">
-          <Ionicons name="close" size={24} color="#666" />
+          <Ionicons name="close" size={24} color="#6B5F52" />
         </Pressable>
       </View>
 
@@ -194,7 +194,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               onPress={() => setShowDatePicker(true)}
               className="flex-row items-center py-1.5 px-3 bg-secondary rounded-full mr-2"
             >
-              <Ionicons name="calendar-outline" size={18} color="#666" />
+              <Ionicons name="calendar-outline" size={18} color="#6B5F52" />
               <Text className="text-foreground text-base ml-1">
                 {date.toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}
               </Text>
@@ -295,8 +295,8 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           )}
 
           {/* Note + Amount */}
-          <View className="flex-row items-center border border-border rounded-xl px-3 py-1.5 mb-2">
-            <Ionicons name="create-outline" size={14} color="#999" />
+          <View className="flex-row items-center border border-border rounded-2xl px-3 py-1.5 mb-2">
+            <Ionicons name="create-outline" size={14} color="#A39685" />
             <BottomSheetTextInput
               value={note}
               onChangeText={setNote}
@@ -332,7 +332,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                       }}
                       className="flex-row items-center px-3 py-1.5 rounded-full border border-border bg-secondary"
                     >
-                      <Ionicons name="time-outline" size={12} color="#999" />
+                      <Ionicons name="time-outline" size={12} color="#A39685" />
                       <Text className="text-foreground text-xs ml-1" numberOfLines={1}>
                         {n}
                       </Text>

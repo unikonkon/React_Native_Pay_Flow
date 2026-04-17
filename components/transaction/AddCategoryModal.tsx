@@ -65,7 +65,7 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
               เพิ่มหมวด{type === 'expense' ? 'รายจ่าย' : 'รายรับ'}
             </Text>
             <Pressable onPress={onClose} className="p-1">
-              <Ionicons name="close" size={22} color="#666" />
+              <Ionicons name="close" size={22} color="#6B5F52" />
             </Pressable>
           </View>
 
@@ -101,7 +101,7 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
                     <Ionicons
                       name={ic as keyof typeof Ionicons.glyphMap}
                       size={18}
-                      color={active ? '#0891b2' : '#666'}
+                      color={active ? '#E87A3D' : '#666'}
                     />
                   </Pressable>
                 );
@@ -127,7 +127,7 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
             <Pressable
               onPress={handleSave}
               disabled={!name.trim() || saving}
-              className={`py-3 rounded-xl items-center bg-primary ${!name.trim() || saving ? 'opacity-50' : ''}`}
+              className={`py-3 rounded-full items-center bg-primary ${!name.trim() || saving ? 'opacity-50' : ''}`}
             >
               <Text className="text-primary-foreground font-bold text-base">เพิ่ม</Text>
             </Pressable>

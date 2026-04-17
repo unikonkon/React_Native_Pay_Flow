@@ -28,11 +28,11 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
     <View className={className}>
       <Pressable
         onPress={() => setOpen(true)}
-        className="flex-row items-center px-3 py-2 bg-secondary rounded-lg self-start"
+        className="flex-row items-center px-3 py-2 bg-secondary rounded-xl self-start"
       >
-        <Ionicons name="wallet-outline" size={16} color="#666" />
+        <Ionicons name="wallet-outline" size={16} color="#6B5F52" />
         <Text className="text-foreground text-sm ml-1">{selectedWalletName}</Text>
-        <Ionicons name="chevron-down" size={14} color="#666" style={{ marginLeft: 4 }} />
+        <Ionicons name="chevron-down" size={14} color="#6B5F52" style={{ marginLeft: 4 }} />
       </Pressable>
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
@@ -47,18 +47,18 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
             <View className="flex-row items-center justify-between mb-3">
               <Text className="text-foreground font-bold text-lg">เลือกกระเป๋า</Text>
               <Pressable onPress={() => setOpen(false)} className="p-1">
-                <Ionicons name="close" size={22} color="#666" />
+                <Ionicons name="close" size={22} color="#6B5F52" />
               </Pressable>
             </View>
 
             <ScrollView className="max-h-96">
               <Pressable
                 onPress={() => handlePick(null)}
-                className={`px-4 py-3 rounded-xl mb-2 border flex-row items-center justify-between ${!selectedWalletId ? 'bg-primary border-primary' : 'border-border bg-background'}`}
+                className={`px-4 py-3 rounded-2xl mb-2 border flex-row items-center justify-between ${!selectedWalletId ? 'bg-primary border-primary' : 'border-border bg-background'}`}
               >
                 <View className="flex-row items-center">
                   <View className="w-7 h-7 rounded-full items-center justify-center mr-2 bg-secondary">
-                    <Ionicons name="albums-outline" size={14} color="#666" />
+                    <Ionicons name="albums-outline" size={14} color="#6B5F52" />
                   </View>
                   <Text className={`text-sm font-semibold ${!selectedWalletId ? 'text-primary-foreground' : 'text-foreground'}`}>
                     ทุกกระเป๋า
@@ -73,7 +73,7 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
                   <Pressable
                     key={w.id}
                     onPress={() => handlePick(w.id)}
-                    className={`px-4 py-3 rounded-xl mb-2 border flex-row items-center justify-between ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
+                    className={`px-4 py-3 rounded-2xl mb-2 border flex-row items-center justify-between ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
                   >
                     <View className="flex-row items-center flex-1">
                       <View
@@ -96,10 +96,10 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
 
               <Pressable
                 onPress={() => { setOpen(false); setAddVisible(true); }}
-                className="px-4 py-3 rounded-xl border border-dashed border-primary/50 flex-row items-center"
+                className="px-4 py-3 rounded-2xl border border-dashed border-primary/50 flex-row items-center"
               >
                 <View className="w-7 h-7 rounded-full items-center justify-center mr-2 bg-primary/10">
-                  <Ionicons name="add" size={16} color="#0891b2" />
+                  <Ionicons name="add" size={16} color="#E87A3D" />
                 </View>
                 <Text className="text-primary font-semibold text-sm">เพิ่มกระเป๋า</Text>
               </Pressable>

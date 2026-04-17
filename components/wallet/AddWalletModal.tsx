@@ -69,7 +69,7 @@ export function AddWalletModal({ visible, onClose, onCreated }: Props) {
           <View className="flex-row items-center justify-between mb-3">
             <Text className="text-foreground font-bold text-lg">เพิ่มกระเป๋าเงิน</Text>
             <Pressable onPress={onClose} className="p-1">
-              <Ionicons name="close" size={22} color="#666" />
+              <Ionicons name="close" size={22} color="#6B5F52" />
             </Pressable>
           </View>
 
@@ -96,7 +96,7 @@ export function AddWalletModal({ visible, onClose, onCreated }: Props) {
                     <Ionicons
                       name={wt.icon as keyof typeof Ionicons.glyphMap}
                       size={16}
-                      color={active ? '#0891b2' : '#666'}
+                      color={active ? '#E87A3D' : '#666'}
                     />
                     <Text className={`text-sm ml-1 ${active ? 'text-primary font-semibold' : 'text-foreground'}`}>
                       {wt.label}
@@ -125,7 +125,7 @@ export function AddWalletModal({ visible, onClose, onCreated }: Props) {
             <Pressable
               onPress={handleSave}
               disabled={!name.trim() || saving}
-              className={`py-3 rounded-xl items-center bg-primary ${!name.trim() || saving ? 'opacity-50' : ''}`}
+              className={`py-3 rounded-full items-center bg-primary ${!name.trim() || saving ? 'opacity-50' : ''}`}
             >
               <Text className="text-primary-foreground font-bold text-base">เพิ่ม</Text>
             </Pressable>

@@ -57,7 +57,7 @@ export default function AlertsScreen() {
         <View className="px-4 py-4 bg-card border-b border-border">
           <View className="flex-row items-center justify-between mb-3">
             <Text className="text-foreground font-medium">เปิดใช้งาน</Text>
-            <Switch value={isMonthlyTargetEnabled} onValueChange={(v) => updateAlertSettings({ isMonthlyTargetEnabled: v })} trackColor={{ true: '#0891b2' }} />
+            <Switch value={isMonthlyTargetEnabled} onValueChange={(v) => updateAlertSettings({ isMonthlyTargetEnabled: v })} trackColor={{ true: '#E87A3D' }} />
           </View>
           {isMonthlyTargetEnabled && (
             <View className="flex-row items-center">
@@ -73,7 +73,7 @@ export default function AlertsScreen() {
         <View className="px-4 py-4 bg-card border-b border-border">
           <View className="flex-row items-center justify-between mb-3">
             <Text className="text-foreground font-medium">เปิดใช้งาน</Text>
-            <Switch value={isCategoryLimitsEnabled} onValueChange={(v) => updateAlertSettings({ isCategoryLimitsEnabled: v })} trackColor={{ true: '#0891b2' }} />
+            <Switch value={isCategoryLimitsEnabled} onValueChange={(v) => updateAlertSettings({ isCategoryLimitsEnabled: v })} trackColor={{ true: '#E87A3D' }} />
           </View>
         </View>
 
@@ -98,7 +98,7 @@ export default function AlertsScreen() {
               );
             })}
             <Pressable onPress={handleAddLimit} className="flex-row items-center justify-center px-4 py-3 bg-card border-b border-border">
-              <Ionicons name="add-circle-outline" size={20} color="#0891b2" />
+              <Ionicons name="add-circle-outline" size={20} color="#E87A3D" />
               <Text className="text-primary font-medium ml-2">เพิ่มเป้าหมวดหมู่</Text>
             </Pressable>
           </>

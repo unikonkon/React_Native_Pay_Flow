@@ -101,7 +101,7 @@ export default function DataTransferScreen() {
   return (
     <SafeAreaView edges={['bottom']} className="flex-1 bg-background">
       {/* Tab: Export / Import */}
-      <View className="flex-row mx-4 mt-4 mb-2 rounded-xl overflow-hidden border border-border">
+      <View className="flex-row mx-4 mt-4 mb-2 rounded-2xl overflow-hidden border border-border">
         <TabButton label="ส่งออกข้อมูล" icon="cloud-upload-outline" active={tab === 'export'}
           onPress={() => { setTab('export'); clearFeedback(); }} />
         <TabButton label="นำเข้าข้อมูล" icon="cloud-download-outline" active={tab === 'import'}
@@ -122,7 +122,7 @@ export default function DataTransferScreen() {
             {/* Data counts */}
             <View className="bg-card rounded-2xl p-4 mb-4 border border-border">
               <View className="flex-row items-center mb-3">
-                <Ionicons name={format === 'txt' ? 'document-text-outline' : 'grid-outline'} size={20} color="#0891b2" />
+                <Ionicons name={format === 'txt' ? 'document-text-outline' : 'grid-outline'} size={20} color="#E87A3D" />
                 <Text className="text-foreground font-semibold text-base ml-2">ข้อมูลที่จะส่งออก</Text>
               </View>
               {counts ? (
@@ -141,7 +141,7 @@ export default function DataTransferScreen() {
             </View>
 
             {/* Info */}
-            <View className="bg-blue-50 rounded-xl p-3 mb-4 border border-blue-200">
+            <View className="bg-blue-50 rounded-2xl p-3 mb-4 border border-blue-200">
               <View className="flex-row items-start">
                 <Ionicons name="information-circle" size={18} color="#3b82f6" style={{ marginTop: 1 }} />
                 <Text className="text-blue-700 text-xs ml-2 flex-1">
@@ -154,7 +154,7 @@ export default function DataTransferScreen() {
 
             {/* Feedback */}
             {exportDone && (
-              <View className="bg-green-50 rounded-xl p-3 mb-4 border border-green-200">
+              <View className="bg-green-50 rounded-2xl p-3 mb-4 border border-green-200">
                 <View className="flex-row items-center">
                   <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
                   <Text className="text-green-700 text-sm ml-2 font-medium">ส่งออกข้อมูลเรียบร้อย!</Text>
@@ -162,7 +162,7 @@ export default function DataTransferScreen() {
               </View>
             )}
             {exportError && (
-              <View className="bg-red-50 rounded-xl p-3 mb-4 border border-red-200">
+              <View className="bg-red-50 rounded-2xl p-3 mb-4 border border-red-200">
                 <View className="flex-row items-start">
                   <Ionicons name="close-circle" size={18} color="#ef4444" style={{ marginTop: 1 }} />
                   <Text className="text-red-700 text-xs ml-2 flex-1">{exportError}</Text>
@@ -172,7 +172,7 @@ export default function DataTransferScreen() {
 
             {/* Export button */}
             <Pressable onPress={handleExport} disabled={loading || !counts}
-              className={`rounded-xl py-4 items-center ${loading ? 'bg-primary/50' : 'bg-primary'}`}>
+              className={`rounded-full py-4 items-center ${loading ? 'bg-primary/50' : 'bg-primary'}`}>
               {loading ? <ActivityIndicator color="white" /> : (
                 <View className="flex-row items-center">
                   <Ionicons name="share-outline" size={20} color="white" />
@@ -188,7 +188,7 @@ export default function DataTransferScreen() {
             {/* Import description */}
             <View className="bg-card rounded-2xl p-4 mb-4 border border-border">
               <View className="flex-row items-center mb-3">
-                <Ionicons name="folder-open-outline" size={20} color="#0891b2" />
+                <Ionicons name="folder-open-outline" size={20} color="#E87A3D" />
                 <Text className="text-foreground font-semibold text-base ml-2">นำเข้าจากไฟล์สำรอง</Text>
               </View>
               <Text className="text-muted-foreground text-sm">
@@ -199,7 +199,7 @@ export default function DataTransferScreen() {
             </View>
 
             {/* Warning */}
-            <View className="bg-amber-50 rounded-xl p-3 mb-4 border border-amber-200">
+            <View className="bg-amber-50 rounded-2xl p-3 mb-4 border border-amber-200">
               <View className="flex-row items-start">
                 <Ionicons name="warning" size={18} color="#f59e0b" style={{ marginTop: 1 }} />
                 <View className="ml-2 flex-1">
@@ -231,7 +231,7 @@ export default function DataTransferScreen() {
               </View>
             )}
             {importResult && !importResult.success && (
-              <View className="bg-red-50 rounded-xl p-3 mb-4 border border-red-200">
+              <View className="bg-red-50 rounded-2xl p-3 mb-4 border border-red-200">
                 <View className="flex-row items-center">
                   <Ionicons name="close-circle" size={18} color="#ef4444" />
                   <Text className="text-red-700 text-sm ml-2">{importResult.error}</Text>
@@ -241,7 +241,7 @@ export default function DataTransferScreen() {
 
             {/* Import button */}
             <Pressable onPress={handleImport} disabled={loading}
-              className={`rounded-xl py-4 items-center ${loading ? 'bg-primary/50' : 'bg-primary'}`}>
+              className={`rounded-full py-4 items-center ${loading ? 'bg-primary/50' : 'bg-primary'}`}>
               {loading ? (
                 <View className="flex-row items-center">
                   <ActivityIndicator color="white" />
@@ -264,7 +264,7 @@ export default function DataTransferScreen() {
       {loading && (
         <View pointerEvents="auto" className="absolute inset-0 items-center justify-center bg-black/40">
           <View className="bg-card rounded-2xl px-6 py-5 items-center border border-border min-w-[220px]">
-            <ActivityIndicator size="large" color="#0891b2" />
+            <ActivityIndicator size="large" color="#E87A3D" />
             <Text className="text-foreground text-base font-semibold mt-3">
               {tab === 'export' ? 'กำลังส่งออกข้อมูล...' : 'กำลังนำเข้าข้อมูล...'}
             </Text>
@@ -293,7 +293,7 @@ function FormatButton({ label, active, onPress }: {
 }) {
   return (
     <Pressable onPress={onPress}
-      className={`flex-1 items-center py-2 mx-1 rounded-lg border ${active ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}>
+      className={`flex-1 items-center py-2 mx-1 rounded-xl border ${active ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}>
       <Text className={`text-xs font-semibold ${active ? 'text-primary' : 'text-muted-foreground'}`}>{label}</Text>
     </Pressable>
   );
@@ -304,7 +304,7 @@ function CountRow({ icon, label, count, suffix }: {
 }) {
   return (
     <View className="flex-row items-center">
-      <Ionicons name={icon} size={16} color="#666" />
+      <Ionicons name={icon} size={16} color="#6B5F52" />
       <Text className="text-foreground text-sm ml-2 flex-1">{label}</Text>
       <Text className="text-muted-foreground text-sm font-medium">
         {suffix && count > 0 ? suffix : `${count} รายการ`}

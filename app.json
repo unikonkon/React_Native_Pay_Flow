@@ -12,7 +12,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.ceasflow.app",
       "infoPlist": {
-        "CFBundleLocalizations": ["th"],
+        "CFBundleLocalizations": [
+          "th"
+        ],
         "CFBundleDevelopmentRegion": "th"
       }
     },
@@ -52,7 +54,8 @@
       ],
       "expo-sqlite",
       "expo-secure-store",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -26,8 +26,8 @@ function StructuredView({ data, periodLabel }: { data: StructuredResult; periodL
   return (
     <View className="gap-4">
       {periodLabel && (
-        <View className="bg-primary/10 rounded-xl px-3 py-2 flex-row items-center">
-          <Ionicons name="calendar-outline" size={16} color="#0891b2" />
+        <View className="bg-primary/10 rounded-2xl px-3 py-2 flex-row items-center">
+          <Ionicons name="calendar-outline" size={16} color="#E87A3D" />
           <Text className="text-primary font-semibold text-sm ml-2">{periodLabel}</Text>
         </View>
       )}
@@ -35,7 +35,7 @@ function StructuredView({ data, periodLabel }: { data: StructuredResult; periodL
       {/* Health Score Card */}
       <View className="bg-card rounded-2xl p-4 border border-border">
         <View className="flex-row items-center mb-3">
-          <Ionicons name="heart-outline" size={20} color="#0891b2" />
+          <Ionicons name="heart-outline" size={20} color="#E87A3D" />
           <Text className="text-foreground font-bold text-base ml-2">สุขภาพการเงิน</Text>
         </View>
         <View className="flex-row items-center justify-between mb-2">
@@ -56,7 +56,7 @@ function StructuredView({ data, periodLabel }: { data: StructuredResult; periodL
             <Text className="text-expense font-bold">{formatCurrency(data.summary.totalExpense)}</Text>
           </View>
         </View>
-        <View className="bg-secondary rounded-xl p-3 mt-2">
+        <View className="bg-secondary rounded-2xl p-3 mt-2">
           <Text className="text-muted-foreground text-xs mb-1">กฎ 50/30/20</Text>
           <View className="flex-row justify-between">
             <Text className="text-foreground text-sm">จำเป็น {formatPercentage(data.summary.rule503020.needs)}</Text>
@@ -89,7 +89,7 @@ function StructuredView({ data, periodLabel }: { data: StructuredResult; periodL
       {data.expensesToReduce.length > 0 && (
         <View className="bg-card rounded-2xl p-4 border border-border">
           <View className="flex-row items-center mb-3">
-            <Ionicons name="trending-down-outline" size={20} color="#EF4444" />
+            <Ionicons name="trending-down-outline" size={20} color="#E57373" />
             <Text className="text-foreground font-bold text-base ml-2">หมวดที่ควรลด</Text>
           </View>
           {data.expensesToReduce.map((item, i) => (
@@ -106,7 +106,7 @@ function StructuredView({ data, periodLabel }: { data: StructuredResult; periodL
       {data.actionPlan.length > 0 && (
         <View className="bg-card rounded-2xl p-4 border border-border">
           <View className="flex-row items-center mb-3">
-            <Ionicons name="checkbox-outline" size={20} color="#22C55E" />
+            <Ionicons name="checkbox-outline" size={20} color="#5CB88A" />
             <Text className="text-foreground font-bold text-base ml-2">แผนปฏิบัติ</Text>
           </View>
           {data.actionPlan.map((plan, i) => (
@@ -121,7 +121,7 @@ function StructuredView({ data, periodLabel }: { data: StructuredResult; periodL
       {data.warnings.length > 0 && (
         <View className="bg-expense/10 rounded-2xl p-4 border border-expense/30">
           <View className="flex-row items-center mb-3">
-            <Ionicons name="warning-outline" size={20} color="#EF4444" />
+            <Ionicons name="warning-outline" size={20} color="#E57373" />
             <Text className="text-expense font-bold text-base ml-2">คำเตือน</Text>
           </View>
           {data.warnings.map((w, i) => (
@@ -146,8 +146,8 @@ function TextView({ text, periodLabel }: { text: string; periodLabel?: string })
   return (
     <View className="gap-4">
       {periodLabel && (
-        <View className="bg-primary/10 rounded-xl px-3 py-2 flex-row items-center">
-          <Ionicons name="calendar-outline" size={16} color="#0891b2" />
+        <View className="bg-primary/10 rounded-2xl px-3 py-2 flex-row items-center">
+          <Ionicons name="calendar-outline" size={16} color="#E87A3D" />
           <Text className="text-primary font-semibold text-sm ml-2">{periodLabel}</Text>
         </View>
       )}

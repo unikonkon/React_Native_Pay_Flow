@@ -101,7 +101,7 @@ export function TransactionGroupItem({
             <Ionicons
               name={expanded ? 'chevron-up' : 'chevron-down'}
               size={14}
-              color="#999"
+              color="#A39685"
               style={{ marginLeft: 2 }}
             />
           )}

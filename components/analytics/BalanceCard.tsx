@@ -19,7 +19,7 @@ export function BalanceCard({ totalIncome, totalExpense, balance }: BalanceCardP
       <View className="flex-row justify-between">
         <View className="flex-row items-center">
           <View className="w-8 h-8 rounded-full bg-income/20 items-center justify-center mr-2">
-            <Ionicons name="arrow-up" size={16} color="#22C55E" />
+            <Ionicons name="arrow-up" size={16} color="#5CB88A" />
           </View>
           <View>
             <Text className="text-muted-foreground text-xs">รายรับ</Text>
@@ -29,7 +29,7 @@ export function BalanceCard({ totalIncome, totalExpense, balance }: BalanceCardP
 
         <View className="flex-row items-center">
           <View className="w-8 h-8 rounded-full bg-expense/20 items-center justify-center mr-2">
-            <Ionicons name="arrow-down" size={16} color="#EF4444" />
+            <Ionicons name="arrow-down" size={16} color="#E57373" />
           </View>
           <View>
             <Text className="text-muted-foreground text-xs">รายจ่าย</Text>

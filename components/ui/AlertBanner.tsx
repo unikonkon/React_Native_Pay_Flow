@@ -17,7 +17,7 @@ export function AlertBanner({ currentExpense, target }: AlertBannerProps) {
   const isDanger = percentage >= 100;
 
   return (
-    <View className={`mx-4 mt-2 p-3 rounded-xl flex-row items-center ${isDanger ? 'bg-expense/15' : 'bg-[#F59E0B]/15'}`}>
+    <View className={`mx-4 mt-2 p-3 rounded-2xl flex-row items-center ${isDanger ? 'bg-expense/15' : 'bg-[#F59E0B]/15'}`}>
       <Ionicons
         name={isDanger ? 'alert-circle' : 'warning'}
         size={20}

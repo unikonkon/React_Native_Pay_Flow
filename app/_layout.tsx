@@ -4,6 +4,9 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
+import { useFonts } from 'expo-font';
+import { IBMPlexSansThai_400Regular, IBMPlexSansThai_600SemiBold, IBMPlexSansThai_700Bold } from '@expo-google-fonts/ibm-plex-sans-thai';
+import { Inter_400Regular, Inter_700Bold, Inter_900Black } from '@expo-google-fonts/inter';
 import { useDatabase } from '@/lib/stores/db';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { useSettingsStore } from '@/lib/stores/settings-store';
@@ -24,6 +27,15 @@ export const unstable_settings = {
 const DARK_THEMES = ['warm-dark', 'sakura-dark', 'ocean-dark', 'forest-dark', 'midnight'];
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    IBMPlexSansThai_400Regular,
+    IBMPlexSansThai_600SemiBold,
+    IBMPlexSansThai_700Bold,
+    Inter_400Regular,
+    Inter_700Bold,
+    Inter_900Black,
+  });
+
   const { isReady } = useDatabase();
   const loadCategories = useCategoryStore(s => s.loadCategories);
   const loadSettings = useSettingsStore(s => s.loadSettings);
@@ -71,7 +83,7 @@ export default function RootLayout() {
     if (success) setIsLocked(false);
   }, []);
 
-  if (!isReady || checkingBiometric) {
+  if (!isReady || checkingBiometric || !fontsLoaded) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" />
