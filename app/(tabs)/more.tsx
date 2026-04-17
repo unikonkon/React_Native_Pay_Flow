@@ -144,9 +144,6 @@ export default function SettingsScreen() {
           onPress={() => router.push('/settings/wallets')}
         />
 
-        <SectionHeader title="ข้อมูล" />
-        <SettingsRow icon="swap-horizontal-outline" label="ส่งออก / นำเข้าข้อมูล" onPress={() => router.push('/settings/data-transfer')} />
-
         <SectionHeader title="เกี่ยวกับ" />
         <SettingsRow icon="information-circle-outline" label="เวอร์ชัน" value={appVersion} />
         <SettingsRow icon="logo-github" label="CeasFlow" value="Expense Tracker" />

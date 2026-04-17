@@ -3,6 +3,12 @@ import { analyzeFinances, getApiKey, getThaiMonthName } from '@/lib/api/ai';
 import { useAiHistoryStore } from '@/lib/stores/ai-history-store';
 import { getAvailableMonths, getAvailableYears, getDb, getTransactionsByRange, getTransactionsByYear } from '@/lib/stores/db';
 import { useWalletStore } from '@/lib/stores/wallet-store';
+import { useTransactionStore } from '@/lib/stores/transaction-store';
+import { useCategoryStore } from '@/lib/stores/category-store';
+import { useAnalysisStore } from '@/lib/stores/analysis-store';
+import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
+import { useThemeStore } from '@/lib/stores/theme-store';
+import { useSettingsStore } from '@/lib/stores/settings-store';
 import type { AiHistory } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -19,8 +25,20 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  exportAllData,
+  exportAllDataExcel,
+  getExportCounts,
+  pickAndImportData,
+  pickAndImportDataExcel,
+  type ExportCounts,
+  type ImportResult,
+} from '@/lib/utils/data-transfer';
 
 type PromptType = 'structured' | 'full';
+type InnerTab = 'ai' | 'data';
+type DataTab = 'export' | 'import';
+type DataFormat = 'txt' | 'excel';
 
 const THAI_MONTHS_SHORT = [
   '', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
@@ -31,6 +49,113 @@ function getPeriodLabel(year: number, month: number | null): string {
   const buddhistYear = year + 543;
   if (month) return `${getThaiMonthName(month)} ${buddhistYear}`;
   return `ปี ${buddhistYear}`;
+}
+
+// ===== Premium Paywall =====
+
+function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
+
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 60 }}>
+      {/* Hero */}
+      <View className="items-center mt-4 mb-6">
+        <View className="w-20 h-20 rounded-full bg-primary/15 items-center justify-center mb-4">
+          <Ionicons name="diamond" size={40} color="#0891b2" />
+        </View>
+        <Text className="text-foreground text-2xl font-bold mb-1">CeasFlow Premium</Text>
+        <Text className="text-muted-foreground text-sm text-center px-4">
+          ปลดล็อกฟีเจอร์ขั้นสูงเพื่อจัดการการเงินอย่างมืออาชีพ
+        </Text>
+      </View>
+
+      {/* Features */}
+      <View className="bg-card rounded-2xl p-5 mb-6 border border-border">
+        <Text className="text-foreground font-bold text-base mb-4">ฟีเจอร์ Premium</Text>
+        <FeatureRow icon="sparkles" label="AI วิเคราะห์การเงิน" desc="วิเคราะห์รายรับ-รายจ่ายอัจฉริยะด้วย AI" />
+        <FeatureRow icon="swap-horizontal" label="ส่งออก / นำเข้าข้อมูล" desc="สำรองและกู้คืนข้อมูลได้ทุกเมื่อ" />
+        <FeatureRow icon="analytics" label="รายงานเชิงลึก" desc="สรุปผลแบบละเอียดรายเดือนและรายปี" />
+        <FeatureRow icon="shield-checkmark" label="สำรองข้อมูลอัตโนมัติ" desc="ป้องกันข้อมูลสูญหาย" last />
+      </View>
+
+      {/* Plans */}
+      <Text className="text-foreground font-bold text-base mb-3">เลือกแพ็กเกจ</Text>
+      <View className="flex-row gap-3 mb-6">
+        {/* Monthly */}
+        <Pressable
+          onPress={() => setSelectedPlan('monthly')}
+          className={`flex-1 rounded-2xl p-4 border-2 ${selectedPlan === 'monthly' ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}
+        >
+          <Text className={`font-semibold text-sm mb-1 ${selectedPlan === 'monthly' ? 'text-primary' : 'text-foreground'}`}>
+            รายเดือน
+          </Text>
+          <Text className={`font-bold text-xl ${selectedPlan === 'monthly' ? 'text-primary' : 'text-foreground'}`}>
+            ฿59
+          </Text>
+          <Text className="text-muted-foreground text-xs">/เดือน</Text>
+        </Pressable>
+
+        {/* Yearly */}
+        <Pressable
+          onPress={() => setSelectedPlan('yearly')}
+          className={`flex-1 rounded-2xl p-4 border-2 relative ${selectedPlan === 'yearly' ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}
+        >
+          <View className="absolute -top-2.5 right-3 bg-green-500 px-2 py-0.5 rounded-full">
+            <Text className="text-white text-[10px] font-bold">ประหยัด 40%</Text>
+          </View>
+          <Text className={`font-semibold text-sm mb-1 ${selectedPlan === 'yearly' ? 'text-primary' : 'text-foreground'}`}>
+            รายปี
+          </Text>
+          <Text className={`font-bold text-xl ${selectedPlan === 'yearly' ? 'text-primary' : 'text-foreground'}`}>
+            ฿429
+          </Text>
+          <Text className="text-muted-foreground text-xs">/ปี (฿35.75/เดือน)</Text>
+        </Pressable>
+      </View>
+
+      {/* Subscribe Button */}
+      <Pressable
+        onPress={() => {
+          Alert.alert(
+            'เร็ว ๆ นี้',
+            'ระบบสมัครสมาชิกกำลังพัฒนา ขอบคุณที่สนใจ!',
+            [
+              { text: 'ตกลง', style: 'default' },
+              { text: 'ทดลองใช้ (Dev)', onPress: onUnlock },
+            ],
+          );
+        }}
+        className="bg-primary rounded-2xl py-4 items-center mb-4"
+      >
+        <View className="flex-row items-center">
+          <Ionicons name="diamond" size={20} color="white" />
+          <Text className="text-white font-bold text-lg ml-2">สมัครสมาชิก Premium</Text>
+        </View>
+      </Pressable>
+
+      {/* Footer note */}
+      <Text className="text-muted-foreground text-xs text-center px-6">
+        สามารถยกเลิกได้ทุกเมื่อ • ต่ออายุอัตโนมัติ • ไม่มีค่าใช้จ่ายแอบแฝง
+      </Text>
+    </ScrollView>
+  );
+}
+
+function FeatureRow({ icon, label, desc, last }: {
+  icon: keyof typeof Ionicons.glyphMap; label: string; desc: string; last?: boolean;
+}) {
+  return (
+    <View className={`flex-row items-start ${last ? '' : 'mb-4'}`}>
+      <View className="w-9 h-9 rounded-full bg-primary/10 items-center justify-center mt-0.5">
+        <Ionicons name={icon} size={18} color="#0891b2" />
+      </View>
+      <View className="flex-1 ml-3">
+        <Text className="text-foreground font-semibold text-sm">{label}</Text>
+        <Text className="text-muted-foreground text-xs">{desc}</Text>
+      </View>
+      <Ionicons name="checkmark-circle" size={20} color="#22c55e" style={{ marginTop: 2 }} />
+    </View>
+  );
 }
 
 // ===== Loading Animation =====
@@ -237,9 +362,302 @@ function HistoryModal({
   );
 }
 
+// ===== Data Transfer Tab =====
+
+function DataTransferTab() {
+  const [dataTab, setDataTab] = useState<DataTab>('export');
+  const [format, setFormat] = useState<DataFormat>('txt');
+  const [counts, setCounts] = useState<ExportCounts | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [exportDone, setExportDone] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  const loadTransactions = useTransactionStore(s => s.loadTransactions);
+  const loadCategories = useCategoryStore(s => s.loadCategories);
+  const loadWallets = useWalletStore(s => s.loadWallets);
+  const loadAnalysis = useAnalysisStore(s => s.loadAnalysis);
+  const loadAiHistories = useAiHistoryStore(s => s.loadHistories);
+  const reloadAlertSettings = useAlertSettingsStore(s => s.loadAlertSettings);
+  const loadTheme = useThemeStore(s => s.loadTheme);
+  const loadSettings = useSettingsStore(s => s.loadSettings);
+
+  useEffect(() => {
+    getExportCounts().then(setCounts);
+  }, []);
+
+  const reloadAllStores = useCallback(async () => {
+    await Promise.all([
+      loadTransactions(), loadCategories(), loadWallets(), loadAnalysis(),
+      loadAiHistories(), reloadAlertSettings(), loadTheme(), loadSettings(),
+    ]);
+  }, [loadTransactions, loadCategories, loadWallets, loadAnalysis, loadAiHistories, reloadAlertSettings, loadTheme, loadSettings]);
+
+  const handleExport = useCallback(async () => {
+    setLoading(true);
+    setExportError(null);
+    setExportDone(false);
+    try {
+      if (format === 'txt') await exportAllData();
+      else await exportAllDataExcel();
+      setExportDone(true);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'ไม่สามารถส่งออกข้อมูลได้';
+      setExportError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, [format]);
+
+  const handleImport = useCallback(async () => {
+    setLoading(true);
+    setImportResult(null);
+    try {
+      const result = format === 'txt' ? await pickAndImportData() : await pickAndImportDataExcel();
+      setImportResult(result);
+      if (result.success) await reloadAllStores();
+    } catch {
+      setImportResult({
+        success: false, wallets: 0, walletsRenamed: 0, categories: 0,
+        transactions: 0, analysis: 0, aiHistory: 0, settingsRestored: false,
+        error: 'เกิดข้อผิดพลาดที่ไม่คาดคิด',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [format, reloadAllStores]);
+
+  const clearFeedback = () => {
+    setExportDone(false);
+    setExportError(null);
+    setImportResult(null);
+  };
+
+  return (
+    <View>
+      {/* Sub-tab: Export / Import */}
+      <View className="flex-row mb-3 rounded-xl overflow-hidden border border-border">
+        <Pressable
+          onPress={() => { setDataTab('export'); clearFeedback(); }}
+          className={`flex-1 flex-row items-center justify-center py-2.5 ${dataTab === 'export' ? 'bg-primary' : 'bg-card'}`}
+        >
+          <Ionicons name="cloud-upload-outline" size={16} color={dataTab === 'export' ? 'white' : '#666'} />
+          <Text className={`ml-1.5 font-semibold text-sm ${dataTab === 'export' ? 'text-white' : 'text-muted-foreground'}`}>ส่งออก</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => { setDataTab('import'); clearFeedback(); }}
+          className={`flex-1 flex-row items-center justify-center py-2.5 ${dataTab === 'import' ? 'bg-primary' : 'bg-card'}`}
+        >
+          <Ionicons name="cloud-download-outline" size={16} color={dataTab === 'import' ? 'white' : '#666'} />
+          <Text className={`ml-1.5 font-semibold text-sm ${dataTab === 'import' ? 'text-white' : 'text-muted-foreground'}`}>นำเข้า</Text>
+        </Pressable>
+      </View>
+
+      {/* Format: TXT / Excel */}
+      <View className="flex-row mb-4">
+        <Pressable
+          onPress={() => { setFormat('txt'); clearFeedback(); }}
+          className={`flex-1 items-center py-2 mx-1 rounded-lg border ${format === 'txt' ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+        >
+          <Text className={`text-xs font-semibold ${format === 'txt' ? 'text-primary' : 'text-muted-foreground'}`}>TXT (JSON)</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => { setFormat('excel'); clearFeedback(); }}
+          className={`flex-1 items-center py-2 mx-1 rounded-lg border ${format === 'excel' ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+        >
+          <Text className={`text-xs font-semibold ${format === 'excel' ? 'text-primary' : 'text-muted-foreground'}`}>Excel (.xlsx)</Text>
+        </Pressable>
+      </View>
+
+      {dataTab === 'export' ? (
+        <View>
+          {/* Data counts */}
+          <View className="bg-card rounded-2xl p-4 mb-4 border border-border">
+            <View className="flex-row items-center mb-3">
+              <Ionicons name={format === 'txt' ? 'document-text-outline' : 'grid-outline'} size={20} color="#0891b2" />
+              <Text className="text-foreground font-semibold text-base ml-2">ข้อมูลที่จะส่งออก</Text>
+            </View>
+            {counts ? (
+              <View className="gap-2">
+                <CountRow icon="wallet-outline" label="กระเป๋าเงิน" count={counts.wallets} />
+                <CountRow icon="grid-outline" label="หมวดหมู่" count={counts.categories} />
+                <CountRow icon="receipt-outline" label="ธุรกรรม" count={counts.transactions} />
+                <CountRow icon="analytics-outline" label="การวิเคราะห์" count={counts.analysis} />
+                <CountRow icon="sparkles-outline" label="ประวัติ AI" count={counts.aiHistory} />
+                <CountRow icon="settings-outline" label="ตั้งค่าแอป" count={counts.hasSettings ? 1 : 0} suffix="✓" />
+                <CountRow icon="alert-circle-outline" label="ตั้งค่าการแจ้งเตือน" count={counts.hasAlertSettings ? 1 : 0} suffix="✓" />
+              </View>
+            ) : (
+              <ActivityIndicator size="small" />
+            )}
+          </View>
+
+          {/* Info */}
+          <View className="bg-blue-50 rounded-xl p-3 mb-4 border border-blue-200">
+            <View className="flex-row items-start">
+              <Ionicons name="information-circle" size={18} color="#3b82f6" style={{ marginTop: 1 }} />
+              <Text className="text-blue-700 text-xs ml-2 flex-1">
+                {format === 'txt'
+                  ? 'ข้อมูลจะถูกส่งออกเป็นไฟล์ .txt (JSON) รวมข้อมูลทั้งหมดในแอป สามารถใช้นำเข้ากลับได้'
+                  : 'ข้อมูลจะถูกส่งออกเป็นไฟล์ .xlsx รวมข้อมูลทั้งหมด สามารถเปิดด้วย Google Sheets, Excel หรือนำเข้ากลับได้'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Feedback */}
+          {exportDone && (
+            <View className="bg-green-50 rounded-xl p-3 mb-4 border border-green-200">
+              <View className="flex-row items-center">
+                <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
+                <Text className="text-green-700 text-sm ml-2 font-medium">ส่งออกข้อมูลเรียบร้อย!</Text>
+              </View>
+            </View>
+          )}
+          {exportError && (
+            <View className="bg-red-50 rounded-xl p-3 mb-4 border border-red-200">
+              <View className="flex-row items-start">
+                <Ionicons name="close-circle" size={18} color="#ef4444" style={{ marginTop: 1 }} />
+                <Text className="text-red-700 text-xs ml-2 flex-1">{exportError}</Text>
+              </View>
+            </View>
+          )}
+
+          {/* Export button */}
+          <Pressable onPress={handleExport} disabled={loading || !counts}
+            className={`rounded-xl py-4 items-center ${loading ? 'bg-primary/50' : 'bg-primary'}`}>
+            {loading ? <ActivityIndicator color="white" /> : (
+              <View className="flex-row items-center">
+                <Ionicons name="share-outline" size={20} color="white" />
+                <Text className="text-white font-bold text-base ml-2">
+                  ส่งออกข้อมูลทั้งหมด ({format === 'txt' ? '.txt' : '.xlsx'})
+                </Text>
+              </View>
+            )}
+          </Pressable>
+        </View>
+      ) : (
+        <View>
+          {/* Import description */}
+          <View className="bg-card rounded-2xl p-4 mb-4 border border-border">
+            <View className="flex-row items-center mb-3">
+              <Ionicons name="folder-open-outline" size={20} color="#0891b2" />
+              <Text className="text-foreground font-semibold text-base ml-2">นำเข้าจากไฟล์สำรอง</Text>
+            </View>
+            <Text className="text-muted-foreground text-sm">
+              {format === 'txt'
+                ? 'เลือกไฟล์ .txt ที่ส่งออกจาก CeasFlow เพื่อนำข้อมูลเข้าสู่แอป'
+                : 'เลือกไฟล์ .xlsx ที่ส่งออกจาก CeasFlow เพื่อนำข้อมูลเข้าสู่แอป'}
+            </Text>
+          </View>
+
+          {/* Warning */}
+          <View className="bg-amber-50 rounded-xl p-3 mb-4 border border-amber-200">
+            <View className="flex-row items-start">
+              <Ionicons name="warning" size={18} color="#f59e0b" style={{ marginTop: 1 }} />
+              <View className="ml-2 flex-1">
+                <Text className="text-amber-800 text-xs font-semibold mb-1">หมายเหตุ</Text>
+                <Text className="text-amber-700 text-xs">• กระเป๋าที่ชื่อซ้ำจะสร้างเป็นชื่อใหม่ เช่น "เงินสด (2)"</Text>
+                <Text className="text-amber-700 text-xs">• ข้อมูลเดิมในแอปจะไม่ถูกลบ</Text>
+                <Text className="text-amber-700 text-xs">• หมวดหมู่ default ที่มีอยู่แล้วจะไม่ถูกสร้างซ้ำ</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Import result */}
+          {importResult && importResult.success && (
+            <View className="bg-green-50 rounded-2xl p-4 mb-4 border border-green-200">
+              <View className="flex-row items-center mb-3">
+                <Ionicons name="checkmark-circle" size={22} color="#22c55e" />
+                <Text className="text-green-700 font-bold text-base ml-2">นำเข้าสำเร็จ!</Text>
+              </View>
+              <View className="gap-1.5">
+                <ResultRow label="กระเป๋าเงิน" count={importResult.wallets} extra={importResult.walletsRenamed > 0 ? `เปลี่ยนชื่อ ${importResult.walletsRenamed}` : undefined} />
+                <ResultRow label="หมวดหมู่ใหม่" count={importResult.categories} />
+                <ResultRow label="ธุรกรรม" count={importResult.transactions} />
+                <ResultRow label="การวิเคราะห์" count={importResult.analysis} />
+                <ResultRow label="ประวัติ AI" count={importResult.aiHistory} />
+                {importResult.settingsRestored && (
+                  <Text className="text-green-700 text-xs">✓ คืนค่าตั้งค่าแอปแล้ว</Text>
+                )}
+              </View>
+            </View>
+          )}
+          {importResult && !importResult.success && (
+            <View className="bg-red-50 rounded-xl p-3 mb-4 border border-red-200">
+              <View className="flex-row items-center">
+                <Ionicons name="close-circle" size={18} color="#ef4444" />
+                <Text className="text-red-700 text-sm ml-2">{importResult.error}</Text>
+              </View>
+            </View>
+          )}
+
+          {/* Import button */}
+          <Pressable onPress={handleImport} disabled={loading}
+            className={`rounded-xl py-4 items-center ${loading ? 'bg-primary/50' : 'bg-primary'}`}>
+            {loading ? (
+              <View className="flex-row items-center">
+                <ActivityIndicator color="white" />
+                <Text className="text-white font-medium text-base ml-2">กำลังนำเข้า...</Text>
+              </View>
+            ) : (
+              <View className="flex-row items-center">
+                <Ionicons name="document-attach-outline" size={20} color="white" />
+                <Text className="text-white font-bold text-base ml-2">
+                  เลือกไฟล์ {format === 'txt' ? '.txt' : '.xlsx'} แล้วนำเข้า
+                </Text>
+              </View>
+            )}
+          </Pressable>
+        </View>
+      )}
+
+      {/* Loading overlay */}
+      {loading && (
+        <View pointerEvents="auto" className="absolute inset-0 items-center justify-center bg-black/40" style={{ zIndex: 50 }}>
+          <View className="bg-card rounded-2xl px-6 py-5 items-center border border-border min-w-[220px]">
+            <ActivityIndicator size="large" color="#0891b2" />
+            <Text className="text-foreground text-base font-semibold mt-3">
+              {dataTab === 'export' ? 'กำลังส่งออกข้อมูล...' : 'กำลังนำเข้าข้อมูล...'}
+            </Text>
+            <Text className="text-muted-foreground text-xs mt-1">กรุณารอสักครู่</Text>
+          </View>
+        </View>
+      )}
+    </View>
+  );
+}
+
+function CountRow({ icon, label, count, suffix }: {
+  icon: keyof typeof Ionicons.glyphMap; label: string; count: number; suffix?: string;
+}) {
+  return (
+    <View className="flex-row items-center">
+      <Ionicons name={icon} size={16} color="#666" />
+      <Text className="text-foreground text-sm ml-2 flex-1">{label}</Text>
+      <Text className="text-muted-foreground text-sm font-medium">
+        {suffix && count > 0 ? suffix : `${count} รายการ`}
+      </Text>
+    </View>
+  );
+}
+
+function ResultRow({ label, count, extra }: { label: string; count: number; extra?: string }) {
+  return (
+    <View className="flex-row items-center">
+      <Text className="text-green-700 text-xs flex-1">• {label}</Text>
+      <Text className="text-green-800 text-xs font-medium">
+        {count} รายการ{extra ? ` (${extra})` : ''}
+      </Text>
+    </View>
+  );
+}
+
 // ===== Main Screen =====
 
-export default function AiAnalysisScreen() {
+export default function PremiumScreen() {
+  const [isPremium, setIsPremium] = useState(false);
+  const [innerTab, setInnerTab] = useState<InnerTab>('ai');
+
   const wallets = useWalletStore(s => s.wallets);
   const { histories, addHistory, deleteHistory } = useAiHistoryStore();
 
@@ -375,177 +793,219 @@ export default function AiAnalysisScreen() {
 
   const recentHistories = histories.slice(0, 5);
 
+  // ===== Not Premium: show paywall =====
+  if (!isPremium) {
+    return (
+      <SafeAreaView className="flex-1 bg-background">
+        <PremiumPaywall onUnlock={() => setIsPremium(true)} />
+      </SafeAreaView>
+    );
+  }
+
+  // ===== Premium: show inner tabs =====
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
-        <Text className="text-foreground text-2xl font-bold mb-4">AI วิเคราะห์การเงิน</Text>
+      {/* Header */}
+      <View className="px-4 pt-4 pb-2 flex-row items-center justify-between">
+        <View className="flex-row items-center">
+          <Ionicons name="diamond" size={20} color="#0891b2" />
+          <Text className="text-foreground text-2xl font-bold ml-2">Premium</Text>
+        </View>
+      </View>
 
-        {!hasApiKey && (
-          <View className="bg-expense/10 rounded-xl p-3 mb-4 flex-row items-center">
-            <Ionicons name="warning-outline" size={18} color="#EF4444" />
-            <Text className="text-foreground text-sm ml-2 flex-1">
-              กรุณาตั้งค่า Gemini API Key ในหน้าตั้งค่าก่อนใช้งาน
-            </Text>
-          </View>
-        )}
+      {/* Inner Tab Bar */}
+      <View className="flex-row mx-4 mb-3 rounded-xl overflow-hidden border border-border">
+        <Pressable
+          onPress={() => setInnerTab('ai')}
+          className={`flex-1 flex-row items-center justify-center py-2.5 ${innerTab === 'ai' ? 'bg-primary' : 'bg-card'}`}
+        >
+          <Ionicons name="sparkles-outline" size={16} color={innerTab === 'ai' ? 'white' : '#666'} />
+          <Text className={`ml-1.5 font-semibold text-sm ${innerTab === 'ai' ? 'text-white' : 'text-muted-foreground'}`}>
+            AI วิเคราะห์
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setInnerTab('data')}
+          className={`flex-1 flex-row items-center justify-center py-2.5 ${innerTab === 'data' ? 'bg-primary' : 'bg-card'}`}
+        >
+          <Ionicons name="swap-horizontal-outline" size={16} color={innerTab === 'data' ? 'white' : '#666'} />
+          <Text className={`ml-1.5 font-semibold text-sm ${innerTab === 'data' ? 'text-white' : 'text-muted-foreground'}`}>
+            ข้อมูล
+          </Text>
+        </Pressable>
+      </View>
 
-        {/* Year Selector */}
-        <Text className="text-foreground font-semibold mb-2">ปี</Text>
-        {availableYears.length === 0 ? (
-          <View className="bg-secondary/50 rounded-xl p-3 mb-4">
-            <Text className="text-muted-foreground text-sm text-center">
-              ยังไม่มีข้อมูลรายการ{selectedWalletId ? 'ในกระเป๋านี้' : ''}
-            </Text>
-          </View>
-        ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
-            <View className="flex-row gap-2">
-              {availableYears.map(y => (
-                <Pressable
-                  key={y}
-                  onPress={() => handleSelectYear(y)}
-                  className={`px-4 py-2 rounded-full border ${selectedYear === y ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
-                >
-                  <Text className={`${selectedYear === y ? 'text-primary font-semibold' : 'text-foreground'}`}>{y}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </ScrollView>
-        )}
-
-        {/* Month Selector */}
-        {availableMonths.length > 0 && (
+      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 0 }}>
+        {innerTab === 'ai' ? (
           <>
-            <Text className="text-foreground font-semibold mb-2">เดือน</Text>
+            {!hasApiKey && (
+              <View className="bg-expense/10 rounded-xl p-3 mb-4 flex-row items-center">
+                <Ionicons name="warning-outline" size={18} color="#EF4444" />
+                <Text className="text-foreground text-sm ml-2 flex-1">
+                  กรุณาตั้งค่า Gemini API Key ในหน้าตั้งค่าก่อนใช้งาน
+                </Text>
+              </View>
+            )}
+
+            {/* Year Selector */}
+            <Text className="text-foreground font-semibold mb-2">ปี</Text>
+            {availableYears.length === 0 ? (
+              <View className="bg-secondary/50 rounded-xl p-3 mb-4">
+                <Text className="text-muted-foreground text-sm text-center">
+                  ยังไม่มีข้อมูลรายการ{selectedWalletId ? 'ในกระเป๋านี้' : ''}
+                </Text>
+              </View>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
+                <View className="flex-row gap-2">
+                  {availableYears.map(y => (
+                    <Pressable
+                      key={y}
+                      onPress={() => handleSelectYear(y)}
+                      className={`px-4 py-2 rounded-full border ${selectedYear === y ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+                    >
+                      <Text className={`${selectedYear === y ? 'text-primary font-semibold' : 'text-foreground'}`}>{y}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </ScrollView>
+            )}
+
+            {/* Month Selector */}
+            {availableMonths.length > 0 && (
+              <>
+                <Text className="text-foreground font-semibold mb-2">เดือน</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
+                  <View className="flex-row gap-2">
+                    <Pressable
+                      onPress={() => setSelectedMonth(null)}
+                      className={`px-3 py-2 rounded-full border ${selectedMonth === null ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+                    >
+                      <Text className={`text-sm ${selectedMonth === null ? 'text-primary font-semibold' : 'text-foreground'}`}>ทั้งปี</Text>
+                    </Pressable>
+                    {availableMonths.map(m => (
+                      <Pressable
+                        key={m}
+                        onPress={() => setSelectedMonth(m)}
+                        className={`px-3 py-2 rounded-full border ${selectedMonth === m ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+                      >
+                        <Text className={`text-sm ${selectedMonth === m ? 'text-primary font-semibold' : 'text-foreground'}`}>{THAI_MONTHS_SHORT[m]}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </ScrollView>
+              </>
+            )}
+
+            {/* Wallet Selector */}
+            <Text className="text-foreground font-semibold mb-2">กระเป๋าเงิน</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
               <View className="flex-row gap-2">
                 <Pressable
-                  onPress={() => setSelectedMonth(null)}
-                  className={`px-3 py-2 rounded-full border ${selectedMonth === null ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+                  onPress={() => handleSelectWallet(null)}
+                  className={`px-3 py-2 rounded-full border ${!selectedWalletId ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
                 >
-                  <Text className={`text-sm ${selectedMonth === null ? 'text-primary font-semibold' : 'text-foreground'}`}>ทั้งปี</Text>
+                  <Text className={`text-sm ${!selectedWalletId ? 'text-primary font-semibold' : 'text-foreground'}`}>ทุกกระเป๋า</Text>
                 </Pressable>
-                {availableMonths.map(m => (
+                {wallets.map(w => (
                   <Pressable
-                    key={m}
-                    onPress={() => setSelectedMonth(m)}
-                    className={`px-3 py-2 rounded-full border ${selectedMonth === m ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+                    key={w.id}
+                    onPress={() => handleSelectWallet(w.id)}
+                    className={`flex-row items-center px-3 py-2 rounded-full border ${selectedWalletId === w.id ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
                   >
-                    <Text className={`text-sm ${selectedMonth === m ? 'text-primary font-semibold' : 'text-foreground'}`}>{THAI_MONTHS_SHORT[m]}</Text>
+                    <View className="w-5 h-5 rounded-full items-center justify-center mr-1" style={{ backgroundColor: w.color }}>
+                      <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={10} color="white" />
+                    </View>
+                    <Text className={`text-sm ${selectedWalletId === w.id ? 'text-primary font-semibold' : 'text-foreground'}`}>{w.name}</Text>
                   </Pressable>
                 ))}
               </View>
             </ScrollView>
-          </>
-        )}
 
-        {/* Wallet Selector */}
-        <Text className="text-foreground font-semibold mb-2">กระเป๋าเงิน</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
-          <View className="flex-row gap-2">
-            <Pressable
-              onPress={() => handleSelectWallet(null)}
-              className={`px-3 py-2 rounded-full border ${!selectedWalletId ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
-            >
-              <Text className={`text-sm ${!selectedWalletId ? 'text-primary font-semibold' : 'text-foreground'}`}>ทุกกระเป๋า</Text>
-            </Pressable>
-            {wallets.map(w => (
+            {/* Prompt Type */}
+            <Text className="text-foreground font-semibold mb-2">รูปแบบ</Text>
+            <View className="flex-row mb-4 rounded-xl overflow-hidden border border-border">
               <Pressable
-                key={w.id}
-                onPress={() => handleSelectWallet(w.id)}
-                className={`flex-row items-center px-3 py-2 rounded-full border ${selectedWalletId === w.id ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+                onPress={() => setPromptType('structured')}
+                className={`flex-1 py-2.5 items-center ${promptType === 'structured' ? 'bg-primary' : 'bg-card'}`}
               >
-                <View className="w-5 h-5 rounded-full items-center justify-center mr-1" style={{ backgroundColor: w.color }}>
-                  <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={10} color="white" />
-                </View>
-                <Text className={`text-sm ${selectedWalletId === w.id ? 'text-primary font-semibold' : 'text-foreground'}`}>{w.name}</Text>
+                <Text className={`text-sm font-semibold ${promptType === 'structured' ? 'text-primary-foreground' : 'text-foreground'}`}>
+                  วิเคราะห์แบบสรุป
+                </Text>
               </Pressable>
-            ))}
-          </View>
-        </ScrollView>
-
-        {/* Prompt Type */}
-        <Text className="text-foreground font-semibold mb-2">รูปแบบ</Text>
-        <View className="flex-row mb-4 rounded-xl overflow-hidden border border-border">
-          <Pressable
-            onPress={() => setPromptType('structured')}
-            className={`flex-1 py-2.5 items-center ${promptType === 'structured' ? 'bg-primary' : 'bg-card'}`}
-          >
-            <Text className={`text-sm font-semibold ${promptType === 'structured' ? 'text-primary-foreground' : 'text-foreground'}`}>
-              วิเคราะห์แบบสรุป
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setPromptType('full')}
-            className={`flex-1 py-2.5 items-center ${promptType === 'full' ? 'bg-primary' : 'bg-card'}`}
-          >
-            <Text className={`text-sm font-semibold ${promptType === 'full' ? 'text-primary-foreground' : 'text-foreground'}`}>
-              วิเคราะห์แบบละเอียด
-            </Text>
-          </Pressable>
-        </View>
-
-        {/* Analyze Button */}
-        <Pressable
-          onPress={handleAnalyze}
-          disabled={isLoading || !hasApiKey || availableYears.length === 0}
-          className={`flex-row items-center justify-center py-4 rounded-xl mb-6 ${isLoading || !hasApiKey || availableYears.length === 0 ? 'bg-primary/50' : 'bg-primary'
-            }`}
-        >
-          {isLoading ? <ActivityIndicator color="white" /> : <Ionicons name="sparkles" size={20} color="white" />}
-          <Text className="text-white font-bold text-lg ml-2">
-            {isLoading ? 'กำลังวิเคราะห์...' : 'เริ่มวิเคราะห์'}
-          </Text>
-        </Pressable>
-
-        {isLoading && <AiLoadingView />}
-
-        {/* History */}
-        {histories.length > 0 && !isLoading && (
-          <View>
-            <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-foreground font-bold text-base">ประวัติการวิเคราะห์</Text>
-              {histories.length > 5 && (
-                <Pressable onPress={() => setHistoryModalVisible(true)} className="flex-row items-center">
-                  <Text className="text-primary text-sm font-semibold mr-1">ดูทั้งหมด ({histories.length})</Text>
-                  <Ionicons name="chevron-forward" size={14} color="#0891b2" />
-                </Pressable>
-              )}
+              <Pressable
+                onPress={() => setPromptType('full')}
+                className={`flex-1 py-2.5 items-center ${promptType === 'full' ? 'bg-primary' : 'bg-card'}`}
+              >
+                <Text className={`text-sm font-semibold ${promptType === 'full' ? 'text-primary-foreground' : 'text-foreground'}`}>
+                  วิเคราะห์แบบละเอียด
+                </Text>
+              </Pressable>
             </View>
-            {recentHistories.map(h => (
-              <Pressable
-                key={h.id}
-                onPress={() => handleViewHistory(h)}
-                onLongPress={() => handleDeleteHistory(h)}
-                className="flex-row items-center px-4 py-3 bg-card border-b border-border rounded-xl mb-2"
-              >
-                <Ionicons name="document-text-outline" size={20} color="#0891b2" />
-                <View className="flex-1 ml-3">
-                  <Text className="text-foreground font-medium">
-                    {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
-                  </Text>
-                  <Text className="text-muted-foreground text-xs">
-                    {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} • {new Date(h.createdAt).toLocaleDateString('th-TH')}
-                  </Text>
+
+            {/* Analyze Button */}
+            <Pressable
+              onPress={handleAnalyze}
+              disabled={isLoading || !hasApiKey || availableYears.length === 0}
+              className={`flex-row items-center justify-center py-4 rounded-xl mb-6 ${isLoading || !hasApiKey || availableYears.length === 0 ? 'bg-primary/50' : 'bg-primary'}`}
+            >
+              {isLoading ? <ActivityIndicator color="white" /> : <Ionicons name="sparkles" size={20} color="white" />}
+              <Text className="text-white font-bold text-lg ml-2">
+                {isLoading ? 'กำลังวิเคราะห์...' : 'เริ่มวิเคราะห์'}
+              </Text>
+            </Pressable>
+
+            {isLoading && <AiLoadingView />}
+
+            {/* History */}
+            {histories.length > 0 && !isLoading && (
+              <View>
+                <View className="flex-row items-center justify-between mb-3">
+                  <Text className="text-foreground font-bold text-base">ประวัติการวิเคราะห์</Text>
+                  {histories.length > 5 && (
+                    <Pressable onPress={() => setHistoryModalVisible(true)} className="flex-row items-center">
+                      <Text className="text-primary text-sm font-semibold mr-1">ดูทั้งหมด ({histories.length})</Text>
+                      <Ionicons name="chevron-forward" size={14} color="#0891b2" />
+                    </Pressable>
+                  )}
                 </View>
-                <Ionicons name="chevron-forward" size={16} color="#ccc" />
-              </Pressable>
-            ))}
-          </View>
-        )}
+                {recentHistories.map(h => (
+                  <Pressable
+                    key={h.id}
+                    onPress={() => handleViewHistory(h)}
+                    onLongPress={() => handleDeleteHistory(h)}
+                    className="flex-row items-center px-4 py-3 bg-card border-b border-border rounded-xl mb-2"
+                  >
+                    <Ionicons name="document-text-outline" size={20} color="#0891b2" />
+                    <View className="flex-1 ml-3">
+                      <Text className="text-foreground font-medium">
+                        {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
+                      </Text>
+                      <Text className="text-muted-foreground text-xs">
+                        {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} • {new Date(h.createdAt).toLocaleDateString('th-TH')}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color="#ccc" />
+                  </Pressable>
+                ))}
+              </View>
+            )}
 
-        {/* Current Result */}
-        {currentResult && !isLoading && (
-          <View className="mb-6">
-            <Text className="text-foreground font-bold text-base mb-3">ผลวิเคราะห์</Text>
-            <AiResultView
-              responseType={currentResult.type as any}
-              responseData={currentResult.data}
-              periodLabel={currentResult.periodLabel}
-            />
-          </View>
+            {/* Current Result */}
+            {currentResult && !isLoading && (
+              <View className="mb-6">
+                <Text className="text-foreground font-bold text-base mb-3">ผลวิเคราะห์</Text>
+                <AiResultView
+                  responseType={currentResult.type as any}
+                  responseData={currentResult.data}
+                  periodLabel={currentResult.periodLabel}
+                />
+              </View>
+            )}
+          </>
+        ) : (
+          <DataTransferTab />
         )}
-
       </ScrollView>
 
       <HistoryModal
