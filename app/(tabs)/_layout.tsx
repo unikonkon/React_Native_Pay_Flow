@@ -1,6 +1,6 @@
-import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { HapticTab } from '@/components/layout/HapticTab';
+import { Ionicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
 
 export default function TabLayout() {
   return (
@@ -37,9 +37,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="ai-analysis"
         options={{
-          title: 'AI วิเคราะห์',
+          title: 'Premium',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="sparkles-outline" size={size} color={color} />
+            <Ionicons name="diamond-outline" size={size} color={color} />
           ),
         }}
       />
