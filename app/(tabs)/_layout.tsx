@@ -1,6 +1,26 @@
 import { HapticTab } from '@/components/layout/HapticTab';
+import { PawPrint } from '@/assets/svg';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+import { View } from 'react-native';
+
+function TabIcon({ name, color, size, focused }: {
+  name: keyof typeof Ionicons.glyphMap;
+  color: string;
+  size: number;
+  focused: boolean;
+}) {
+  return (
+    <View style={{ alignItems: 'center' }}>
+      <Ionicons name={name} size={size} color={color} />
+      {focused && (
+        <View style={{ marginTop: 2 }}>
+          <PawPrint size={8} color="#E87A3D" />
+        </View>
+      )}
+    </View>
+  );
+}
 
 export default function TabLayout() {
   return (
@@ -8,11 +28,11 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarActiveTintColor: '#0891b2',
-        tabBarInactiveTintColor: '#999',
+        tabBarActiveTintColor: '#E87A3D',
+        tabBarInactiveTintColor: '#A39685',
         tabBarStyle: {
           borderTopWidth: 1,
-          borderTopColor: '#e5e5e5',
+          borderTopColor: '#EDE4D3',
         },
       }}
     >
@@ -20,8 +40,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'รายการ',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <TabIcon name={focused ? 'list' : 'list-outline'} color={color} size={size} focused={focused} />
           ),
         }}
       />
@@ -29,8 +49,8 @@ export default function TabLayout() {
         name="analytics"
         options={{
           title: 'สรุป',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="pie-chart-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <TabIcon name={focused ? 'pie-chart' : 'pie-chart-outline'} color={color} size={size} focused={focused} />
           ),
         }}
       />
@@ -38,8 +58,8 @@ export default function TabLayout() {
         name="ai-analysis"
         options={{
           title: 'Premium',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="diamond-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <TabIcon name={focused ? 'diamond' : 'diamond-outline'} color={color} size={size} focused={focused} />
           ),
         }}
       />
@@ -47,8 +67,8 @@ export default function TabLayout() {
         name="more"
         options={{
           title: 'ตั้งค่า',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <TabIcon name={focused ? 'settings' : 'settings-outline'} color={color} size={size} focused={focused} />
           ),
         }}
       />

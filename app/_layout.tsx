@@ -21,7 +21,7 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
-const DARK_THEMES = ['dark'];
+const DARK_THEMES = ['warm-dark', 'sakura-dark', 'ocean-dark', 'forest-dark', 'midnight'];
 
 export default function RootLayout() {
   const { isReady } = useDatabase();
@@ -81,13 +81,13 @@ export default function RootLayout() {
 
   if (isLocked) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
-        <Ionicons name="lock-closed" size={64} color="#0891b2" />
-        <Text style={{ fontSize: 20, fontWeight: 'bold', marginTop: 16, color: '#333' }}>CeasFlow</Text>
-        <Text style={{ fontSize: 14, color: '#666', marginTop: 4 }}>กรุณาปลดล็อกเพื่อใช้งาน</Text>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FBF7F0' }}>
+        <Ionicons name="lock-closed" size={64} color="#E87A3D" />
+        <Text style={{ fontSize: 20, fontWeight: 'bold', marginTop: 16, color: '#2B2118' }}>MiawMoney</Text>
+        <Text style={{ fontSize: 14, color: '#6B5F52', marginTop: 4 }}>กรุณาปลดล็อกเพื่อใช้งาน</Text>
         <Pressable
           onPress={handleUnlock}
-          style={{ marginTop: 24, paddingHorizontal: 32, paddingVertical: 12, backgroundColor: '#0891b2', borderRadius: 12 }}
+          style={{ marginTop: 24, paddingHorizontal: 32, paddingVertical: 12, backgroundColor: '#E87A3D', borderRadius: 999 }}
         >
           <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>ปลดล็อก</Text>
         </Pressable>
@@ -98,7 +98,7 @@ export default function RootLayout() {
   const statusBarStyle = DARK_THEMES.includes(currentTheme) ? 'light' : 'dark';
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }} className={currentTheme !== 'light' ? currentTheme : undefined}>
+    <GestureHandlerRootView style={{ flex: 1 }} className={currentTheme !== 'warm' ? currentTheme : undefined}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen

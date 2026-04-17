@@ -1,3 +1,4 @@
+import { MiawMini } from '@/assets/svg';
 import { BalanceCard } from '@/components/analytics/BalanceCard';
 import { BarChartView } from '@/components/analytics/BarChartView';
 import { PieChartView } from '@/components/analytics/PieChartView';
@@ -80,6 +81,11 @@ export default function AnalyticsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView>
+        <View className="flex-row items-center px-4 pt-2 pb-1">
+          <MiawMini size={28} />
+          <Text className="text-foreground text-xl font-bold ml-2">สรุป</Text>
+        </View>
+
         <PeriodSelector
           period={currentPeriod}
           onChange={setCurrentPeriod}

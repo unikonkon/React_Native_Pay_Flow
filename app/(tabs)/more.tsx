@@ -1,3 +1,4 @@
+import { MiawMini } from '@/assets/svg';
 import { useEffect, useState } from 'react';
 import { View, Text, Pressable, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,10 +27,10 @@ function SettingsRow({
       onPress={onPress}
       className="flex-row items-center px-4 py-4 bg-card border-b border-border"
     >
-      <Ionicons name={icon} size={22} color="#666" />
+      <Ionicons name={icon} size={22} color="#6B5F52" />
       <Text className="flex-1 text-foreground ml-3">{label}</Text>
       {value && <Text className="text-muted-foreground mr-1">{value}</Text>}
-      {onPress && <Ionicons name="chevron-forward" size={18} color="#ccc" />}
+      {onPress && <Ionicons name="chevron-forward" size={18} color="#A39685" />}
     </Pressable>
   );
 }
@@ -107,8 +108,9 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <View className="px-4 pt-4 pb-2">
-        <Text className="text-foreground text-2xl font-bold">ตั้งค่า</Text>
+      <View className="px-4 pt-4 pb-2 flex-row items-center">
+        <MiawMini size={28} />
+        <Text className="text-foreground text-2xl font-bold ml-2">ตั้งค่า</Text>
       </View>
 
       <ScrollView>
@@ -146,7 +148,7 @@ export default function SettingsScreen() {
 
         <SectionHeader title="เกี่ยวกับ" />
         <SettingsRow icon="information-circle-outline" label="เวอร์ชัน" value={appVersion} />
-        <SettingsRow icon="logo-github" label="CeasFlow" value="Expense Tracker" />
+        <SettingsRow icon="logo-github" label="MiawMoney" value="มิวมันนี่" />
       </ScrollView>
 
       <AddWalletModal

@@ -5,15 +5,15 @@ import { useThemeStore } from '@/lib/stores/theme-store';
 import * as Haptics from 'expo-haptics';
 
 const THEMES = [
-  { key: 'light', name: 'สว่าง', bg: '#ffffff', primary: '#171717', card: '#ffffff' },
-  { key: 'dark', name: 'มืด', bg: '#0a0a0a', primary: '#fafafa', card: '#171717' },
-  { key: 'zinc', name: 'ซิงค์', bg: '#fafafa', primary: '#18181b', card: '#ffffff' },
-  { key: 'stone', name: 'สโตน', bg: '#fafaf9', primary: '#1c1917', card: '#ffffff' },
-  { key: 'cyan', name: 'ฟ้า', bg: '#ecfeff', primary: '#0891b2', card: '#ffffff' },
-  { key: 'sky', name: 'ท้องฟ้า', bg: '#f0f9ff', primary: '#0284c7', card: '#ffffff' },
-  { key: 'teal', name: 'เขียวน้ำทะเล', bg: '#f0fdfa', primary: '#0d9488', card: '#ffffff' },
-  { key: 'gray', name: 'เทา', bg: '#f9fafb', primary: '#111827', card: '#ffffff' },
-  { key: 'neutral', name: 'ธรรมชาติ', bg: '#fafafa', primary: '#0a0a0a', card: '#ffffff' },
+  { key: 'warm', name: 'อบอุ่น', bg: '#FBF7F0', primary: '#E87A3D', accent: '#F5D9B8' },
+  { key: 'warm-dark', name: 'อบอุ่น (มืด)', bg: '#1F1913', primary: '#E87A3D', accent: '#3A2E22' },
+  { key: 'sakura', name: 'ซากุระ', bg: '#FFF5F5', primary: '#E87A3D', accent: '#FFE0E8' },
+  { key: 'sakura-dark', name: 'ซากุระ (มืด)', bg: '#1F1517', primary: '#E87A3D', accent: '#3A2530' },
+  { key: 'ocean', name: 'มหาสมุทร', bg: '#F0F7FB', primary: '#E87A3D', accent: '#D0E8F5' },
+  { key: 'ocean-dark', name: 'มหาสมุทร (มืด)', bg: '#131A1F', primary: '#E87A3D', accent: '#1E2E38' },
+  { key: 'forest', name: 'ป่าไม้', bg: '#F2F7F0', primary: '#E87A3D', accent: '#D0E8C8' },
+  { key: 'forest-dark', name: 'ป่าไม้ (มืด)', bg: '#151F13', primary: '#E87A3D', accent: '#253520' },
+  { key: 'midnight', name: 'เที่ยงคืน', bg: '#14141A', primary: '#E87A3D', accent: '#252530' },
 ];
 
 export default function ThemeScreen() {
@@ -34,7 +34,7 @@ export default function ThemeScreen() {
             return (
               <Pressable key={theme.key} onPress={() => handleSelect(theme.key)} className={`w-[31%] rounded-2xl overflow-hidden border-2 ${isSelected ? 'border-primary' : 'border-border'}`}>
                 <View style={{ backgroundColor: theme.bg }} className="p-3 h-24 justify-between">
-                  <View style={{ backgroundColor: theme.card }} className="rounded-lg p-2 flex-1 justify-center border border-border">
+                  <View style={{ backgroundColor: theme.accent, opacity: 0.5 }} className="rounded-lg p-2 flex-1 justify-center border border-border">
                     <View className="flex-row items-center">
                       <View style={{ backgroundColor: theme.primary }} className="w-4 h-4 rounded-full mr-2" />
                       <View style={{ backgroundColor: theme.primary, opacity: 0.3 }} className="h-2 flex-1 rounded" />

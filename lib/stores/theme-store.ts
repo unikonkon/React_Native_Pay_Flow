@@ -11,12 +11,12 @@ interface ThemeStore {
 }
 
 export const useThemeStore = create<ThemeStore>((set) => ({
-  currentTheme: 'light',
+  currentTheme: 'warm',
   isLoaded: false,
 
   loadTheme: async () => {
     const saved = await AsyncStorage.getItem(THEME_KEY);
-    set({ currentTheme: saved ?? 'light', isLoaded: true });
+    set({ currentTheme: saved ?? 'warm', isLoaded: true });
   },
 
   setTheme: async (theme) => {

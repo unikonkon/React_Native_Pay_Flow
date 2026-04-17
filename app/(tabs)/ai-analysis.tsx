@@ -1,3 +1,4 @@
+import { MiawHero, MiawThinking, GoldCracks } from '@/assets/svg';
 import { AiResultView } from '@/components/ai/AiResultView';
 import { analyzeFinances, getApiKey, getThaiMonthName } from '@/lib/api/ai';
 import { useAiHistoryStore } from '@/lib/stores/ai-history-store';
@@ -60,10 +61,11 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
     <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 60 }}>
       {/* Hero */}
       <View className="items-center mt-4 mb-6">
-        <View className="w-20 h-20 rounded-full bg-primary/15 items-center justify-center mb-4">
-          <Ionicons name="diamond" size={40} color="#0891b2" />
+        <View className="mb-4">
+          <MiawHero size={140} />
         </View>
-        <Text className="text-foreground text-2xl font-bold mb-1">CeasFlow Premium</Text>
+        <GoldCracks width={200} height={20} opacity={0.15} direction="horizontal" />
+        <Text className="text-foreground text-2xl font-bold mb-1 mt-2">MiawMoney Premium</Text>
         <Text className="text-muted-foreground text-sm text-center px-4">
           ปลดล็อกฟีเจอร์ขั้นสูงเพื่อจัดการการเงินอย่างมืออาชีพ
         </Text>
@@ -100,7 +102,7 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
           onPress={() => setSelectedPlan('yearly')}
           className={`flex-1 rounded-2xl p-4 border-2 relative ${selectedPlan === 'yearly' ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}
         >
-          <View className="absolute -top-2.5 right-3 bg-green-500 px-2 py-0.5 rounded-full">
+          <View className="absolute -top-2.5 right-3 bg-gold px-2 py-0.5 rounded-full">
             <Text className="text-white text-[10px] font-bold">ประหยัด 40%</Text>
           </View>
           <Text className={`font-semibold text-sm mb-1 ${selectedPlan === 'yearly' ? 'text-primary' : 'text-foreground'}`}>
@@ -147,7 +149,7 @@ function FeatureRow({ icon, label, desc, last }: {
   return (
     <View className={`flex-row items-start ${last ? '' : 'mb-4'}`}>
       <View className="w-9 h-9 rounded-full bg-primary/10 items-center justify-center mt-0.5">
-        <Ionicons name={icon} size={18} color="#0891b2" />
+        <Ionicons name={icon} size={18} color="#E87A3D" />
       </View>
       <View className="flex-1 ml-3">
         <Text className="text-foreground font-semibold text-sm">{label}</Text>
@@ -196,11 +198,9 @@ function AiLoadingView() {
       exiting={FadeOut.duration(200)}
       className="bg-card rounded-2xl p-6 border border-border mb-6 items-center"
     >
-      <Animated.View style={glowStyle} className="mb-4">
-        <View className="w-16 h-16 rounded-full bg-primary/15 items-center justify-center">
-          <Ionicons name={step.icon} size={32} color="#0891b2" />
-        </View>
-      </Animated.View>
+      <View className="mb-4">
+        <MiawThinking size={100} />
+      </View>
       <Animated.Text key={stepIndex} entering={FadeIn.duration(400)} className="text-foreground font-semibold text-base mb-1">
         {step.text}
       </Animated.Text>
@@ -343,7 +343,7 @@ function HistoryModal({
                   onLongPress={() => onDelete(h)}
                   className="flex-row items-center px-4 py-3 bg-card border-b border-border rounded-xl mb-2"
                 >
-                  <Ionicons name="document-text-outline" size={20} color="#0891b2" />
+                  <Ionicons name="document-text-outline" size={20} color="#E87A3D" />
                   <View className="flex-1 ml-3">
                     <Text className="text-foreground font-medium">
                       {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
@@ -474,7 +474,7 @@ function DataTransferTab() {
           {/* Data counts */}
           <View className="bg-card rounded-2xl p-4 mb-4 border border-border">
             <View className="flex-row items-center mb-3">
-              <Ionicons name={format === 'txt' ? 'document-text-outline' : 'grid-outline'} size={20} color="#0891b2" />
+              <Ionicons name={format === 'txt' ? 'document-text-outline' : 'grid-outline'} size={20} color="#E87A3D" />
               <Text className="text-foreground font-semibold text-base ml-2">ข้อมูลที่จะส่งออก</Text>
             </View>
             {counts ? (
@@ -540,7 +540,7 @@ function DataTransferTab() {
           {/* Import description */}
           <View className="bg-card rounded-2xl p-4 mb-4 border border-border">
             <View className="flex-row items-center mb-3">
-              <Ionicons name="folder-open-outline" size={20} color="#0891b2" />
+              <Ionicons name="folder-open-outline" size={20} color="#E87A3D" />
               <Text className="text-foreground font-semibold text-base ml-2">นำเข้าจากไฟล์สำรอง</Text>
             </View>
             <Text className="text-muted-foreground text-sm">
@@ -615,7 +615,7 @@ function DataTransferTab() {
       {loading && (
         <View pointerEvents="auto" className="absolute inset-0 items-center justify-center bg-black/40" style={{ zIndex: 50 }}>
           <View className="bg-card rounded-2xl px-6 py-5 items-center border border-border min-w-[220px]">
-            <ActivityIndicator size="large" color="#0891b2" />
+            <ActivityIndicator size="large" color="#E87A3D" />
             <Text className="text-foreground text-base font-semibold mt-3">
               {dataTab === 'export' ? 'กำลังส่งออกข้อมูล...' : 'กำลังนำเข้าข้อมูล...'}
             </Text>
@@ -808,7 +808,7 @@ export default function PremiumScreen() {
       {/* Header */}
       <View className="px-4 pt-4 pb-2 flex-row items-center justify-between">
         <View className="flex-row items-center">
-          <Ionicons name="diamond" size={20} color="#0891b2" />
+          <Ionicons name="diamond" size={20} color="#E87A3D" />
           <Text className="text-foreground text-2xl font-bold ml-2">Premium</Text>
         </View>
       </View>
@@ -965,7 +965,7 @@ export default function PremiumScreen() {
                   {histories.length > 5 && (
                     <Pressable onPress={() => setHistoryModalVisible(true)} className="flex-row items-center">
                       <Text className="text-primary text-sm font-semibold mr-1">ดูทั้งหมด ({histories.length})</Text>
-                      <Ionicons name="chevron-forward" size={14} color="#0891b2" />
+                      <Ionicons name="chevron-forward" size={14} color="#E87A3D" />
                     </Pressable>
                   )}
                 </View>
@@ -976,7 +976,7 @@ export default function PremiumScreen() {
                     onLongPress={() => handleDeleteHistory(h)}
                     className="flex-row items-center px-4 py-3 bg-card border-b border-border rounded-xl mb-2"
                   >
-                    <Ionicons name="document-text-outline" size={20} color="#0891b2" />
+                    <Ionicons name="document-text-outline" size={20} color="#E87A3D" />
                     <View className="flex-1 ml-3">
                       <Text className="text-foreground font-medium">
                         {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}

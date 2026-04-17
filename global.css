@@ -2,173 +2,173 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Light theme (default) */
+/* MiawMoney — อบอุ่น (default) */
 :root {
-  --background: #ffffff;
-  --foreground: #0a0a0a;
-  --card: #ffffff;
-  --card-foreground: #0a0a0a;
-  --primary: #171717;
-  --primary-foreground: #fafafa;
-  --secondary: #f5f5f5;
-  --secondary-foreground: #171717;
-  --muted: #f5f5f5;
-  --muted-foreground: #737373;
-  --accent: #f5f5f5;
-  --accent-foreground: #171717;
-  --destructive: #ef4444;
-  --border: #e5e5e5;
-  --ring: #171717;
+  --background: #FBF7F0;
+  --foreground: #2B2118;
+  --card: #FFFFFF;
+  --card-foreground: #2B2118;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F8F2E7;
+  --secondary-foreground: #2B2118;
+  --muted: #F8F2E7;
+  --muted-foreground: #A39685;
+  --accent: #F5D9B8;
+  --accent-foreground: #2B2118;
+  --destructive: #E57373;
+  --border: #EDE4D3;
+  --ring: #E87A3D;
 }
 
-/* Dark theme */
-.dark {
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --card: #171717;
-  --card-foreground: #fafafa;
-  --primary: #fafafa;
-  --primary-foreground: #171717;
-  --secondary: #262626;
-  --secondary-foreground: #fafafa;
-  --muted: #262626;
-  --muted-foreground: #a3a3a3;
-  --accent: #262626;
-  --accent-foreground: #fafafa;
-  --destructive: #dc2626;
-  --border: #262626;
-  --ring: #d4d4d4;
+/* MiawMoney — อบอุ่น (มืด) */
+.warm-dark {
+  --background: #1F1913;
+  --foreground: #F5EDE0;
+  --card: #2B2218;
+  --card-foreground: #F5EDE0;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #3A2E22;
+  --secondary-foreground: #F5EDE0;
+  --muted: #3A2E22;
+  --muted-foreground: #8A7E72;
+  --accent: #4A3D30;
+  --accent-foreground: #F5EDE0;
+  --destructive: #E57373;
+  --border: #4A3D30;
+  --ring: #E87A3D;
 }
 
-/* Zinc theme */
-.zinc {
-  --background: #fafafa;
-  --foreground: #18181b;
-  --card: #ffffff;
-  --card-foreground: #18181b;
-  --primary: #18181b;
-  --primary-foreground: #fafafa;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
-  --accent-foreground: #18181b;
-  --destructive: #ef4444;
-  --border: #e4e4e7;
-  --ring: #18181b;
+/* MiawMoney — ซากุระ */
+.sakura {
+  --background: #FFF5F5;
+  --foreground: #2B2118;
+  --card: #FFFFFF;
+  --card-foreground: #2B2118;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FFF0F0;
+  --secondary-foreground: #2B2118;
+  --muted: #FFF0F0;
+  --muted-foreground: #A39685;
+  --accent: #FFE0E8;
+  --accent-foreground: #2B2118;
+  --destructive: #E57373;
+  --border: #F5D5D5;
+  --ring: #E87A3D;
 }
 
-/* Stone theme */
-.stone {
-  --background: #fafaf9;
-  --foreground: #1c1917;
-  --card: #ffffff;
-  --card-foreground: #1c1917;
-  --primary: #1c1917;
-  --primary-foreground: #fafaf9;
-  --secondary: #f5f5f4;
-  --secondary-foreground: #1c1917;
-  --muted: #f5f5f4;
-  --muted-foreground: #78716c;
-  --accent: #f5f5f4;
-  --accent-foreground: #1c1917;
-  --destructive: #ef4444;
-  --border: #e7e5e4;
-  --ring: #1c1917;
+/* MiawMoney — ซากุระ (มืด) */
+.sakura-dark {
+  --background: #1F1517;
+  --foreground: #F5EDE0;
+  --card: #2B1E22;
+  --card-foreground: #F5EDE0;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #3A2530;
+  --secondary-foreground: #F5EDE0;
+  --muted: #3A2530;
+  --muted-foreground: #8A7E72;
+  --accent: #4A3338;
+  --accent-foreground: #F5EDE0;
+  --destructive: #E57373;
+  --border: #4A3338;
+  --ring: #E87A3D;
 }
 
-/* Cyan theme */
-.cyan {
-  --background: #ecfeff;
-  --foreground: #083344;
-  --card: #ffffff;
-  --card-foreground: #083344;
-  --primary: #0891b2;
-  --primary-foreground: #ffffff;
-  --secondary: #cffafe;
-  --secondary-foreground: #083344;
-  --muted: #cffafe;
-  --muted-foreground: #155e75;
-  --accent: #a5f3fc;
-  --accent-foreground: #083344;
-  --destructive: #ef4444;
-  --border: #a5f3fc;
-  --ring: #0891b2;
+/* MiawMoney — มหาสมุทร */
+.ocean {
+  --background: #F0F7FB;
+  --foreground: #2B2118;
+  --card: #FFFFFF;
+  --card-foreground: #2B2118;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #E8F2F8;
+  --secondary-foreground: #2B2118;
+  --muted: #E8F2F8;
+  --muted-foreground: #A39685;
+  --accent: #D0E8F5;
+  --accent-foreground: #2B2118;
+  --destructive: #E57373;
+  --border: #D3E4ED;
+  --ring: #E87A3D;
 }
 
-/* Sky theme */
-.sky {
-  --background: #f0f9ff;
-  --foreground: #082f49;
-  --card: #ffffff;
-  --card-foreground: #082f49;
-  --primary: #0284c7;
-  --primary-foreground: #ffffff;
-  --secondary: #e0f2fe;
-  --secondary-foreground: #082f49;
-  --muted: #e0f2fe;
-  --muted-foreground: #0369a1;
-  --accent: #bae6fd;
-  --accent-foreground: #082f49;
-  --destructive: #ef4444;
-  --border: #bae6fd;
-  --ring: #0284c7;
+/* MiawMoney — มหาสมุทร (มืด) */
+.ocean-dark {
+  --background: #131A1F;
+  --foreground: #F5EDE0;
+  --card: #182228;
+  --card-foreground: #F5EDE0;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1E2E38;
+  --secondary-foreground: #F5EDE0;
+  --muted: #1E2E38;
+  --muted-foreground: #8A7E72;
+  --accent: #304A50;
+  --accent-foreground: #F5EDE0;
+  --destructive: #E57373;
+  --border: #304A50;
+  --ring: #E87A3D;
 }
 
-/* Teal theme */
-.teal {
-  --background: #f0fdfa;
-  --foreground: #042f2e;
-  --card: #ffffff;
-  --card-foreground: #042f2e;
-  --primary: #0d9488;
-  --primary-foreground: #ffffff;
-  --secondary: #ccfbf1;
-  --secondary-foreground: #042f2e;
-  --muted: #ccfbf1;
-  --muted-foreground: #115e59;
-  --accent: #99f6e4;
-  --accent-foreground: #042f2e;
-  --destructive: #ef4444;
-  --border: #99f6e4;
-  --ring: #0d9488;
+/* MiawMoney — ป่าไม้ */
+.forest {
+  --background: #F2F7F0;
+  --foreground: #2B2118;
+  --card: #FFFFFF;
+  --card-foreground: #2B2118;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #E8F2E5;
+  --secondary-foreground: #2B2118;
+  --muted: #E8F2E5;
+  --muted-foreground: #A39685;
+  --accent: #D0E8C8;
+  --accent-foreground: #2B2118;
+  --destructive: #E57373;
+  --border: #D3E4CF;
+  --ring: #E87A3D;
 }
 
-/* Gray theme */
-.gray {
-  --background: #f9fafb;
-  --foreground: #111827;
-  --card: #ffffff;
-  --card-foreground: #111827;
-  --primary: #111827;
-  --primary-foreground: #f9fafb;
-  --secondary: #f3f4f6;
-  --secondary-foreground: #111827;
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
-  --accent: #f3f4f6;
-  --accent-foreground: #111827;
-  --destructive: #ef4444;
-  --border: #e5e7eb;
-  --ring: #111827;
+/* MiawMoney — ป่าไม้ (มืด) */
+.forest-dark {
+  --background: #151F13;
+  --foreground: #F5EDE0;
+  --card: #1E2B1A;
+  --card-foreground: #F5EDE0;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #253520;
+  --secondary-foreground: #F5EDE0;
+  --muted: #253520;
+  --muted-foreground: #8A7E72;
+  --accent: #334A30;
+  --accent-foreground: #F5EDE0;
+  --destructive: #E57373;
+  --border: #334A30;
+  --ring: #E87A3D;
 }
 
-/* Neutral theme */
-.neutral {
-  --background: #fafafa;
-  --foreground: #0a0a0a;
-  --card: #ffffff;
-  --card-foreground: #0a0a0a;
-  --primary: #0a0a0a;
-  --primary-foreground: #fafafa;
-  --secondary: #f5f5f5;
-  --secondary-foreground: #0a0a0a;
-  --muted: #f5f5f5;
-  --muted-foreground: #737373;
-  --accent: #f5f5f5;
-  --accent-foreground: #0a0a0a;
-  --destructive: #ef4444;
-  --border: #e5e5e5;
-  --ring: #0a0a0a;
+/* MiawMoney — เที่ยงคืน (OLED) */
+.midnight {
+  --background: #14141A;
+  --foreground: #F5EDE0;
+  --card: #1E1E28;
+  --card-foreground: #F5EDE0;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #252530;
+  --secondary-foreground: #F5EDE0;
+  --muted: #252530;
+  --muted-foreground: #8A7E72;
+  --accent: #2E2E3A;
+  --accent-foreground: #F5EDE0;
+  --destructive: #E57373;
+  --border: #2E2E3A;
+  --ring: #E87A3D;
 }

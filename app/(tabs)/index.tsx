@@ -1,3 +1,4 @@
+import { MiawMini } from '@/assets/svg';
 import { FrequentTransactions } from '@/components/transaction/FrequentTransactions';
 import { TransactionList } from '@/components/transaction/TransactionList';
 import { AlertBanner } from '@/components/ui/AlertBanner';
@@ -133,7 +134,10 @@ export default function TransactionsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <View className="px-4 pt-2 pb-3 bg-card border-b border-border">
-
+        <View className="flex-row items-center mb-2">
+          <MiawMini size={28} />
+          <Text className="text-foreground text-xl font-bold ml-2">รายการ</Text>
+        </View>
 
         <View className="flex-row items-center justify-between mb-1">
           <WalletFilter
