@@ -12,8 +12,8 @@ import { useCategoryStore } from '@/lib/stores/category-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { formatCurrency } from '@/lib/utils/format';
 import type { Analysis, Transaction } from '@/types';
-import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { useCallback, useEffect, useRef } from 'react';
 import { Alert, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -182,7 +182,7 @@ export default function TransactionsScreen() {
         onSelect={handleFrequentSelect}
       />
 
-      <View className="flex-1">
+      <View className="">
         <TransactionList
           transactions={transactions}
           onItemPress={handleItemPress}

@@ -1,5 +1,5 @@
-import { HapticTab } from '@/components/layout/HapticTab';
 import { PawPrint } from '@/assets/svg';
+import { HapticTab } from '@/components/layout/HapticTab';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { View } from 'react-native';

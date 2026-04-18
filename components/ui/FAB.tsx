@@ -1,7 +1,7 @@
-import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Pressable, View } from 'react-native';
 
 interface FABProps {
   onPress: () => void;
@@ -16,7 +16,7 @@ export function FAB({ onPress }: FABProps) {
   return (
     <Pressable
       onPress={handlePress}
-      className="absolute bottom-6 right-6"
+      className="absolute bottom-1 right-6"
       style={({ pressed }) => ({ transform: [{ scale: pressed ? 0.92 : 1 }] })}
     >
       <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: -8, zIndex: 1 }}>
