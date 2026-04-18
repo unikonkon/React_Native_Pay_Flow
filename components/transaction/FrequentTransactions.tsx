@@ -19,32 +19,33 @@ export function FrequentTransactions({ analyses, categories, onSelect }: Frequen
   };
 
   return (
-    <View className="px-4 py-3 bg-card border-b border-border">
-      <Text className="text-muted-foreground text-xs font-semibold mb-2">รายการใช้บ่อย</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View className="flex-row gap-2">
+    <View className="py-3">
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground px-4 mb-2.5">รายการใช้บ่อย</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
+        <View className="flex-row" style={{ gap: 16 }}>
           {analyses.map((analysis) => {
             const cat = getCategoryById(analysis.categoryId);
             return (
               <Pressable
                 key={analysis.id}
                 onPress={() => handleSelect(analysis)}
-                className="items-center w-16"
+                className="items-center"
+                style={{ width: 56 }}
               >
                 <View
-                  className="w-11 h-11 rounded-full items-center justify-center mb-1"
+                  className="w-14 h-14 rounded-full items-center justify-center"
                   style={{ backgroundColor: cat?.color ?? '#999' }}
                 >
                   <Ionicons
                     name={(cat?.icon ?? 'help-circle') as keyof typeof Ionicons.glyphMap}
-                    size={20}
+                    size={24}
                     color="white"
                   />
                 </View>
-                <Text className="text-foreground text-xs text-center" numberOfLines={1}>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-foreground text-center mt-1.5" numberOfLines={1}>
                   {cat?.name ?? 'อื่นๆ'}
                 </Text>
-                <Text className="text-muted-foreground text-xs">
+                <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">
                   {formatCurrency(analysis.amount)}
                 </Text>
               </Pressable>

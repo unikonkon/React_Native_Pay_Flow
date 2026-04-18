@@ -14,23 +14,23 @@ export function BarChartView({ labels, incomeData, expenseData }: BarChartViewPr
   if (labels.length === 0) {
     return (
       <View className="items-center py-10">
-        <Text className="text-muted-foreground">ไม่มีข้อมูล</Text>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-muted-foreground">ไม่มีข้อมูล</Text>
       </View>
     );
   }
 
   return (
     <View className="mb-4">
-      <Text className="text-foreground font-bold text-base px-4 mb-2">รายรับ-รายจ่ายรายเดือน</Text>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground px-4 mb-2">รายรับ-รายจ่ายรายเดือน</Text>
 
       <View className="flex-row justify-center gap-4 mb-2 px-4">
         <View className="flex-row items-center">
           <View className="w-3 h-3 rounded-full bg-income mr-1" />
-          <Text className="text-muted-foreground text-xs">รายรับ</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">รายรับ</Text>
         </View>
         <View className="flex-row items-center">
           <View className="w-3 h-3 rounded-full bg-expense mr-1" />
-          <Text className="text-muted-foreground text-xs">รายจ่าย</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">รายจ่าย</Text>
         </View>
       </View>
 

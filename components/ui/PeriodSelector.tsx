@@ -112,13 +112,13 @@ export function PeriodSelector({ period, onChange, className }: Props) {
           disabled={!canShift}
           className="p-2"
         >
-          <Ionicons name="chevron-back" size={24} color={canShift ? '#666' : '#A39685'} />
+          <Ionicons name="chevron-back" size={24} color={canShift ? '#6B5F52' : '#A39685'} />
         </Pressable>
         <Pressable
           onPress={handleOpen}
           className="flex-row items-center px-3 py-1.5 rounded-xl bg-secondary/60 flex-shrink"
         >
-          <Text className="text-foreground font-bold text-lg" numberOfLines={1}>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 17 }} className="text-foreground" numberOfLines={1}>
             {formatPeriodLabel(period)}
           </Text>
           <Ionicons name="chevron-down" size={18} color="#6B5F52" style={{ marginLeft: 4 }} />
@@ -128,7 +128,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
           disabled={!canShift}
           className="p-2"
         >
-          <Ionicons name="chevron-forward" size={24} color={canShift ? '#666' : '#A39685'} />
+          <Ionicons name="chevron-forward" size={24} color={canShift ? '#6B5F52' : '#A39685'} />
         </Pressable>
       </View>
 
@@ -142,21 +142,22 @@ export function PeriodSelector({ period, onChange, className }: Props) {
             className="w-11/12 max-w-md bg-card rounded-2xl p-4 border border-border"
           >
             <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-foreground font-bold text-lg">เลือกช่วงเวลา</Text>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }} className="text-foreground">เลือกช่วงเวลา</Text>
               <Pressable onPress={() => setOpen(false)} className="p-1">
                 <Ionicons name="close" size={22} color="#6B5F52" />
               </Pressable>
             </View>
 
-            <View className="flex-row bg-secondary rounded-2xl p-1 mb-4">
+            <View className="flex-row bg-secondary rounded-full p-1 mb-4">
               {(Object.keys(TAB_LABEL) as TabKey[]).map((t) => (
                 <Pressable
                   key={t}
                   onPress={() => { Haptics.selectionAsync(); setTab(t); }}
-                  className={`flex-1 py-2 rounded-xl items-center ${tab === t ? 'bg-primary' : ''}`}
+                  className="flex-1 py-2 rounded-full items-center"
+                  style={{ backgroundColor: tab === t ? '#E87A3D' : 'transparent' }}
                 >
                   <Text
-                    className={`text-[11px] font-semibold ${tab === t ? 'text-primary-foreground' : 'text-foreground'}`}
+                    style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, color: tab === t ? '#fff' : '#2B2118' }}
                   >
                     {TAB_LABEL[t]}
                   </Text>
@@ -177,14 +178,14 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                           className={`px-2 py-3 rounded-2xl border items-center ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
                         >
                           <Text
-                            className={`text-sm font-semibold ${selected ? 'text-primary-foreground' : 'text-foreground'}`}
+                            style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: selected ? '#fff' : '#2B2118' }}
                             numberOfLines={1}
                           >
                             {formatPeriodLabel(p)}
                           </Text>
                           {isLatest && (
                             <Text
-                              className={`text-[10px] mt-0.5 ${selected ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}
+                              style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 10, color: selected ? 'rgba(255,255,255,0.8)' : '#A39685', marginTop: 2 }}
                             >
                               เดือนล่าสุด
                             </Text>
@@ -208,7 +209,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                       className={`px-3 py-3 rounded-2xl mb-2 border ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
                     >
                       <Text
-                        className={`text-sm font-semibold ${selected ? 'text-primary-foreground' : 'text-foreground'}`}
+                        style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: selected ? '#fff' : '#2B2118' }}
                       >
                         {formatPeriodLabel(p)}
                         {i === 0 ? '  (สัปดาห์นี้)' : ''}
@@ -230,7 +231,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                       className={`px-4 py-3 rounded-2xl mb-2 border flex-row items-center justify-between ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
                     >
                       <Text
-                        className={`text-sm font-semibold ${selected ? 'text-primary-foreground' : 'text-foreground'}`}
+                        style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: selected ? '#fff' : '#2B2118' }}
                       >
                         {opt.label}
                       </Text>
@@ -249,7 +250,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                 {showStartPicker ? (
                   <View className="bg-white rounded-2xl mb-2 overflow-hidden">
                     <View className="px-4 pt-2">
-                      <Text className="text-gray-500 text-xs font-semibold">วันเริ่มต้น</Text>
+                      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-muted-foreground">วันเริ่มต้น</Text>
                     </View>
                     <DateTimePicker
                       value={customStart}
@@ -265,7 +266,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                     />
                     {Platform.OS === 'ios' && (
                       <Pressable onPress={() => setShowStartPicker(false)} className="py-2 items-center">
-                        <Text className="text-primary font-semibold text-sm">ตกลง</Text>
+                        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-primary">ตกลง</Text>
                       </Pressable>
                     )}
                   </View>
@@ -274,8 +275,8 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                     onPress={() => { setShowStartPicker(true); setShowEndPicker(false); }}
                     className="px-4 py-3 rounded-2xl mb-2 border border-border bg-background flex-row items-center justify-between"
                   >
-                    <Text className="text-muted-foreground text-sm">วันเริ่มต้น</Text>
-                    <Text className="text-foreground font-semibold text-sm">{formatThaiDate(customStart)}</Text>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-muted-foreground">วันเริ่มต้น</Text>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground">{formatThaiDate(customStart)}</Text>
                   </Pressable>
                 )}
 
@@ -283,7 +284,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                 {showEndPicker ? (
                   <View className="bg-white rounded-2xl mb-2 overflow-hidden">
                     <View className="px-4 pt-2">
-                      <Text className="text-gray-500 text-xs font-semibold">วันสิ้นสุด</Text>
+                      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-muted-foreground">วันสิ้นสุด</Text>
                     </View>
                     <DateTimePicker
                       value={customEnd}
@@ -299,7 +300,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                     />
                     {Platform.OS === 'ios' && (
                       <Pressable onPress={() => setShowEndPicker(false)} className="py-2 items-center">
-                        <Text className="text-primary font-semibold text-sm">ตกลง</Text>
+                        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-primary">ตกลง</Text>
                       </Pressable>
                     )}
                   </View>
@@ -308,8 +309,8 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                     onPress={() => { setShowEndPicker(true); setShowStartPicker(false); }}
                     className="px-4 py-3 rounded-2xl mb-2 border border-border bg-background flex-row items-center justify-between"
                   >
-                    <Text className="text-muted-foreground text-sm">วันสิ้นสุด</Text>
-                    <Text className="text-foreground font-semibold text-sm">{formatThaiDate(customEnd)}</Text>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-muted-foreground">วันสิ้นสุด</Text>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground">{formatThaiDate(customEnd)}</Text>
                   </Pressable>
                 )}
 
@@ -318,7 +319,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                   onPress={handleApplyCustom}
                   className="bg-primary py-3 rounded-full items-center mt-2"
                 >
-                  <Text className="text-primary-foreground font-bold text-sm">ใช้ช่วงเวลานี้</Text>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, color: '#fff' }}>ใช้ช่วงเวลานี้</Text>
                 </Pressable>
               </View>
             )}

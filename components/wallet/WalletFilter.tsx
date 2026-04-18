@@ -30,9 +30,9 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
         onPress={() => setOpen(true)}
         className="flex-row items-center px-3 py-2 bg-secondary rounded-xl self-start"
       >
-        <Ionicons name="wallet-outline" size={16} color="#6B5F52" />
-        <Text className="text-foreground text-sm ml-1">{selectedWalletName}</Text>
-        <Ionicons name="chevron-down" size={14} color="#6B5F52" style={{ marginLeft: 4 }} />
+        <Ionicons name="wallet-outline" size={15} color="#6B5F52" />
+        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground ml-1">{selectedWalletName}</Text>
+        <Ionicons name="chevron-down" size={12} color="#6B5F52" style={{ marginLeft: 4 }} />
       </Pressable>
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
@@ -45,7 +45,7 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
             className="w-11/12 max-w-md bg-card rounded-2xl p-4 border border-border"
           >
             <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-foreground font-bold text-lg">เลือกกระเป๋า</Text>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }} className="text-foreground">เลือกกระเป๋า</Text>
               <Pressable onPress={() => setOpen(false)} className="p-1">
                 <Ionicons name="close" size={22} color="#6B5F52" />
               </Pressable>
@@ -60,7 +60,7 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
                   <View className="w-7 h-7 rounded-full items-center justify-center mr-2 bg-secondary">
                     <Ionicons name="albums-outline" size={14} color="#6B5F52" />
                   </View>
-                  <Text className={`text-sm font-semibold ${!selectedWalletId ? 'text-primary-foreground' : 'text-foreground'}`}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: !selectedWalletId ? '#fff' : '#2B2118' }}>
                     ทุกกระเป๋า
                   </Text>
                 </View>
@@ -83,7 +83,7 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
                         <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={14} color="white" />
                       </View>
                       <Text
-                        className={`text-sm font-semibold ${selected ? 'text-primary-foreground' : 'text-foreground'}`}
+                        style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: selected ? '#fff' : '#2B2118' }}
                         numberOfLines={1}
                       >
                         {w.name}
@@ -101,7 +101,7 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
                 <View className="w-7 h-7 rounded-full items-center justify-center mr-2 bg-primary/10">
                   <Ionicons name="add" size={16} color="#E87A3D" />
                 </View>
-                <Text className="text-primary font-semibold text-sm">เพิ่มกระเป๋า</Text>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-primary">เพิ่มกระเป๋า</Text>
               </Pressable>
             </ScrollView>
           </Pressable>

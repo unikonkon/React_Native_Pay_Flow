@@ -45,21 +45,21 @@ export function TransactionItem({ item, onPress, onLongPress }: TransactionItemP
       </View>
 
       <View className="flex-1">
-        <Text className="text-foreground font-medium text-base">
+        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 17 }} className="text-foreground">
           {item.category?.name ?? 'ไม่ระบุ'}
         </Text>
         {item.note ? (
-          <Text className="text-muted-foreground text-xs mt-0.5" numberOfLines={1}>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground mt-0.5" numberOfLines={1}>
             {item.note}
           </Text>
         ) : null}
       </View>
 
       <View className="items-end">
-        <Text className={`font-bold text-base ${isIncome ? 'text-income' : 'text-expense'}`}>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 17, fontVariant: ['tabular-nums'], letterSpacing: -0.2 }} className={isIncome ? 'text-income' : 'text-expense'}>
           {isIncome ? '+' : '-'}{formatCurrency(item.amount)}
         </Text>
-        <Text className="text-muted-foreground text-xs">{formatTime(item.createdAt)}</Text>
+        <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 12, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">{formatTime(item.createdAt)}</Text>
       </View>
     </Pressable>
   );

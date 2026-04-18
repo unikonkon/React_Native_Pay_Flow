@@ -27,7 +27,7 @@ export default function ThemeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
       <ScrollView contentContainerStyle={{ padding: 16 }}>
-        <Text className="text-muted-foreground text-sm mb-4">เลือกธีมสำหรับแอป</Text>
+        <Text className="text-muted-foreground text-sm mb-4" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }}>เลือกธีมสำหรับแอป</Text>
         <View className="flex-row flex-wrap gap-3">
           {THEMES.map(theme => {
             const isSelected = currentTheme === theme.key;
@@ -43,7 +43,7 @@ export default function ThemeScreen() {
                 </View>
                 <View className={`py-2 items-center ${isSelected ? 'bg-primary' : 'bg-card'}`}>
                   {isSelected && <Ionicons name="checkmark-circle" size={16} color="white" style={{ position: 'absolute', top: -8, right: 4 }} />}
-                  <Text className={`text-xs font-semibold ${isSelected ? 'text-primary-foreground' : 'text-foreground'}`}>{theme.name}</Text>
+                  <Text className={`text-xs ${isSelected ? 'text-primary-foreground' : 'text-foreground'}`} style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }}>{theme.name}</Text>
                 </View>
               </Pressable>
             );

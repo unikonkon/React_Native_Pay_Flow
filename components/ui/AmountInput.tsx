@@ -7,9 +7,10 @@ interface AmountInputProps {
 }
 
 export function AmountInput({ value, onChangeText, type }: AmountInputProps) {
+  const color = type === 'income' ? '#5CB88A' : '#E57373';
   return (
     <View className="flex-row items-center border-b-2 border-border pb-2 mb-4">
-      <Text className={`text-3xl font-bold ${type === 'income' ? 'text-income' : 'text-expense'}`}>
+      <Text style={{ fontFamily: 'Inter_900Black', fontSize: 30, fontVariant: ['tabular-nums'], color }}>
         ฿
       </Text>
       <TextInput
@@ -24,7 +25,7 @@ export function AmountInput({ value, onChangeText, type }: AmountInputProps) {
         placeholder="0"
         placeholderTextColor="#999"
         keyboardType="decimal-pad"
-        className={`flex-1 text-3xl font-bold ml-1 ${type === 'income' ? 'text-income' : 'text-expense'}`}
+        style={{ flex: 1, fontFamily: 'Inter_900Black', fontSize: 30, fontVariant: ['tabular-nums'], color, marginLeft: 4 }}
       />
     </View>
   );

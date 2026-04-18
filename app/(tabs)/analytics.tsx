@@ -80,28 +80,41 @@ export default function AnalyticsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView>
+        {/* Month header centered like prototype */}
         <PeriodSelector
           period={currentPeriod}
           onChange={setCurrentPeriod}
-          className="px-4 pt-2 pb-1"
+          className="px-4 pt-3 pb-1"
         />
 
-        <WalletFilter
-          selectedWalletId={selectedWalletId}
-          onChange={setSelectedWalletId}
-          className="px-4 pb-3"
-        />
+        <View className="px-4 pb-3">
+          <WalletFilter
+            selectedWalletId={selectedWalletId}
+            onChange={setSelectedWalletId}
+            className=""
+          />
+        </View>
 
         <BalanceCard totalIncome={totalIncome} totalExpense={totalExpense} balance={balance} />
 
-        <View className="flex-row mx-4 mb-4 rounded-xl overflow-hidden border border-border">
+        {/* Pill-style tabs like prototype */}
+        <View className="flex-row mx-4 mb-4 bg-secondary rounded-full" style={{ padding: 4 }}>
           {(['overview', 'category', 'wallets'] as ChartTab[]).map(tab => (
             <Pressable
               key={tab}
               onPress={() => setChartTab(tab)}
-              className={`flex-1 py-2.5 items-center ${chartTab === tab ? 'bg-primary' : 'bg-card'}`}
+              className="flex-1 items-center rounded-full"
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 8,
+                backgroundColor: chartTab === tab ? '#E87A3D' : 'transparent',
+              }}
             >
-              <Text className={`font-semibold text-xs ${chartTab === tab ? 'text-primary-foreground' : 'text-foreground'}`}>
+              <Text style={{
+                fontFamily: 'IBMPlexSansThai_600SemiBold',
+                fontSize: 13,
+                color: chartTab === tab ? '#fff' : '#A39685',
+              }}>
                 {tab === 'overview' ? 'รายรับ/รายจ่าย' : tab === 'category' ? 'รายหมวด' : 'กระเป๋า'}
               </Text>
             </Pressable>
@@ -120,10 +133,11 @@ export default function AnalyticsScreen() {
 
         <Pressable
           onPress={handleExport}
-          className="flex-row items-center justify-center mx-4 my-6 py-3 bg-secondary rounded-xl border border-border"
+          className="flex-row items-center justify-center mx-4 my-6 bg-secondary border border-border"
+          style={{ paddingVertical: 14, borderRadius: 14 }}
         >
-          <Ionicons name="download-outline" size={20} color="#666" />
-          <Text className="text-foreground font-semibold ml-2">ส่งออก Excel</Text>
+          <Ionicons name="download-outline" size={20} color="#6B5F52" />
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground ml-2">ส่งออก Excel</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>

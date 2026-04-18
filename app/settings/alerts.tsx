@@ -52,11 +52,11 @@ export default function AlertsScreen() {
     <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
       <ScrollView>
         <View className="px-4 py-2 bg-background">
-          <Text className="text-muted-foreground text-xs font-semibold uppercase">เป้ารายจ่ายรายเดือน</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-muted-foreground">เป้ารายจ่ายรายเดือน</Text>
         </View>
         <View className="px-4 py-4 bg-card border-b border-border">
           <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-foreground font-medium">เปิดใช้งาน</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">เปิดใช้งาน</Text>
             <Switch value={isMonthlyTargetEnabled} onValueChange={(v) => updateAlertSettings({ isMonthlyTargetEnabled: v })} trackColor={{ true: '#E87A3D' }} />
           </View>
           {isMonthlyTargetEnabled && (
@@ -68,11 +68,11 @@ export default function AlertsScreen() {
         </View>
 
         <View className="px-4 py-2 bg-background mt-4">
-          <Text className="text-muted-foreground text-xs font-semibold uppercase">เป้าตามหมวดหมู่</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-muted-foreground">เป้าตามหมวดหมู่</Text>
         </View>
         <View className="px-4 py-4 bg-card border-b border-border">
           <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-foreground font-medium">เปิดใช้งาน</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">เปิดใช้งาน</Text>
             <Switch value={isCategoryLimitsEnabled} onValueChange={(v) => updateAlertSettings({ isCategoryLimitsEnabled: v })} trackColor={{ true: '#E87A3D' }} />
           </View>
         </View>
@@ -92,14 +92,14 @@ export default function AlertsScreen() {
                   <View className="w-8 h-8 rounded-full items-center justify-center mr-3" style={{ backgroundColor: cat.color }}>
                     <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={16} color="white" />
                   </View>
-                  <Text className="text-foreground flex-1">{cat.name}</Text>
-                  <Text className="text-foreground font-semibold">{formatCurrency(limit.limit)}</Text>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15 }} className="text-foreground flex-1">{cat.name}</Text>
+                  <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 15, fontVariant: ['tabular-nums'] }} className="text-foreground">{formatCurrency(limit.limit)}</Text>
                 </Pressable>
               );
             })}
             <Pressable onPress={handleAddLimit} className="flex-row items-center justify-center px-4 py-3 bg-card border-b border-border">
               <Ionicons name="add-circle-outline" size={20} color="#E87A3D" />
-              <Text className="text-primary font-medium ml-2">เพิ่มเป้าหมวดหมู่</Text>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-primary ml-2">เพิ่มเป้าหมวดหมู่</Text>
             </Pressable>
           </>
         )}

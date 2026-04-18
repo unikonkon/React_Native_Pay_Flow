@@ -24,10 +24,10 @@ export function AlertBanner({ currentExpense, target }: AlertBannerProps) {
         color={isDanger ? '#EF4444' : '#F59E0B'}
       />
       <View className="flex-1 ml-2">
-        <Text className={`font-semibold text-sm ${isDanger ? 'text-expense' : 'text-[#F59E0B]'}`}>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: isDanger ? '#E57373' : '#F59E0B' }}>
           {isDanger ? 'เกินเป้า!' : 'ใกล้ถึงเป้า'}
         </Text>
-        <Text className="text-muted-foreground text-xs">
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">
           ใช้จ่ายแล้ว {formatCurrency(currentExpense)} จากเป้า {formatCurrency(target)} ({percentage}%)
         </Text>
       </View>

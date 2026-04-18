@@ -178,14 +178,14 @@ export default function WalletsScreen() {
           <Ionicons name={item.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
         </View>
         <View className="flex-1">
-          <Text className="text-foreground font-medium text-base">{item.name}</Text>
-          <Text className="text-muted-foreground text-xs">
+          <Text className="text-foreground text-base" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>{item.name}</Text>
+          <Text className="text-muted-foreground text-xs" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }}>
             {WALLET_TYPES.find(t => t.value === item.type)?.label ?? item.type}
           </Text>
         </View>
         {isDefault && (
           <View className="bg-primary/10 px-2 py-1 rounded-xl mr-2">
-            <Text className="text-primary text-xs">ค่าเริ่มต้น</Text>
+            <Text className="text-primary text-xs" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }}>ค่าเริ่มต้น</Text>
           </View>
         )}
         <Pressable
@@ -212,7 +212,7 @@ export default function WalletsScreen() {
         className="flex-row items-center justify-center py-3 mx-32 mb-4 rounded-full border border-destructive"
       >
         <Ionicons name="trash-outline" size={18} color="#E57373" />
-        <Text className="text-destructive font-semibold ml-2">ล้างข้อมูลทั้งหมด</Text>
+        <Text className="text-destructive ml-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>ล้างข้อมูลทั้งหมด</Text>
       </Pressable>
 
       <Pressable
@@ -232,11 +232,11 @@ export default function WalletsScreen() {
         handleIndicatorStyle={{ backgroundColor: '#ccc' }}
       >
         <BottomSheetScrollView contentContainerStyle={{ padding: 20 }}>
-          <Text className="text-foreground text-lg font-bold mb-4 text-center">
+          <Text className="text-foreground text-lg mb-4 text-center" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }}>
             {isEditing ? 'แก้ไขกระเป๋าเงิน' : 'เพิ่มกระเป๋าเงิน'}
           </Text>
 
-          <Text className="text-foreground font-semibold mb-2">ชื่อ</Text>
+          <Text className="text-foreground mb-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>ชื่อ</Text>
           <BottomSheetTextInput
             value={name}
             onChangeText={setName}
@@ -252,7 +252,7 @@ export default function WalletsScreen() {
             }}
           />
 
-          <Text className="text-foreground font-semibold mb-2">ประเภท</Text>
+          <Text className="text-foreground mb-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>ประเภท</Text>
           <View className="flex-row flex-wrap gap-2 mb-4">
             {WALLET_TYPES.map((wt) => (
               <Pressable
@@ -263,14 +263,14 @@ export default function WalletsScreen() {
                 }`}
               >
                 <Ionicons name={wt.icon as keyof typeof Ionicons.glyphMap} size={16} color={selectedType === wt.value ? '#E87A3D' : '#666'} />
-                <Text className={`text-sm ml-1 ${selectedType === wt.value ? 'text-primary font-semibold' : 'text-foreground'}`}>
+                <Text className={`text-sm ml-1 ${selectedType === wt.value ? 'text-primary' : 'text-foreground'}`} style={{ fontFamily: selectedType === wt.value ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13 }}>
                   {wt.label}
                 </Text>
               </Pressable>
             ))}
           </View>
 
-          <Text className="text-foreground font-semibold mb-2">สี</Text>
+          <Text className="text-foreground mb-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>สี</Text>
           <View className="flex-row gap-3 mb-6">
             {WALLET_COLORS.map((color) => (
               <Pressable
@@ -293,7 +293,7 @@ export default function WalletsScreen() {
             className={`py-4 rounded-full items-center bg-primary ${!name.trim() ? 'opacity-50' : ''}`}
             disabled={!name.trim()}
           >
-            <Text className="text-white font-bold text-lg">
+            <Text className="text-white text-lg" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }}>
               {isEditing ? 'อัพเดท' : 'เพิ่ม'}
             </Text>
           </Pressable>
@@ -327,7 +327,7 @@ export default function WalletsScreen() {
                       color="white"
                     />
                   </View>
-                  <Text className="text-foreground font-bold text-lg flex-1" numberOfLines={1}>
+                  <Text className="text-foreground text-lg flex-1" numberOfLines={1} style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }}>
                     {actionWallet.name}
                   </Text>
                 </View>
@@ -338,7 +338,7 @@ export default function WalletsScreen() {
                   className={`flex-row items-center py-3 px-3 rounded-xl mb-2 ${actionWallet.id === defaultWalletId ? 'opacity-50' : 'active:bg-secondary'}`}
                 >
                   <Ionicons name="star-outline" size={20} color="#E87A3D" />
-                  <Text className="text-foreground ml-3 flex-1">
+                  <Text className="text-foreground ml-3 flex-1" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15 }}>
                     {actionWallet.id === defaultWalletId ? 'เป็นค่าเริ่มต้นอยู่แล้ว' : 'ตั้งเป็นค่าเริ่มต้น'}
                   </Text>
                 </Pressable>
@@ -352,7 +352,7 @@ export default function WalletsScreen() {
                   className="flex-row items-center py-3 px-3 rounded-xl mb-2 active:bg-secondary"
                 >
                   <Ionicons name="create-outline" size={20} color="#6B5F52" />
-                  <Text className="text-foreground ml-3 flex-1">แก้ไข</Text>
+                  <Text className="text-foreground ml-3 flex-1" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15 }}>แก้ไข</Text>
                 </Pressable>
 
                 <Pressable
@@ -360,7 +360,7 @@ export default function WalletsScreen() {
                   className="flex-row items-center py-3 px-3 rounded-xl mb-2 active:bg-amber-50"
                 >
                   <Ionicons name="document-text-outline" size={20} color="#F59E0B" />
-                  <Text className="text-foreground ml-3 flex-1">ล้างรายการในกระเป๋า</Text>
+                  <Text className="text-foreground ml-3 flex-1" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15 }}>ล้างรายการในกระเป๋า</Text>
                 </Pressable>
 
                 <Pressable
@@ -369,7 +369,7 @@ export default function WalletsScreen() {
                   className={`flex-row items-center py-3 px-3 rounded-xl ${actionWallet.id === defaultWalletId ? 'opacity-50' : 'active:bg-destructive/10'}`}
                 >
                   <Ionicons name="trash-outline" size={20} color="#E57373" />
-                  <Text className="text-destructive ml-3 flex-1">ลบกระเป๋า</Text>
+                  <Text className="text-destructive ml-3 flex-1" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15 }}>ลบกระเป๋า</Text>
                 </Pressable>
               </>
             )}

@@ -67,14 +67,14 @@ export function AddWalletModal({ visible, onClose, onCreated }: Props) {
           className="w-11/12 max-w-md bg-card rounded-2xl p-4 border border-border"
         >
           <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-foreground font-bold text-lg">เพิ่มกระเป๋าเงิน</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }} className="text-foreground">เพิ่มกระเป๋าเงิน</Text>
             <Pressable onPress={onClose} className="p-1">
               <Ionicons name="close" size={22} color="#6B5F52" />
             </Pressable>
           </View>
 
           <ScrollView className="max-h-[480px]" keyboardShouldPersistTaps="handled">
-            <Text className="text-foreground font-semibold mb-2">ชื่อ</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground mb-2">ชื่อ</Text>
             <TextInput
               value={name}
               onChangeText={setName}
@@ -83,7 +83,7 @@ export function AddWalletModal({ visible, onClose, onCreated }: Props) {
               className="border border-border rounded-xl px-3 py-3 mb-4 text-foreground"
             />
 
-            <Text className="text-foreground font-semibold mb-2">ประเภท</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground mb-2">ประเภท</Text>
             <View className="flex-row flex-wrap gap-2 mb-4">
               {WALLET_TYPES.map((wt) => {
                 const active = selectedType === wt.value;
@@ -98,7 +98,7 @@ export function AddWalletModal({ visible, onClose, onCreated }: Props) {
                       size={16}
                       color={active ? '#E87A3D' : '#666'}
                     />
-                    <Text className={`text-sm ml-1 ${active ? 'text-primary font-semibold' : 'text-foreground'}`}>
+                    <Text style={{ fontFamily: active ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 14 }} className={`ml-1 ${active ? 'text-primary' : 'text-foreground'}`}>
                       {wt.label}
                     </Text>
                   </Pressable>
@@ -106,7 +106,7 @@ export function AddWalletModal({ visible, onClose, onCreated }: Props) {
               })}
             </View>
 
-            <Text className="text-foreground font-semibold mb-2">สี</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground mb-2">สี</Text>
             <View className="flex-row flex-wrap gap-3 mb-5">
               {WALLET_COLORS.map((color) => (
                 <Pressable
@@ -127,7 +127,7 @@ export function AddWalletModal({ visible, onClose, onCreated }: Props) {
               disabled={!name.trim() || saving}
               className={`py-3 rounded-full items-center bg-primary ${!name.trim() || saving ? 'opacity-50' : ''}`}
             >
-              <Text className="text-primary-foreground font-bold text-base">เพิ่ม</Text>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, color: '#fff' }}>เพิ่ม</Text>
             </Pressable>
           </ScrollView>
         </Pressable>

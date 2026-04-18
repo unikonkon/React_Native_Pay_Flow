@@ -62,47 +62,47 @@ export function TransactionGroupItem({
       onPress={handleHeadPress}
       onLongPress={handleHeadLongPress}
       android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
-      className="flex-row items-center py-3 px-4 bg-card"
+      className="flex-row items-center bg-card"
+      style={{ paddingVertical: 12, paddingHorizontal: 16, gap: 12 }}
     >
       <View
-        className="w-10 h-10 rounded-full items-center justify-center mr-3"
-        style={{ backgroundColor: color }}
+        className="rounded-full items-center justify-center"
+        style={{ width: 40, height: 40, backgroundColor: color }}
       >
         <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
       </View>
 
-      <View className="flex-1">
-        <View className="flex-row items-center">
-          <Text className="text-foreground font-medium text-base" numberOfLines={1}>
+      <View className="flex-1" style={{ minWidth: 0 }}>
+        <View className="flex-row items-center" style={{ gap: 8 }}>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 17 }} className="text-foreground" numberOfLines={1}>
             {head.category?.name ?? 'ไม่ระบุ'}
           </Text>
           {isGroup && (
-            <View className="ml-2 px-2 py-0.5 rounded-full bg-primary/10">
-              <Text className="text-primary text-[11px] font-bold">×{count}</Text>
+            <View className="px-2 py-0.5 rounded-full bg-background">
+              <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">×{count}</Text>
             </View>
           )}
         </View>
         {!isGroup && head.note ? (
-          <Text className="text-muted-foreground text-xs mt-0.5" numberOfLines={1}>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground mt-0.5" numberOfLines={1}>
             {head.note}
           </Text>
         ) : null}
       </View>
 
       <View className="items-end">
-        <Text className={`font-bold text-base ${isIncome ? 'text-income' : 'text-expense'}`}>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 17, fontVariant: ['tabular-nums'], letterSpacing: -0.2 }} className={isIncome ? 'text-income' : 'text-expense'}>
           {isIncome ? '+' : '-'}{formatCurrency(total)}
         </Text>
-        <View className="flex-row items-center">
+        <View className="flex-row items-center mt-0.5">
           {!isGroup && (
-            <Text className="text-muted-foreground text-xs">{formatTime(head.createdAt)}</Text>
+            <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 12, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">{formatTime(head.createdAt)}</Text>
           )}
           {isGroup && (
             <Ionicons
               name={expanded ? 'chevron-up' : 'chevron-down'}
               size={14}
               color="#A39685"
-              style={{ marginLeft: 2 }}
             />
           )}
         </View>
@@ -126,7 +126,7 @@ export function TransactionGroupItem({
       </SwipeableRow>
 
       {isGroup && expanded && (
-        <View className="bg-background/40 border-t border-border">
+        <View className="bg-card">
           {items.map((t) => (
             <SwipeableRow
               key={t.id}
@@ -143,19 +143,19 @@ export function TransactionGroupItem({
                   onItemLongPress?.(t);
                 }}
                 android_ripple={{ color: 'rgba(0,0,0,0.08)' }}
-                className="flex-row items-center py-2 pl-[60px] pr-4 border-b border-border/60 bg-card"
+                className="flex-row items-center border-b border-border/60 bg-card"
+                style={{ paddingVertical: 8, paddingLeft: 68, paddingRight: 16, gap: 8 }}
               >
+                <View style={{ width: 8, height: 1 }} className="bg-border" />
                 <View className="flex-1">
-                  <Text className="text-muted-foreground text-xs">{formatTime(t.createdAt)}</Text>
-                  {t.note ? (
-                    <Text className="text-muted-foreground text-[11px] mt-0.5" numberOfLines={1}>
-                      {t.note}
-                    </Text>
-                  ) : null}
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground" numberOfLines={1}>
+                    {t.note || formatTime(t.createdAt)}
+                  </Text>
                 </View>
-                <Text className={`font-semibold text-sm ${isIncome ? 'text-income' : 'text-expense'}`}>
+                <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 15, fontVariant: ['tabular-nums'] }} className={isIncome ? 'text-income' : 'text-expense'}>
                   {isIncome ? '+' : '-'}{formatCurrency(t.amount)}
                 </Text>
+                <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 12, fontVariant: ['tabular-nums'], width: 40, textAlign: 'right' }} className="text-muted-foreground">{formatTime(t.createdAt)}</Text>
               </Pressable>
             </SwipeableRow>
           ))}

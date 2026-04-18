@@ -53,13 +53,13 @@ function StepperRow({ label, cols, rows, colMin, colMax, rowMin, rowMax, onCol, 
   const btn = 'w-8 h-8 rounded-full items-center justify-center bg-card border border-border';
   return (
     <View className="flex-row items-center justify-between">
-      <Text className="text-foreground text-xs font-semibold flex-1" numberOfLines={1}>{label}</Text>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-foreground flex-1" numberOfLines={1}>{label}</Text>
       <View className="flex-row items-center mr-3">
         <Text className="text-muted-foreground text-[10px] mr-1.5">คอลัมน์</Text>
         <Pressable onPress={() => onCol(-1)} disabled={cols <= colMin} className={`${btn} ${cols <= colMin ? 'opacity-40' : ''}`}>
           <Ionicons name="remove" size={12} color="#6B5F52" />
         </Pressable>
-        <Text className="text-foreground text-xs font-bold mx-1.5 w-4 text-center">{cols}</Text>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 12, width: 16, textAlign: 'center' }} className="text-foreground mx-1.5">{cols}</Text>
         <Pressable onPress={() => onCol(1)} disabled={cols >= colMax} className={`${btn} ${cols >= colMax ? 'opacity-40' : ''}`}>
           <Ionicons name="add" size={12} color="#6B5F52" />
         </Pressable>
@@ -69,7 +69,7 @@ function StepperRow({ label, cols, rows, colMin, colMax, rowMin, rowMax, onCol, 
         <Pressable onPress={() => onRow(-1)} disabled={rows <= rowMin} className={`${btn} ${rows <= rowMin ? 'opacity-40' : ''}`}>
           <Ionicons name="remove" size={12} color="#6B5F52" />
         </Pressable>
-        <Text className="text-foreground text-xs font-bold mx-1.5 w-4 text-center">{rows}</Text>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 12, width: 16, textAlign: 'center' }} className="text-foreground mx-1.5">{rows}</Text>
         <Pressable onPress={() => onRow(1)} disabled={rows >= rowMax} className={`${btn} ${rows >= rowMax ? 'opacity-40' : ''}`}>
           <Ionicons name="add" size={12} color="#6B5F52" />
         </Pressable>
@@ -255,7 +255,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
   return (
     <View className="mb-3">
       <View className="flex-row items-center justify-between mb-2">
-        <Text className="text-foreground font-semibold">
+        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">
           {tab === 'select' ? 'เลือกหมวดหมู่' : tab === 'manage' ? 'ตั้งค่าหมวดหมู่' : 'รายการที่ใช้บ่อย'}
         </Text>
         {tab === 'select' && selectedCat && (
@@ -266,43 +266,34 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
             >
               <Ionicons name={selectedCat.icon as keyof typeof Ionicons.glyphMap} size={12} color="white" />
             </View>
-            <Text className="text-primary text-xs font-semibold">{selectedCat.name}</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-primary">{selectedCat.name}</Text>
           </View>
         )}
       </View>
 
-      <View className="flex-row bg-secondary rounded-2xl p-1 mb-2">
-        <Pressable
-          onPress={() => { setTab('recommend'); onTabChange?.('recommend'); }}
-          className={`flex-1 py-1.5 rounded-xl items-center ${tab === 'recommend' ? 'bg-primary' : ''}`}
-        >
-          <Text className={`text-xs font-semibold ${tab === 'recommend' ? 'text-primary-foreground' : 'text-foreground'}`}>
-            แนะนำ
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => { setTab('select'); onTabChange?.('select'); }}
-          className={`flex-1 py-1.5 rounded-xl items-center ${tab === 'select' ? 'bg-primary' : ''}`}
-        >
-          <Text className={`text-xs font-semibold ${tab === 'select' ? 'text-primary-foreground' : 'text-foreground'}`}>
-            เลือก
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => { setTab('manage'); onTabChange?.('manage'); }}
-          className={`flex-1 py-1.5 rounded-xl items-center ${tab === 'manage' ? 'bg-primary' : ''}`}
-        >
-          <Text className={`text-xs font-semibold ${tab === 'manage' ? 'text-primary-foreground' : 'text-foreground'}`}>
-            ตั้งค่า
-          </Text>
-        </Pressable>
+      <View className="flex-row bg-secondary rounded-full p-1 mb-2">
+        {(['recommend', 'select', 'manage'] as Tab[]).map(t => {
+          const labels = { recommend: 'แนะนำ', select: 'เลือก', manage: 'ตั้งค่า' };
+          return (
+            <Pressable
+              key={t}
+              onPress={() => { setTab(t); onTabChange?.(t); }}
+              className="flex-1 py-2 rounded-full items-center"
+              style={{ backgroundColor: tab === t ? '#E87A3D' : 'transparent' }}
+            >
+              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: tab === t ? '#fff' : '#A39685' }}>
+                {labels[t]}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       {tab === 'manage' && (
         pickedId ? (
           <View className="flex-row items-center justify-center mb-2 px-2 py-2 bg-secondary/50 rounded-2xl">
             <Ionicons name="move" size={14} color="#E87A3D" />
-            <Text className="text-primary text-xs font-semibold ml-1 flex-shrink" numberOfLines={1}>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-primary ml-1 flex-shrink" numberOfLines={1}>
               แตะปลายทางเพื่อวาง · แตะเดิมเพื่อยกเลิก
             </Text>
           </View>
@@ -333,7 +324,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
             />
             <View className="h-px bg-border/60 my-2" />
             <View className="flex-row items-center justify-between">
-              <Text className="text-foreground text-xs font-semibold flex-1" numberOfLines={1}>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-foreground flex-1" numberOfLines={1}>
                 แท็บเริ่มต้น
               </Text>
               <View className="flex-row bg-card rounded-full p-0.5 border border-border">
@@ -346,7 +337,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                   }}
                   className={`px-3 py-1 rounded-full ${defaultCategoryTab === 'recommend' ? 'bg-primary' : ''}`}
                 >
-                  <Text className={`text-[11px] font-semibold ${defaultCategoryTab === 'recommend' ? 'text-primary-foreground' : 'text-foreground'}`}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, color: defaultCategoryTab === 'recommend' ? '#fff' : '#2B2118' }}>
                     แนะนำ
                   </Text>
                 </Pressable>
@@ -359,7 +350,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                   }}
                   className={`px-3 py-1 rounded-full ${defaultCategoryTab === 'select' ? 'bg-primary' : ''}`}
                 >
-                  <Text className={`text-[11px] font-semibold ${defaultCategoryTab === 'select' ? 'text-primary-foreground' : 'text-foreground'}`}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, color: defaultCategoryTab === 'select' ? '#fff' : '#2B2118' }}>
                     เลือก
                   </Text>
                 </Pressable>
@@ -385,7 +376,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                 </View>
               ) : (
                 <>
-                  <Text className="text-muted-foreground text-[11px] font-semibold mb-1">หมวดที่ใช้บ่อย</Text>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11 }} className="text-muted-foreground mb-1">หมวดที่ใช้บ่อย</Text>
                   {topCategories.length === 0 ? (
                     <View className="items-center py-3">
                       <Text className="text-muted-foreground text-xs">ยังไม่มีข้อมูลในกระเป๋านี้</Text>
@@ -415,7 +406,8 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                               />
                             </View>
                             <Text
-                              className={`text-[11px] text-center mt-1 px-0.5 ${isSelected ? 'text-primary font-semibold' : 'text-foreground'}`}
+                              style={{ fontFamily: isSelected ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 11, textAlign: 'center' }}
+                              className={`mt-1 px-0.5 ${isSelected ? 'text-primary' : 'text-foreground'}`}
                               numberOfLines={1}
                             >
                               {cat.name}
@@ -455,13 +447,15 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                               </View>
                               <View className="flex-1">
                                 <Text
-                                  className={`text-[9px] font-semibold ${isActive ? 'text-primary' : 'text-foreground'}`}
+                                  style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 9 }}
+                                  className={isActive ? 'text-primary' : 'text-foreground'}
                                   numberOfLines={1}
                                 >
                                   {cat.name}
                                 </Text>
                                 <Text
-                                  className={`text-[16px] font-bold ${type === 'income' ? 'text-income' : 'text-expense'}`}
+                                  style={{ fontFamily: 'Inter_700Bold', fontSize: 16, fontVariant: ['tabular-nums'] }}
+                                  className={type === 'income' ? 'text-income' : 'text-expense'}
                                   numberOfLines={1}
                                 >
                                   {formatCurrency(a.amount)}
@@ -510,8 +504,8 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                       />
                     </View>
                     <Text
-                      className={`text-xs text-center mt-1 px-0.5 ${isSelected ? 'text-primary font-semibold' : 'text-foreground'
-                        }`}
+                      style={{ fontFamily: isSelected ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, textAlign: 'center' }}
+                      className={`mt-1 px-0.5 ${isSelected ? 'text-primary' : 'text-foreground'}`}
                       numberOfLines={1}
                     >
                       {cat.name}
@@ -560,7 +554,8 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                         )}
                       </View>
                       <Text
-                        className={`text-xs text-center mt-1 px-0.5 ${isPicked ? 'text-primary font-semibold' : 'text-foreground'}`}
+                        style={{ fontFamily: isPicked ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, textAlign: 'center' }}
+                        className={`mt-1 px-0.5 ${isPicked ? 'text-primary' : 'text-foreground'}`}
                         numberOfLines={1}
                       >
                         {cat.name}
@@ -577,7 +572,7 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                   <View className="w-14 h-14 rounded-full items-center justify-center border-2 border-dashed border-primary/60 bg-primary/5">
                     <Ionicons name="add" size={26} color="#E87A3D" />
                   </View>
-                  <Text className="text-xs text-center mt-1 px-0.5 text-primary font-semibold" numberOfLines={1}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, textAlign: 'center' }} className="mt-1 px-0.5 text-primary" numberOfLines={1}>
                     เพิ่ม
                   </Text>
                 </Pressable>

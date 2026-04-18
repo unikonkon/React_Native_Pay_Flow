@@ -16,30 +16,46 @@ function SettingsRow({
   label,
   value,
   onPress,
+  last,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   value?: string;
   onPress?: () => void;
+  last?: boolean;
 }) {
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center px-4 py-4 bg-card border-b border-border"
+      className="flex-row items-center"
+      style={{
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        gap: 12,
+        borderBottomWidth: last ? 0 : 0.5,
+        borderBottomColor: '#EDE4D3',
+      }}
     >
-      <Ionicons name={icon} size={22} color="#6B5F52" />
-      <Text className="flex-1 text-foreground ml-3">{label}</Text>
-      {value && <Text className="text-muted-foreground mr-1">{value}</Text>}
-      {onPress && <Ionicons name="chevron-forward" size={18} color="#A39685" />}
+      <View style={{ width: 22, alignItems: 'center' }}>
+        <Ionicons name={icon} size={20} color="#6B5F52" />
+      </View>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15 }} className="flex-1 text-foreground">{label}</Text>
+      {value !== undefined && <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-muted-foreground">{value}</Text>}
+      <Ionicons name="chevron-forward" size={14} color="#A39685" />
     </Pressable>
   );
 }
 
-function SectionHeader({ title }: { title: string }) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <View className="px-4 py-2 bg-background">
-      <Text className="text-muted-foreground text-xs font-semibold uppercase">{title}</Text>
-    </View>
+    <>
+      <View style={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 }}>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">{title}</Text>
+      </View>
+      <View className="bg-card" style={{ marginHorizontal: 16, borderRadius: 16, overflow: 'hidden' }}>
+        {children}
+      </View>
+    </>
   );
 }
 
@@ -108,47 +124,51 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <View className="px-4 pt-4 pb-2 flex-row items-center">
-        <MiawMini size={28} />
-        <Text className="text-foreground text-2xl font-bold ml-2">ตั้งค่า</Text>
+      <View className="flex-row items-center" style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4, gap: 10 }}>
+        <MiawMini size={30} />
+        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22 }} className="text-foreground">ตั้งค่า</Text>
       </View>
 
-      <ScrollView>
-        <SectionHeader title="ทั่วไป" />
-        <SettingsRow icon="color-palette-outline" label="ธีม" value={themeLabel} onPress={handleThemeToggle} />
-        <SettingsRow icon="key-outline" label="Gemini API Key" value={apiKeyStatus} onPress={handleApiKey} />
-        <SettingsRow icon="sparkles-outline" label="AI วิเคราะห์" value={apiKeyStatus.startsWith('ตั้งค่าแล้ว') ? 'พร้อมใช้งาน' : 'ยังไม่ได้ตั้งค่า'} />
-        {biometricAvailable && (
+      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+        <Section title="ทั่วไป">
+          <SettingsRow icon="color-palette-outline" label="ธีม" value={themeLabel} onPress={handleThemeToggle} />
+          <SettingsRow icon="key-outline" label="Gemini API Key" value={apiKeyStatus} onPress={handleApiKey} />
+          <SettingsRow icon="sparkles-outline" label="AI วิเคราะห์" value={apiKeyStatus.startsWith('ตั้งค่าแล้ว') ? 'พร้อมใช้งาน' : 'ยังไม่ได้ตั้งค่า'} />
+          {biometricAvailable && (
+            <SettingsRow
+              icon="finger-print-outline"
+              label="ล็อกด้วย Face ID/ลายนิ้วมือ"
+              value={biometricEnabled ? 'เปิด' : 'ปิด'}
+              onPress={handleBiometricToggle}
+            />
+          )}
           <SettingsRow
-            icon="finger-print-outline"
-            label="ล็อกด้วย Face ID/ลายนิ้วมือ"
-            value={biometricEnabled ? 'เปิด' : 'ปิด'}
-            onPress={handleBiometricToggle}
+            icon="notifications-outline"
+            label="แจ้งเตือน Push"
+            value={notificationsEnabled ? 'เปิด' : 'ปิด'}
+            onPress={handleNotificationsToggle}
           />
-        )}
-        <SettingsRow
-          icon="notifications-outline"
-          label="แจ้งเตือน Push"
-          value={notificationsEnabled ? 'เปิด' : 'ปิด'}
-          onPress={handleNotificationsToggle}
-        />
-        <SettingsRow icon="cash-outline" label="สกุลเงิน" value={`${currency} ฿`} />
+          <SettingsRow icon="cash-outline" label="สกุลเงิน" value={`${currency} ฿`} last />
+        </Section>
 
-        <SectionHeader title="กระเป๋าเงิน" />
-        <SettingsRow
-          icon="add-circle-outline"
-          label="สร้างกระเป๋าใหม่"
-          onPress={() => setAddWalletVisible(true)}
-        />
-        <SettingsRow
-          icon="wallet-outline"
-          label="จัดการกระเป๋าเงิน"
-          onPress={() => router.push('/settings/wallets')}
-        />
+        <Section title="กระเป๋าเงิน">
+          <SettingsRow
+            icon="add-circle-outline"
+            label="สร้างกระเป๋าใหม่"
+            onPress={() => setAddWalletVisible(true)}
+          />
+          <SettingsRow
+            icon="wallet-outline"
+            label="จัดการกระเป๋าเงิน"
+            onPress={() => router.push('/settings/wallets')}
+            last
+          />
+        </Section>
 
-        <SectionHeader title="เกี่ยวกับ" />
-        <SettingsRow icon="information-circle-outline" label="เวอร์ชัน" value={appVersion} />
-        <SettingsRow icon="logo-github" label="MiawMoney" value="มิวมันนี่" />
+        <Section title="เกี่ยวกับ">
+          <SettingsRow icon="information-circle-outline" label="เวอร์ชัน" value={appVersion} />
+          <SettingsRow icon="paw-outline" label="แมวมันนี่" value="MaewMoney" last />
+        </Section>
       </ScrollView>
 
       <AddWalletModal

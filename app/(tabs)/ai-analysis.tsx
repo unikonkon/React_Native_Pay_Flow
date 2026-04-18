@@ -58,86 +58,107 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 60 }}>
-      {/* Hero */}
-      <View className="items-center mt-4 mb-6">
-        <View className="mb-4">
-          <MiawHero size={140} />
-        </View>
-        <GoldCracks width={200} height={20} opacity={0.15} direction="horizontal" />
-        <Text className="text-foreground text-2xl font-bold mb-1 mt-2">MiawMoney Premium</Text>
-        <Text className="text-muted-foreground text-sm text-center px-4">
-          ปลดล็อกฟีเจอร์ขั้นสูงเพื่อจัดการการเงินอย่างมืออาชีพ
+    <ScrollView contentContainerStyle={{ paddingBottom: 140 }}>
+      {/* Hero with mascot */}
+      <View className="items-center" style={{ paddingTop: 12 }}>
+        <MiawHero size={160} />
+        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 24, marginTop: 4 }} className="text-foreground">
+          แมวมันนี่ Premium
+        </Text>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14, marginTop: 4, textAlign: 'center', paddingHorizontal: 32 }} className="text-muted-foreground">
+          ปลดล็อกฟีเจอร์ขั้นสูงเพื่อจัดการเงินอย่างมืออาชีพ
         </Text>
       </View>
 
-      {/* Features */}
-      <View className="bg-card rounded-2xl p-5 mb-6 border border-border">
-        <Text className="text-foreground font-bold text-base mb-4">ฟีเจอร์ Premium</Text>
+      {/* Features card */}
+      <View className="bg-card border border-border" style={{ margin: 16, marginTop: 24, padding: 18, borderRadius: 20 }}>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, marginBottom: 14 }} className="text-foreground">
+          ฟีเจอร์ Premium
+        </Text>
         <FeatureRow icon="sparkles" label="AI วิเคราะห์การเงิน" desc="วิเคราะห์รายรับ-รายจ่ายอัจฉริยะด้วย AI" />
         <FeatureRow icon="swap-horizontal" label="ส่งออก / นำเข้าข้อมูล" desc="สำรองและกู้คืนข้อมูลได้ทุกเมื่อ" />
         <FeatureRow icon="analytics" label="รายงานเชิงลึก" desc="สรุปผลแบบละเอียดรายเดือนและรายปี" />
         <FeatureRow icon="shield-checkmark" label="สำรองข้อมูลอัตโนมัติ" desc="ป้องกันข้อมูลสูญหาย" last />
       </View>
 
-      {/* Plans */}
-      <Text className="text-foreground font-bold text-base mb-3">เลือกแพ็กเกจ</Text>
-      <View className="flex-row gap-3 mb-6">
+      {/* Packages */}
+      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 }} className="text-foreground">
+        เลือกแพ็กเกจ
+      </Text>
+      <View className="flex-row" style={{ gap: 10, paddingHorizontal: 16 }}>
         {/* Monthly */}
         <Pressable
           onPress={() => setSelectedPlan('monthly')}
-          className={`flex-1 rounded-2xl p-4 border-2 ${selectedPlan === 'monthly' ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}
+          className="flex-1 bg-card"
+          style={{
+            padding: 16,
+            borderRadius: 18,
+            borderWidth: selectedPlan === 'monthly' ? 2 : 1,
+            borderColor: selectedPlan === 'monthly' ? '#E87A3D' : '#EDE4D3',
+            backgroundColor: selectedPlan === 'monthly' ? 'rgba(232,122,61,0.08)' : undefined,
+          }}
         >
-          <Text className={`font-semibold text-sm mb-1 ${selectedPlan === 'monthly' ? 'text-primary' : 'text-foreground'}`}>
-            รายเดือน
-          </Text>
-          <Text className={`font-bold text-xl ${selectedPlan === 'monthly' ? 'text-primary' : 'text-foreground'}`}>
-            ฿59
-          </Text>
-          <Text className="text-muted-foreground text-xs">/เดือน</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground">รายเดือน</Text>
+          <Text style={{ fontFamily: 'Inter_900Black', fontSize: 24, marginTop: 4 }} className="text-foreground">฿99</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 2 }} className="text-muted-foreground">/เดือน</Text>
         </Pressable>
 
         {/* Yearly */}
-        <Pressable
-          onPress={() => setSelectedPlan('yearly')}
-          className={`flex-1 rounded-2xl p-4 border-2 relative ${selectedPlan === 'yearly' ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}
-        >
-          <View className="absolute -top-2.5 right-3 bg-gold px-2 py-0.5 rounded-full">
-            <Text className="text-white text-[10px] font-bold">ประหยัด 40%</Text>
+        <View className="flex-1" style={{ position: 'relative' }}>
+          <View style={{
+            position: 'absolute', top: -10, right: 8, zIndex: 2,
+            paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999,
+            backgroundColor: '#E8B547',
+          }}>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 11, color: '#fff' }}>ประหยัด 25%</Text>
           </View>
-          <Text className={`font-semibold text-sm mb-1 ${selectedPlan === 'yearly' ? 'text-primary' : 'text-foreground'}`}>
-            รายปี
-          </Text>
-          <Text className={`font-bold text-xl ${selectedPlan === 'yearly' ? 'text-primary' : 'text-foreground'}`}>
-            ฿429
-          </Text>
-          <Text className="text-muted-foreground text-xs">/ปี (฿35.75/เดือน)</Text>
+          <Pressable
+            onPress={() => setSelectedPlan('yearly')}
+            className="bg-card"
+            style={{
+              padding: 16,
+              borderRadius: 18,
+              borderWidth: selectedPlan === 'yearly' ? 2 : 1,
+              borderColor: selectedPlan === 'yearly' ? '#E87A3D' : '#EDE4D3',
+              backgroundColor: selectedPlan === 'yearly' ? 'rgba(232,122,61,0.08)' : undefined,
+            }}
+          >
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground">รายปี</Text>
+            <Text style={{ fontFamily: 'Inter_900Black', fontSize: 24, marginTop: 4 }} className="text-foreground">฿899</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 2 }} className="text-muted-foreground">/ปี (฿74.91/เดือน)</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* CTA Button */}
+      <View style={{ paddingHorizontal: 16, paddingTop: 20 }}>
+        <Pressable
+          onPress={() => {
+            Alert.alert(
+              'เร็ว ๆ นี้',
+              'ระบบสมัครสมาชิกกำลังพัฒนา ขอบคุณที่สนใจ!',
+              [
+                { text: 'ตกลง', style: 'default' },
+                { text: 'ทดลองใช้ (Dev)', onPress: onUnlock },
+              ],
+            );
+          }}
+          style={{
+            paddingVertical: 16, borderRadius: 16,
+            backgroundColor: '#E87A3D',
+            shadowColor: '#E87A3D', shadowOpacity: 0.35, shadowRadius: 20, shadowOffset: { width: 0, height: 8 },
+            elevation: 8,
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}
+        >
+          <Ionicons name="diamond" size={18} color="white" />
+          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, color: '#fff' }}>สมัครสมาชิก Premium</Text>
         </Pressable>
       </View>
 
-      {/* Subscribe Button */}
-      <Pressable
-        onPress={() => {
-          Alert.alert(
-            'เร็ว ๆ นี้',
-            'ระบบสมัครสมาชิกกำลังพัฒนา ขอบคุณที่สนใจ!',
-            [
-              { text: 'ตกลง', style: 'default' },
-              { text: 'ทดลองใช้ (Dev)', onPress: onUnlock },
-            ],
-          );
-        }}
-        className="bg-primary rounded-2xl py-4 items-center mb-4"
-      >
-        <View className="flex-row items-center">
-          <Ionicons name="diamond" size={20} color="white" />
-          <Text className="text-white font-bold text-lg ml-2">สมัครสมาชิก Premium</Text>
-        </View>
-      </Pressable>
-
       {/* Footer note */}
-      <Text className="text-muted-foreground text-xs text-center px-6">
-        สามารถยกเลิกได้ทุกเมื่อ • ต่ออายุอัตโนมัติ • ไม่มีค่าใช้จ่ายแอบแฝง
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, textAlign: 'center', paddingHorizontal: 24, paddingTop: 16 }} className="text-muted-foreground">
+        สามารถยกเลิกได้ทุกเมื่อ · ต่ออายุอัตโนมัติ · ไม่มีค่าใช้จ่ายแอบแฝง
       </Text>
     </ScrollView>
   );
@@ -147,15 +168,24 @@ function FeatureRow({ icon, label, desc, last }: {
   icon: keyof typeof Ionicons.glyphMap; label: string; desc: string; last?: boolean;
 }) {
   return (
-    <View className={`flex-row items-start ${last ? '' : 'mb-4'}`}>
-      <View className="w-9 h-9 rounded-full bg-primary/10 items-center justify-center mt-0.5">
-        <Ionicons name={icon} size={18} color="#E87A3D" />
+    <View className="flex-row items-start" style={{
+      paddingVertical: 12,
+      gap: 12,
+      borderBottomWidth: last ? 0 : 0.5,
+      borderBottomColor: '#EDE4D3',
+    }}>
+      <View style={{
+        width: 32, height: 32, borderRadius: 10,
+        alignItems: 'center', justifyContent: 'center',
+        backgroundColor: '#E87A3D',
+      }}>
+        <Ionicons name={icon} size={16} color="white" />
       </View>
-      <View className="flex-1 ml-3">
-        <Text className="text-foreground font-semibold text-sm">{label}</Text>
-        <Text className="text-muted-foreground text-xs">{desc}</Text>
+      <View className="flex-1">
+        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">{label}</Text>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">{desc}</Text>
       </View>
-      <Ionicons name="checkmark-circle" size={20} color="#22c55e" style={{ marginTop: 2 }} />
+      <Ionicons name="checkmark-circle" size={20} color="#5CB88A" style={{ marginTop: 2 }} />
     </View>
   );
 }

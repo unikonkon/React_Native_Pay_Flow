@@ -95,13 +95,13 @@ export default function RootLayout() {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FBF7F0' }}>
         <Ionicons name="lock-closed" size={64} color="#E87A3D" />
-        <Text style={{ fontSize: 20, fontWeight: 'bold', marginTop: 16, color: '#2B2118' }}>MiawMoney</Text>
-        <Text style={{ fontSize: 14, color: '#6B5F52', marginTop: 4 }}>กรุณาปลดล็อกเพื่อใช้งาน</Text>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 20, marginTop: 16, color: '#2B2118' }}>MiawMoney</Text>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14, color: '#6B5F52', marginTop: 4 }}>กรุณาปลดล็อกเพื่อใช้งาน</Text>
         <Pressable
           onPress={handleUnlock}
           style={{ marginTop: 24, paddingHorizontal: 32, paddingVertical: 12, backgroundColor: '#E87A3D', borderRadius: 999 }}
         >
-          <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>ปลดล็อก</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', color: 'white', fontSize: 16 }}>ปลดล็อก</Text>
         </Pressable>
       </View>
     );

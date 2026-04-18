@@ -66,8 +66,8 @@ export default function AddTransactionScreen() {
         animationConfigs={animationConfigs}
         onClose={handleSheetClose}
         backdropComponent={renderBackdrop}
-        handleIndicatorStyle={{ backgroundColor: '#ccc' }}
-        backgroundStyle={{ backgroundColor: 'white' }}
+        handleIndicatorStyle={{ backgroundColor: '#EDE4D3', width: 36, height: 4 }}
+        backgroundStyle={{ backgroundColor: '#FBF7F0', borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
       >
         <TransactionForm editTransaction={editingTransaction} onClose={handleRequestClose} />
       </BottomSheet>

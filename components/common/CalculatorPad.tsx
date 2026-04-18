@@ -153,25 +153,28 @@ export function CalculatorPad({
 
   const saveBgClass = type === 'income' ? 'bg-income' : 'bg-expense';
 
+  const saveColor = value > 0 && !saveDisabled
+    ? (type === 'expense' ? '#E87A3D' : '#5CB88A')
+    : undefined;
+
   return (
-    <View>
+    <View style={{ paddingVertical: 10 }}>
       {BUTTONS.map((row, rowIdx) => (
-        <View key={rowIdx} className="flex-row mb-2">
+        <View key={rowIdx} className="flex-row" style={{ marginBottom: 8 }}>
           {row.map((btn, colIdx) => {
             const isNumber = btn.kind === 'num';
-            const bgClass = isNumber ? 'bg-card' : 'bg-secondary';
-            const textColor = isNumber ? 'text-foreground' : 'text-muted-foreground';
             return (
               <Pressable
                 key={colIdx}
                 onPress={() => handlePress(btn.label)}
                 android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
-                className={`flex-1 mx-1 py-3 rounded-full items-center justify-center ${bgClass}`}
+                className={`flex-1 items-center justify-center ${isNumber ? 'bg-card' : 'bg-secondary'}`}
+                style={{ marginHorizontal: 4, paddingVertical: 16, borderRadius: 14 }}
               >
                 {btn.icon ? (
-                  <Ionicons name="backspace-outline" size={22} color="#6B5F52" />
+                  <Ionicons name="backspace-outline" size={20} color="#6B5F52" />
                 ) : (
-                  <Text className={`text-2xl font-bold ${textColor}`}>
+                  <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 20, color: isNumber ? '#2B2118' : '#A39685' }}>
                     {btn.label}
                   </Text>
                 )}
@@ -182,29 +185,38 @@ export function CalculatorPad({
       ))}
 
       {/* Last row: 00 | 0 | Save (spans 2 columns) */}
-      <View className="flex-row mb-1">
+      <View className="flex-row" style={{ marginBottom: 4 }}>
         <Pressable
           onPress={() => handlePress('00')}
           android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
-          className="flex-1 mx-1 py-3 rounded-full items-center justify-center bg-card"
+          className="flex-1 items-center justify-center bg-card"
+          style={{ marginHorizontal: 4, paddingVertical: 16, borderRadius: 14 }}
         >
-          <Text className="text-2xl font-bold text-foreground">00</Text>
+          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 20, color: '#2B2118' }}>00</Text>
         </Pressable>
         <Pressable
           onPress={() => handlePress('0')}
           android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
-          className="flex-1 mx-1 py-3 rounded-full items-center justify-center bg-card"
+          className="flex-1 items-center justify-center bg-card"
+          style={{ marginHorizontal: 4, paddingVertical: 16, borderRadius: 14 }}
         >
-          <Text className="text-2xl font-bold text-foreground">0</Text>
+          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 20, color: '#2B2118' }}>0</Text>
         </Pressable>
         <Pressable
           onPress={handleSavePress}
           disabled={saveDisabled}
           android_ripple={{ color: 'rgba(255,255,255,0.2)' }}
-          style={{ flex: 2 }}
-          className={`mx-1 py-3 rounded-full items-center justify-center ${saveBgClass} ${saveDisabled ? 'opacity-50' : ''}`}
+          style={{
+            flex: 2, marginHorizontal: 4, paddingVertical: 18, borderRadius: 16,
+            alignItems: 'center', justifyContent: 'center',
+            backgroundColor: saveColor ?? '#F8F2E7',
+            opacity: saveDisabled ? 0.5 : 1,
+          }}
         >
-          <Text className="text-white text-xl font-bold">{saveLabel}</Text>
+          <Text style={{
+            fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16,
+            color: saveColor ? '#fff' : '#A39685',
+          }}>{saveLabel}</Text>
         </Pressable>
       </View>
     </View>

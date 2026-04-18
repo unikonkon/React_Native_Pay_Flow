@@ -30,27 +30,43 @@ export function PieChartView({ data, title }: PieChartViewProps) {
 
   return (
     <View className="mb-4">
-      <Text className="text-foreground font-bold text-base px-4 mb-2">{title}</Text>
-      <PieChart
-        data={chartData}
-        width={screenWidth - 32}
-        height={200}
-        chartConfig={{
-          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-        }}
-        accessor="amount"
-        backgroundColor="transparent"
-        paddingLeft="0"
-        absolute
-      />
+      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground px-4 mb-3">{title}</Text>
 
-      {/* Top categories list */}
-      <View className="px-4 mt-2">
-        {data.slice(0, 5).map((item) => (
-          <View key={item.categoryId} className="flex-row items-center py-2">
+      {/* Chart + legend side by side */}
+      <View className="flex-row items-center px-4" style={{ gap: 16 }}>
+        <PieChart
+          data={chartData}
+          width={200}
+          height={200}
+          chartConfig={{
+            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+          }}
+          accessor="amount"
+          backgroundColor="transparent"
+          paddingLeft="0"
+          hasLegend={false}
+          absolute
+        />
+        <View className="flex-1" style={{ gap: 6 }}>
+          {data.slice(0, 6).map((item) => (
+            <View key={item.categoryId} className="flex-row items-center" style={{ gap: 8 }}>
+              <View className="rounded-full" style={{ width: 10, height: 10, backgroundColor: item.category?.color ?? '#999' }} />
+              <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 12, fontVariant: ['tabular-nums'] }} className="text-foreground">
+                {formatCurrency(item.total)}{' '}
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>{item.category?.name ?? 'อื่นๆ'}</Text>
+              </Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* Category breakdown list */}
+      <View style={{ marginTop: 20 }}>
+        {data.map((item) => (
+          <View key={item.categoryId} className="flex-row items-center bg-card border-b border-border" style={{ gap: 12, paddingVertical: 12, paddingHorizontal: 16 }}>
             <View
-              className="w-8 h-8 rounded-full items-center justify-center mr-3"
-              style={{ backgroundColor: item.category?.color ?? '#999' }}
+              className="rounded-full items-center justify-center"
+              style={{ width: 36, height: 36, backgroundColor: item.category?.color ?? '#999' }}
             >
               <Ionicons
                 name={(item.category?.icon ?? 'help-circle') as keyof typeof Ionicons.glyphMap}
@@ -58,9 +74,9 @@ export function PieChartView({ data, title }: PieChartViewProps) {
                 color="white"
               />
             </View>
-            <Text className="flex-1 text-foreground">{item.category?.name ?? 'อื่น ๆ'}</Text>
-            <Text className="text-foreground font-semibold mr-2">{formatCurrency(item.total)}</Text>
-            <Text className="text-muted-foreground text-sm w-12 text-right">
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 16 }} className="flex-1 text-foreground">{item.category?.name ?? 'อื่น ๆ'}</Text>
+            <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 16, fontVariant: ['tabular-nums'] }} className="text-foreground mr-2">{formatCurrency(item.total)}</Text>
+            <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 13, width: 34, textAlign: 'right' }} className="text-muted-foreground">
               {item.percentage.toFixed(0)}%
             </Text>
           </View>

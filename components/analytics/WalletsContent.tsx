@@ -12,7 +12,7 @@ export function WalletsContent({ wallets, transactions }: WalletsContentProps) {
   if (wallets.length === 0) {
     return (
       <View className="items-center py-10">
-        <Text className="text-muted-foreground">ไม่มีกระเป๋าเงิน</Text>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-muted-foreground">ไม่มีกระเป๋าเงิน</Text>
       </View>
     );
   }
@@ -28,7 +28,7 @@ export function WalletsContent({ wallets, transactions }: WalletsContentProps) {
 
   return (
     <View className="px-4 mb-4">
-      <Text className="text-foreground font-bold text-base mb-3">เปรียบเทียบกระเป๋าเงิน</Text>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground mb-3">เปรียบเทียบกระเป๋าเงิน</Text>
       {walletStats.map(({ wallet, income, expense, balance }) => {
         const barWidth = Math.max((Math.abs(balance) / maxBalance) * 100, 5);
         return (
@@ -40,8 +40,8 @@ export function WalletsContent({ wallets, transactions }: WalletsContentProps) {
               >
                 <Ionicons name={wallet.icon as keyof typeof Ionicons.glyphMap} size={16} color="white" />
               </View>
-              <Text className="text-foreground font-medium flex-1">{wallet.name}</Text>
-              <Text className={`font-bold ${balance >= 0 ? 'text-income' : 'text-expense'}`}>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground flex-1">{wallet.name}</Text>
+              <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 16, fontVariant: ['tabular-nums'] }} className={balance >= 0 ? 'text-income' : 'text-expense'}>
                 {formatCurrency(Math.abs(balance))}
               </Text>
             </View>
@@ -52,8 +52,8 @@ export function WalletsContent({ wallets, transactions }: WalletsContentProps) {
               />
             </View>
             <View className="flex-row justify-between mt-1">
-              <Text className="text-income text-xs">+{formatCurrency(income)}</Text>
-              <Text className="text-expense text-xs">-{formatCurrency(expense)}</Text>
+              <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 12, fontVariant: ['tabular-nums'] }} className="text-income">+{formatCurrency(income)}</Text>
+              <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 12, fontVariant: ['tabular-nums'] }} className="text-expense">-{formatCurrency(expense)}</Text>
             </View>
           </View>
         );

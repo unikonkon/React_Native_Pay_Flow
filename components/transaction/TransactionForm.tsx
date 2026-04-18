@@ -133,32 +133,46 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
 
   return (
     <View className="flex-1 bg-background">
-      {/* Header — type toggle + close */}
-      <View className="flex-row items-center px-4 pb-2 border-b border-border">
-        <View className="flex-1 flex-row items-center justify-center">
-          <View className="flex-row rounded-full overflow-hidden border border-border">
-            <Pressable
-              onPress={() => toggleType('expense')}
-              className={`flex-row items-center px-4 py-1.5 ${type === 'expense' ? 'bg-expense' : 'bg-card'}`}
-            >
-              <Ionicons name="remove-circle-outline" size={14} color={type === 'expense' ? 'white' : '#666'} />
-              <Text className={`font-bold ml-1 text-md ${type === 'expense' ? 'text-white' : 'text-foreground'}`}>
-                รายจ่าย
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => toggleType('income')}
-              className={`flex-row items-center px-4 py-1.5 ${type === 'income' ? 'bg-income' : 'bg-card'}`}
-            >
-              <Ionicons name="add-circle-outline" size={14} color={type === 'income' ? 'white' : '#666'} />
-              <Text className={`font-bold ml-1 text-md ${type === 'income' ? 'text-white' : 'text-foreground'}`}>
-                รายรับ
-              </Text>
-            </Pressable>
-          </View>
+      {/* Header — type toggle pills + close */}
+      <View className="flex-row items-center" style={{ paddingHorizontal: 16, paddingBottom: 10, gap: 8 }}>
+        <View className="flex-1 flex-row items-center justify-center" style={{ gap: 8 }}>
+          <Pressable
+            onPress={() => toggleType('expense')}
+            style={{
+              flexDirection: 'row', alignItems: 'center',
+              paddingHorizontal: 20, paddingVertical: 8, borderRadius: 999,
+              backgroundColor: type === 'expense' ? '#E57373' : undefined,
+              shadowColor: type === 'expense' ? '#E57373' : 'transparent',
+              shadowOpacity: type === 'expense' ? 0.3 : 0,
+              shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
+            }}
+            className={type === 'expense' ? '' : 'bg-card'}
+          >
+            <Text style={{
+              fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14,
+              color: type === 'expense' ? '#fff' : '#A39685',
+            }}>⊖ รายจ่าย</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => toggleType('income')}
+            style={{
+              flexDirection: 'row', alignItems: 'center',
+              paddingHorizontal: 20, paddingVertical: 8, borderRadius: 999,
+              backgroundColor: type === 'income' ? '#5CB88A' : undefined,
+              shadowColor: type === 'income' ? '#5CB88A' : 'transparent',
+              shadowOpacity: type === 'income' ? 0.3 : 0,
+              shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
+            }}
+            className={type === 'income' ? '' : 'bg-card'}
+          >
+            <Text style={{
+              fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14,
+              color: type === 'income' ? '#fff' : '#A39685',
+            }}>⊕ รายรับ</Text>
+          </Pressable>
         </View>
-        <Pressable onPress={onClose} className="p-1">
-          <Ionicons name="close" size={24} color="#6B5F52" />
+        <Pressable onPress={onClose} style={{ padding: 4 }}>
+          <Ionicons name="close" size={22} color="#6B5F52" />
         </Pressable>
       </View>
 
@@ -295,8 +309,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           )}
 
           {/* Note + Amount */}
-          <View className="flex-row items-center border border-border rounded-2xl px-3 py-1.5 mb-2">
-            <Ionicons name="create-outline" size={14} color="#A39685" />
+          <View className="flex-row items-center mb-2" style={{ gap: 10 }}>
             <BottomSheetTextInput
               value={note}
               onChangeText={setNote}
@@ -304,10 +317,20 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               placeholderTextColor="#999"
               onFocus={() => setNoteFocused(true)}
               onBlur={() => setTimeout(() => setNoteFocused(false), 150)}
-              style={{ flex: 1, marginLeft: 6, fontSize: 13, color: '#0a0a0a', paddingVertical: 2 }}
+              style={{
+                flex: 1, paddingVertical: 10, paddingHorizontal: 14,
+                borderWidth: 1, borderColor: '#EDE4D3', borderRadius: 14,
+                fontSize: 14, color: '#2B2118',
+                fontFamily: 'IBMPlexSansThai_400Regular',
+              }}
             />
-            <Text className={`text-lg font-bold ${type === 'income' ? 'text-income' : 'text-expense'}`}>
-              {amount > 0 ? `฿${amount.toLocaleString('th-TH')}` : '฿0'}
+            <Text style={{
+              fontFamily: 'Inter_900Black', fontSize: 20,
+              fontVariant: ['tabular-nums'],
+              minWidth: 70, textAlign: 'right',
+              color: type === 'income' ? '#5CB88A' : '#E57373',
+            }}>
+              ฿{amount > 0 ? amount.toLocaleString('th-TH') : '0'}
             </Text>
           </View>
 

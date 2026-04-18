@@ -9,16 +9,16 @@ interface DayGroupHeaderProps {
 
 export function DayGroupHeader({ date, income, expense }: DayGroupHeaderProps) {
   return (
-    <View className="flex-row items-center justify-between px-4 py-2 bg-background">
-      <Text className="text-muted-foreground text-sm font-semibold">
+    <View className="flex-row items-center justify-between px-4 bg-secondary" style={{ height: 36 }}>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }} className="text-muted-foreground">
         {formatRelativeDate(date)}
       </Text>
-      <View className="flex-row gap-3">
+      <View className="flex-row" style={{ gap: 12 }}>
         {income > 0 && (
-          <Text className="text-income text-xs font-medium">+{formatCurrency(income)}</Text>
+          <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 13, fontVariant: ['tabular-nums'] }} className="text-income">+{formatCurrency(income)}</Text>
         )}
         {expense > 0 && (
-          <Text className="text-expense text-xs font-medium">-{formatCurrency(expense)}</Text>
+          <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 13, fontVariant: ['tabular-nums'] }} className="text-expense">-{formatCurrency(expense)}</Text>
         )}
       </View>
     </View>

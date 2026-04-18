@@ -110,10 +110,10 @@ export default function CategoriesScreen() {
       <View className="w-9 h-9 rounded-full items-center justify-center mr-3" style={{ backgroundColor: item.color }}>
         <Ionicons name={item.icon as keyof typeof Ionicons.glyphMap} size={18} color="white" />
       </View>
-      <Text className="text-foreground font-medium flex-1">{item.name}</Text>
+      <Text className="text-foreground flex-1" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>{item.name}</Text>
       {item.isCustom && (
         <View className="bg-secondary px-2 py-0.5 rounded-xl">
-          <Text className="text-muted-foreground text-xs">กำหนดเอง</Text>
+          <Text className="text-muted-foreground text-xs" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }}>กำหนดเอง</Text>
         </View>
       )}
     </Pressable>
@@ -127,7 +127,7 @@ export default function CategoriesScreen() {
         renderItem={renderItem as any}
         renderSectionHeader={({ section }: any) => (
           <View className="px-4 py-2 bg-background">
-            <Text className="text-muted-foreground text-xs font-semibold uppercase">{section.title}</Text>
+            <Text className="text-muted-foreground text-xs uppercase" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }}>{section.title}</Text>
           </View>
         )}
         stickySectionHeadersEnabled={false}
@@ -150,11 +150,11 @@ export default function CategoriesScreen() {
         handleIndicatorStyle={{ backgroundColor: '#ccc' }}
       >
         <BottomSheetScrollView contentContainerStyle={{ padding: 20 }}>
-          <Text className="text-foreground text-lg font-bold mb-4 text-center">
+          <Text className="text-foreground text-lg mb-4 text-center" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }}>
             {isEditing ? 'แก้ไขหมวดหมู่' : 'เพิ่มหมวดหมู่'}
           </Text>
 
-          <Text className="text-foreground font-semibold mb-2">ชื่อ</Text>
+          <Text className="text-foreground mb-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>ชื่อ</Text>
           <BottomSheetTextInput
             value={name}
             onChangeText={setName}
@@ -165,19 +165,19 @@ export default function CategoriesScreen() {
 
           {!isEditing && (
             <>
-              <Text className="text-foreground font-semibold mb-2">ประเภท</Text>
+              <Text className="text-foreground mb-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>ประเภท</Text>
               <View className="flex-row mb-4 rounded-2xl overflow-hidden border border-border">
                 <Pressable onPress={() => setSelectedType('expense')} className={`flex-1 py-2.5 items-center ${selectedType === 'expense' ? 'bg-expense' : 'bg-card'}`}>
-                  <Text className={`font-semibold ${selectedType === 'expense' ? 'text-white' : 'text-foreground'}`}>รายจ่าย</Text>
+                  <Text className={`${selectedType === 'expense' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>รายจ่าย</Text>
                 </Pressable>
                 <Pressable onPress={() => setSelectedType('income')} className={`flex-1 py-2.5 items-center ${selectedType === 'income' ? 'bg-income' : 'bg-card'}`}>
-                  <Text className={`font-semibold ${selectedType === 'income' ? 'text-white' : 'text-foreground'}`}>รายรับ</Text>
+                  <Text className={`${selectedType === 'income' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>รายรับ</Text>
                 </Pressable>
               </View>
             </>
           )}
 
-          <Text className="text-foreground font-semibold mb-2">ไอคอน</Text>
+          <Text className="text-foreground mb-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>ไอคอน</Text>
           <View className="flex-row flex-wrap gap-2 mb-4">
             {CATEGORY_ICONS.map(icon => (
               <Pressable key={icon} onPress={() => setSelectedIcon(icon)} className={`w-10 h-10 rounded-full items-center justify-center ${selectedIcon === icon ? 'border-2 border-primary' : 'bg-secondary'}`}>
@@ -186,7 +186,7 @@ export default function CategoriesScreen() {
             ))}
           </View>
 
-          <Text className="text-foreground font-semibold mb-2">สี</Text>
+          <Text className="text-foreground mb-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>สี</Text>
           <View className="flex-row flex-wrap gap-3 mb-6">
             {CATEGORY_COLORS.map(color => (
               <Pressable key={color} onPress={() => setSelectedColor(color)} className={`w-9 h-9 rounded-full items-center justify-center ${selectedColor === color ? 'border-2 border-foreground' : ''}`} style={{ backgroundColor: color }}>
@@ -196,7 +196,7 @@ export default function CategoriesScreen() {
           </View>
 
           <Pressable onPress={handleSave} className={`py-4 rounded-full items-center bg-primary ${!name.trim() ? 'opacity-50' : ''}`} disabled={!name.trim()}>
-            <Text className="text-white font-bold text-lg">{isEditing ? 'อัพเดท' : 'เพิ่ม'}</Text>
+            <Text className="text-white text-lg" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }}>{isEditing ? 'อัพเดท' : 'เพิ่ม'}</Text>
           </Pressable>
         </BottomSheetScrollView>
       </BottomSheet>
