@@ -1,4 +1,3 @@
-import { MiawMini } from '@/assets/svg';
 import { FrequentTransactions } from '@/components/transaction/FrequentTransactions';
 import { TransactionList } from '@/components/transaction/TransactionList';
 import { AlertBanner } from '@/components/ui/AlertBanner';
@@ -15,8 +14,10 @@ import type { Analysis, Transaction } from '@/types';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef } from 'react';
-import { Alert, Text, View } from 'react-native';
+import { Alert, Image, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+const mascotRun = require('@/assets/mascot-run.png');
 
 export default function TransactionsScreen() {
   const transactions = useTransactionStore(s => s.transactions);
@@ -136,8 +137,8 @@ export default function TransactionsScreen() {
       {/* Header */}
       <View className="px-4 pt-2 pb-1">
         <View className="flex-row items-center mb-2">
-          <MiawMini size={30} />
-          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22 }} className="text-foreground ml-2">รายการ</Text>
+          <Image source={mascotRun} style={{ width: 44, height: 34 }} resizeMode="contain" />
+          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground ml-2">รายการ</Text>
         </View>
 
         {/* Wallet + Month row */}

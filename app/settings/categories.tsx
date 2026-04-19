@@ -10,7 +10,7 @@ import * as Haptics from 'expo-haptics';
 const CATEGORY_COLORS = [
   '#F5A185', '#B8856B', '#8AC5C5', '#F0A830', '#F59FB8',
   '#9FC9A8', '#F5D988', '#B5A8DB', '#F5B8BC', '#FFB3C7',
-  '#E8B547', '#6B4A9E', '#4A7FC1', '#5CB88A', '#D4A544',
+  '#E8B547', '#6B4A9E', '#4A7FC1', '#3E8B68', '#D4A544',
   '#A39685',
 ];
 

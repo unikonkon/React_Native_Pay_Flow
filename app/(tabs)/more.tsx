@@ -1,6 +1,7 @@
-import { MiawMini } from '@/assets/svg';
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable, Alert, ScrollView } from 'react-native';
+import { View, Text, Pressable, Alert, ScrollView, Image } from 'react-native';
+
+const mascotRun = require('@/assets/mascot-run.png');
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -52,7 +53,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <View style={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 }}>
         <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">{title}</Text>
       </View>
-      <View className="bg-card" style={{ marginHorizontal: 16, borderRadius: 16, overflow: 'hidden' }}>
+      <View className="bg-card" style={{ marginHorizontal: 16, borderRadius: 16, overflow: 'hidden', shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 16, shadowOffset: { width: 0, height: 4 }, elevation: 2 }}>
         {children}
       </View>
     </>
@@ -124,9 +125,9 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <View className="flex-row items-center" style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4, gap: 10 }}>
-        <MiawMini size={30} />
-        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22 }} className="text-foreground">ตั้งค่า</Text>
+      <View className="flex-row items-center" style={{ paddingHorizontal: 18, paddingTop: 8, paddingBottom: 4, gap: 10 }}>
+        <Image source={mascotRun} style={{ width: 44, height: 34 }} resizeMode="contain" />
+        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground">ตั้งค่า</Text>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>

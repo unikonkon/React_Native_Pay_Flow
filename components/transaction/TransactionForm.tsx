@@ -141,8 +141,8 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             style={{
               flexDirection: 'row', alignItems: 'center',
               paddingHorizontal: 20, paddingVertical: 8, borderRadius: 999,
-              backgroundColor: type === 'expense' ? '#E57373' : undefined,
-              shadowColor: type === 'expense' ? '#E57373' : 'transparent',
+              backgroundColor: type === 'expense' ? '#C65A4E' : undefined,
+              shadowColor: type === 'expense' ? '#C65A4E' : 'transparent',
               shadowOpacity: type === 'expense' ? 0.3 : 0,
               shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
             }}
@@ -158,8 +158,8 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             style={{
               flexDirection: 'row', alignItems: 'center',
               paddingHorizontal: 20, paddingVertical: 8, borderRadius: 999,
-              backgroundColor: type === 'income' ? '#5CB88A' : undefined,
-              shadowColor: type === 'income' ? '#5CB88A' : 'transparent',
+              backgroundColor: type === 'income' ? '#3E8B68' : undefined,
+              shadowColor: type === 'income' ? '#3E8B68' : 'transparent',
               shadowOpacity: type === 'income' ? 0.3 : 0,
               shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
             }}
@@ -328,7 +328,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               fontFamily: 'Inter_900Black', fontSize: 20,
               fontVariant: ['tabular-nums'],
               minWidth: 70, textAlign: 'right',
-              color: type === 'income' ? '#5CB88A' : '#E57373',
+              color: type === 'income' ? '#3E8B68' : '#C65A4E',
             }}>
               ฿{amount > 0 ? amount.toLocaleString('th-TH') : '0'}
             </Text>

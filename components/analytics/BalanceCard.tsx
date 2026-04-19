@@ -43,8 +43,8 @@ export function BalanceCard({ totalIncome, totalExpense, balance }: BalanceCardP
       </Text>
 
       <View className="flex-row" style={{ gap: 10, marginTop: 14 }}>
-        <StatBox icon="up" label="รายรับ" value={totalIncome} color="#4A9E75" />
-        <StatBox icon="down" label="รายจ่าย" value={totalExpense} color="#D85F5F" />
+        <StatBox icon="up" label="รายรับ" value={totalIncome} color="#3E8B68" />
+        <StatBox icon="down" label="รายจ่าย" value={totalExpense} color="#C65A4E" />
       </View>
     </View>
   );

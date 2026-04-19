@@ -10,6 +10,7 @@ import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { useWalletStore } from '@/lib/stores/wallet-store';
 import { exportToCSV } from '@/lib/utils/data-transfer';
 import { getBarChartBuckets } from '@/lib/utils/period';
+import { Sparkles } from '@/assets/svg';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
@@ -80,14 +81,21 @@ export default function AnalyticsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView>
-        {/* Month header centered like prototype */}
-        <PeriodSelector
-          period={currentPeriod}
-          onChange={setCurrentPeriod}
-          className="px-4 pt-3 pb-1"
-        />
+        {/* Header title like prototype */}
+        <View style={{ paddingHorizontal: 18, paddingTop: 8, paddingBottom: 4, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 26, letterSpacing: -0.4 }} className="text-foreground">สรุป</Text>
+          <Sparkles size={12} />
+        </View>
 
-        <View className="px-4 pb-3">
+        {/* Date range + wallet */}
+        <View style={{ paddingHorizontal: 18, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View style={{ flex: 1 }}>
+            <PeriodSelector
+              period={currentPeriod}
+              onChange={setCurrentPeriod}
+              className=""
+            />
+          </View>
           <WalletFilter
             selectedWalletId={selectedWalletId}
             onChange={setSelectedWalletId}

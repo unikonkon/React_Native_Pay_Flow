@@ -185,7 +185,7 @@ function FeatureRow({ icon, label, desc, last }: {
         <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">{label}</Text>
         <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">{desc}</Text>
       </View>
-      <Ionicons name="checkmark-circle" size={20} color="#5CB88A" style={{ marginTop: 2 }} />
+      <Ionicons name="checkmark-circle" size={20} color="#3E8B68" style={{ marginTop: 2 }} />
     </View>
   );
 }

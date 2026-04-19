@@ -36,15 +36,15 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, 'isCustom'>[] = [
 
 // 14 Income Categories (ตามเอกสาร MOBILE-APP-ARCHITECTURE.md section 9.2)
 export const DEFAULT_INCOME_CATEGORIES: Omit<Category, 'isCustom'>[] = [
-  { id: 'inc-salary', name: 'เงินเดือน', icon: 'briefcase', color: '#5CB88A', type: 'income', sortOrder: 0 },
+  { id: 'inc-salary', name: 'เงินเดือน', icon: 'briefcase', color: '#3E8B68', type: 'income', sortOrder: 0 },
   { id: 'inc-bonus', name: 'โบนัส', icon: 'sparkles', color: '#E8B547', type: 'income', sortOrder: 1 },
   { id: 'inc-overtime', name: 'ค่าล่วงเวลา', icon: 'time', color: '#F0A830', type: 'income', sortOrder: 2 },
-  { id: 'inc-commission', name: 'ค่าคอมมิชชั่น', icon: 'stats-chart', color: '#5CB88A', type: 'income', sortOrder: 3 },
-  { id: 'inc-side-income', name: 'รายได้เสริม', icon: 'wallet', color: '#5CB88A', type: 'income', sortOrder: 4 },
+  { id: 'inc-commission', name: 'ค่าคอมมิชชั่น', icon: 'stats-chart', color: '#3E8B68', type: 'income', sortOrder: 3 },
+  { id: 'inc-side-income', name: 'รายได้เสริม', icon: 'wallet', color: '#3E8B68', type: 'income', sortOrder: 4 },
   { id: 'inc-freelance', name: 'ฟรีแลนซ์', icon: 'laptop', color: '#4A7FC1', type: 'income', sortOrder: 5 },
   { id: 'inc-selling', name: 'ขายของ', icon: 'storefront', color: '#F5A185', type: 'income', sortOrder: 6 },
   { id: 'inc-dividend', name: 'เงินปันผล', icon: 'trending-up', color: '#6B4A9E', type: 'income', sortOrder: 7 },
-  { id: 'inc-interest', name: 'ดอกเบี้ย', icon: 'cash', color: '#5CB88A', type: 'income', sortOrder: 8 },
+  { id: 'inc-interest', name: 'ดอกเบี้ย', icon: 'cash', color: '#3E8B68', type: 'income', sortOrder: 8 },
   { id: 'inc-investment-profit', name: 'กำไรจากการลงทุน', icon: 'analytics', color: '#8AC5C5', type: 'income', sortOrder: 9 },
   { id: 'inc-tax-refund', name: 'เงินคืนภาษี', icon: 'receipt', color: '#E8B547', type: 'income', sortOrder: 10 },
   { id: 'inc-gift-received', name: 'ได้รับเงิน/ของขวัญ', icon: 'gift', color: '#FFB3C7', type: 'income', sortOrder: 11 },

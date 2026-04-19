@@ -9,18 +9,17 @@ interface DayGroupHeaderProps {
 
 export function DayGroupHeader({ date, income, expense }: DayGroupHeaderProps) {
   return (
-    <View className="flex-row items-center justify-between px-4 bg-secondary" style={{ height: 36 }}>
-      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }} className="text-muted-foreground">
+    <View className="flex-row items-center" style={{ paddingHorizontal: 18, paddingTop: 14, paddingBottom: 6, borderTopWidth: 0.5, borderTopColor: 'rgba(42,35,32,0.08)', marginTop: 8, gap: 10 }}>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, fontVariant: ['tabular-nums'] }} className="text-foreground">
         {formatRelativeDate(date)}
       </Text>
-      <View className="flex-row" style={{ gap: 12 }}>
-        {income > 0 && (
-          <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 13, fontVariant: ['tabular-nums'] }} className="text-income">+{formatCurrency(income)}</Text>
-        )}
-        {expense > 0 && (
-          <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 13, fontVariant: ['tabular-nums'] }} className="text-expense">-{formatCurrency(expense)}</Text>
-        )}
-      </View>
+      <View style={{ flex: 1 }} />
+      {income > 0 && (
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 12, fontVariant: ['tabular-nums'], color: '#3E8B68' }}>+{formatCurrency(income)}</Text>
+      )}
+      {expense > 0 && (
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 12, fontVariant: ['tabular-nums'], color: '#C65A4E' }}>−{formatCurrency(expense)}</Text>
+      )}
     </View>
   );
 }

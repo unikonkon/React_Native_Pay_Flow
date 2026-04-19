@@ -63,11 +63,16 @@ export function TransactionGroupItem({
       onLongPress={handleHeadLongPress}
       android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
       className="flex-row items-center bg-card"
-      style={{ paddingVertical: 12, paddingHorizontal: 16, gap: 12 }}
+      style={{
+        paddingVertical: 12, paddingHorizontal: 14, gap: 12,
+        borderRadius: 18,
+        shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 16, shadowOffset: { width: 0, height: 4 },
+        elevation: 2,
+      }}
     >
       <View
         className="rounded-full items-center justify-center"
-        style={{ width: 40, height: 40, backgroundColor: color }}
+        style={{ width: 42, height: 42, backgroundColor: color }}
       >
         <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
       </View>
@@ -78,8 +83,8 @@ export function TransactionGroupItem({
             {head.category?.name ?? 'ไม่ระบุ'}
           </Text>
           {isGroup && (
-            <View className="px-2 py-0.5 rounded-full bg-background">
-              <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">×{count}</Text>
+            <View style={{ paddingHorizontal: 6, paddingVertical: 1, borderRadius: 999, backgroundColor: '#F0D0CB' }}>
+              <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 11, fontVariant: ['tabular-nums'], color: '#C65A4E' }}>×{count}</Text>
             </View>
           )}
         </View>
@@ -111,7 +116,7 @@ export function TransactionGroupItem({
   );
 
   return (
-    <View className="border-b border-border">
+    <View style={{ marginHorizontal: 14, marginVertical: 3 }}>
       <SwipeableRow
         onDelete={() => {
           if (isGroup) {

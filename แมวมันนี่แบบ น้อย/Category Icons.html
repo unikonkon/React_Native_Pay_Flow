@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=1280"/>
+<title>แมวมันนี่ — Category Icons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FBF7F0;
+    --paper-deep: #F5EEE0;
+    --ink: #2A2320;
+    --ink-soft: #6B5F55;
+    --ink-muted: #9A8D80;
+    --hairline: rgba(42,35,32,0.08);
+    --orange: #E87A3D;
+    --orange-deep: #C85F28;
+    --orange-tint: #FCE8D4;
+  }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body {
+    font-family: 'IBM Plex Sans Thai', 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 48px 28px 80px; }
+  .header { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 6px; }
+  .paw-logo {
+    width: 56px; height: 56px; border-radius: 16px; background: var(--orange-tint);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h1 { font-size: 36px; font-weight: 800; margin: 0; letter-spacing: -0.6px; line-height: 1.1; }
+  .sub { color: var(--ink-muted); font-size: 14px; margin-top: 4px; }
+  .meta { display: flex; gap: 16px; margin: 18px 0 36px; flex-wrap: wrap; }
+  .pill {
+    padding: 6px 14px; border-radius: 999px; background: #fff;
+    border: 1px solid var(--hairline); font-size: 13px; color: var(--ink-soft);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pill b { color: var(--ink); font-weight: 700; font-family: 'Inter', sans-serif; }
+
+  h2 {
+    font-size: 20px; font-weight: 700; margin: 32px 0 14px;
+    display: flex; align-items: center; gap: 10px; letter-spacing: -0.2px;
+  }
+  h2 .count {
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+    color: var(--orange-deep); background: var(--orange-tint);
+    padding: 2px 9px; border-radius: 999px;
+  }
+  .sect-accent {
+    width: 3px; height: 22px; background: var(--orange); border-radius: 2px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: #fff; border-radius: 18px; padding: 18px 14px 14px;
+    border: 1px solid var(--hairline);
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(42,35,32,0.08);
+  }
+  .card .name {
+    font-size: 13px; font-weight: 600; color: var(--ink); text-align: center;
+    line-height: 1.25; min-height: 32px; display: flex; align-items: center;
+  }
+  .card .id {
+    font-family: 'Inter', sans-serif; font-size: 10px; color: var(--ink-muted);
+    letter-spacing: 0.2px;
+  }
+
+  /* Darker section band for income */
+  .band {
+    background: linear-gradient(135deg, #FDF9F2 0%, #F8F2E4 100%);
+    border-radius: 24px; padding: 24px 20px 28px; margin-top: 20px;
+  }
+
+  /* All-together strip */
+  .strip {
+    display: flex; gap: 8px; overflow-x: auto;
+    padding: 16px; background: #fff; border: 1px solid var(--hairline);
+    border-radius: 18px; margin-top: 18px;
+  }
+  .strip > * { flex-shrink: 0; }
+
+  footer {
+    margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--hairline);
+    color: var(--ink-muted); font-size: 12px; display: flex; justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <div class="header">
+      <div class="paw-logo">
+        <svg width="34" height="34" viewBox="0 0 16 16" fill="#E87A3D">
+          <ellipse cx="4" cy="5" rx="1.4" ry="1.8"/>
+          <ellipse cx="8" cy="3.5" rx="1.4" ry="1.8"/>
+          <ellipse cx="12" cy="5" rx="1.4" ry="1.8"/>
+          <ellipse cx="2.5" cy="9" rx="1.2" ry="1.5"/>
+          <ellipse cx="13.5" cy="9" rx="1.2" ry="1.5"/>
+          <path d="M8 7c-3 0-5 2-5 4.5S5 15 8 15s5-1 5-3.5S11 7 8 7z"/>
+        </svg>
+      </div>
+      <div>
+        <h1>ชุดไอคอนหมวดหมู่ · แมวมันนี่</h1>
+        <div class="sub">44 ไอคอนธีมแมว — stroke-based, 44×44 viewBox, สอดคล้องกับ <code>CatIcon</code> ที่มีอยู่</div>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div class="pill"><b>44</b> ไอคอนทั้งหมด</div>
+      <div class="pill"><b>30</b> รายจ่าย</div>
+      <div class="pill"><b>14</b> รายรับ</div>
+      <div class="pill">🐾 Paw stamps · cat ears · whiskers</div>
+    </div>
+
+    <h2><div class="sect-accent"></div> รายจ่าย <span class="count">30</span></h2>
+    <div id="expense-grid" class="grid"></div>
+
+    <div class="band">
+      <h2 style="margin-top: 4px"><div class="sect-accent"></div> รายรับ <span class="count">14</span></h2>
+      <div id="income-grid" class="grid"></div>
+    </div>
+
+    <h2><div class="sect-accent"></div> ทั้งหมดเรียงติดกัน (ลากเลื่อนดู)</h2>
+    <div id="strip" class="strip"></div>
+
+    <footer>
+      <div>แมวมันนี่ · MaewMoney Category Icons v1</div>
+      <div>44 / 44</div>
+    </footer>
+
+  </div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="src/cat-icons.jsx"></script>
+
+  <script type="text/babel">
+    function Card({ cat }) {
+      return (
+        <div className="card">
+          <CatCategoryIcon kind={cat.icon} bg={cat.color} size={60} />
+          <div className="name">{cat.name}</div>
+          <div className="id">{cat.id}</div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('expense-grid'))
+      .render(<>{EXPENSE_CATS.map(c => <Card key={c.id} cat={c}/>)}</>);
+    ReactDOM.createRoot(document.getElementById('income-grid'))
+      .render(<>{INCOME_CATS.map(c => <Card key={c.id} cat={c}/>)}</>);
+    ReactDOM.createRoot(document.getElementById('strip'))
+      .render(<>{[...EXPENSE_CATS, ...INCOME_CATS].map(c => (
+        <CatCategoryIcon key={c.id} kind={c.icon} bg={c.color} size={56} />
+      ))}</>);
+  </script>
+</body>
+</html>

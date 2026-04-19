@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<title>แมวมันนี่ — MaewMoney</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #EDE5D6;
+    font-family: "IBM Plex Sans Thai","Inter",system-ui,sans-serif; }
+  body { background:
+    radial-gradient(1000px 700px at 20% -10%, #F5EADA 0%, transparent 60%),
+    radial-gradient(900px 700px at 90% 100%, #E7DAC0 0%, transparent 60%),
+    #EDE5D6;
+    min-height: 100vh;
+    color: #2A2320;
+  }
+  * { -webkit-font-smoothing: antialiased; }
+  button { font-family: inherit; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .app-stage { display: flex; align-items: flex-start; justify-content: center;
+    padding: 32px 16px; min-height: 100vh; box-sizing: border-box; gap: 28px; flex-wrap: wrap; }
+  .tweaks-panel {
+    position: fixed; bottom: 20px; right: 20px; width: 260px; z-index: 1000;
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(16px);
+    border: 0.5px solid rgba(42,35,32,0.1); border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(42,35,32,0.16); padding: 14px 16px;
+    font-family: "IBM Plex Sans Thai", "Inter", system-ui;
+    display: none;
+  }
+  .tweaks-panel.on { display: block; }
+  .tweaks-panel h3 { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: #2A2320; letter-spacing: 0.3px; text-transform: uppercase;}
+  .tweak-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; font-size: 13px; color: #2A2320; gap: 10px; }
+  .tweak-row button { border: none; cursor: pointer; border-radius: 999px; padding: 5px 10px; font-size: 12px; font-weight: 600; }
+  .tweak-chip { background: #F5EEE0; color: #6B5F55; }
+  .tweak-chip.on { background: #E87A3D; color: #fff; }
+  .screen-label { font-family: "Inter"; font-size: 11px; font-weight: 600; color: #6B5F55; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; margin-top: 12px; }
+</style>
+</head>
+<body>
+  <div id="root" class="app-stage" data-screen-label="MaewMoney app"></div>
+
+  <div id="tweaks" class="tweaks-panel">
+    <h3>✦ Tweaks</h3>
+    <div class="tweak-row">
+      <span>Dark mode</span>
+      <button id="tw-dark" class="tweak-chip">off</button>
+    </div>
+    <div class="tweak-row">
+      <span>Layout</span>
+      <div style="display:flex;gap:4px;">
+        <button data-layout="showcase" class="tweak-chip tw-layout on">All</button>
+        <button data-layout="main" class="tweak-chip tw-layout">Single</button>
+      </div>
+    </div>
+    <div class="tweak-row">
+      <span>Accent hue</span>
+      <div style="display:flex;gap:4px;">
+        <button data-accent="#E87A3D" class="tweak-chip tw-accent on" style="background:#E87A3D;color:#fff;">Orange</button>
+        <button data-accent="#C65A4E" class="tweak-chip tw-accent" style="background:#C65A4E;color:#fff;">Terra</button>
+        <button data-accent="#6B4A9E" class="tweak-chip tw-accent" style="background:#6B4A9E;color:#fff;">Cosmic</button>
+      </div>
+    </div>
+    <div class="tweak-row" style="font-size:11px;color:#9A8D80;padding-top:4px;">
+      Tap the FAB to open the Add flow
+    </div>
+  </div>
+
+  <script>
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "dark": false,
+      "layout": "showcase",
+      "accent": "#E87A3D"
+    }/*EDITMODE-END*/;
+    window.__tweaks = { ...TWEAK_DEFAULTS };
+
+    // Tweak panel — toggled by toolbar
+    window.addEventListener('message', (e) => {
+      if (e.data?.type === '__activate_edit_mode') document.getElementById('tweaks').classList.add('on');
+      if (e.data?.type === '__deactivate_edit_mode') document.getElementById('tweaks').classList.remove('on');
+    });
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+  </script>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="src/tokens.jsx"></script>
+  <script type="text/babel" src="src/icons.jsx"></script>
+  <script type="text/babel" src="src/data.jsx"></script>
+  <script type="text/babel" src="src/phone-frame.jsx"></script>
+  <script type="text/babel" src="src/chrome.jsx"></script>
+  <script type="text/babel" src="src/dashboard.jsx"></script>
+  <script type="text/babel" src="src/summary.jsx"></script>
+  <script type="text/babel" src="src/premium-settings.jsx"></script>
+  <script type="text/babel" src="src/wallet-manage.jsx"></script>
+  <script type="text/babel" src="src/date-range.jsx"></script>
+  <script type="text/babel" src="src/overlays.jsx"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function App() {
+      const [dark, setDark] = useState(window.__tweaks.dark);
+      const [layout, setLayout] = useState(window.__tweaks.layout);
+      const [accent, setAccent] = useState(window.__tweaks.accent);
+
+      // Apply accent override to orange token
+      useEffect(() => {
+        window.TOKENS.orange = accent;
+      }, [accent]);
+
+      const [tab, setTab] = useState('list');
+      const [wallet, setWallet] = useState('all');
+      const [range, setRange] = useState({ kind: 'month', m: 3, y: 2026 }); // เม.ย. 2569 (CE 2026)
+      const [showAdd, setShowAdd] = useState(false);
+      const [showAddWallet, setShowAddWallet] = useState(false);
+      const [showPicker, setShowPicker] = useState(false);
+
+      // Wire tweaks
+      useEffect(() => {
+        const darkBtn = document.getElementById('tw-dark');
+        darkBtn.textContent = dark ? 'on' : 'off';
+        darkBtn.classList.toggle('on', dark);
+        darkBtn.onclick = () => {
+          const v = !dark; setDark(v);
+          window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { dark: v } }, '*');
+        };
+        document.querySelectorAll('.tw-layout').forEach(b => {
+          b.classList.toggle('on', b.dataset.layout === layout);
+          b.onclick = () => {
+            setLayout(b.dataset.layout);
+            window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { layout: b.dataset.layout } }, '*');
+          };
+        });
+        document.querySelectorAll('.tw-accent').forEach(b => {
+          b.classList.toggle('on', b.dataset.accent === accent);
+          b.onclick = () => {
+            setAccent(b.dataset.accent);
+            window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { accent: b.dataset.accent } }, '*');
+          };
+        });
+      }, [dark, layout, accent]);
+
+      const renderMain = (screenTab) => {
+        const t = screenTab || tab;
+        switch (t) {
+          case 'list':
+            return <Dashboard dark={dark} wallet={wallet} setWallet={setWallet} range={range} setRange={setRange} onOpenAdd={() => setShowAdd(true)} />;
+          case 'summary':
+            return <SummaryScreen dark={dark} range={range} setRange={setRange} />;
+          case 'premium':
+            return <PremiumScreen dark={dark} />;
+          case 'premium-upgrade':
+            return <PremiumUpgradeScreen dark={dark} />;
+          case 'wallets':
+            return <ManageWalletsScreen dark={dark} onOpenAdd={() => setShowAddWallet(true)} />;
+          case 'settings':
+            return <SettingsScreen dark={dark} onToggleDark={() => setDark(d => !d)} />;
+          case 'splash':
+            return <SplashScreen dark={dark} onStart={() => setTab('list')} />;
+          case 'empty':
+            return <EmptyState dark={dark} onAdd={() => setShowAdd(true)} />;
+        }
+      };
+
+      const DeviceWithChrome = ({ screenTab, label, hideChrome }) => (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <PhoneFrame dark={dark}>
+            <div data-screen-label={label} style={{ height: '100%' }}>
+              {renderMain(screenTab)}
+              {!hideChrome && screenTab !== 'splash' && <BottomNav tab={screenTab || tab} setTab={() => {}} dark={dark} />}
+              {!hideChrome && screenTab === 'list' && <FAB onClick={() => setShowAdd(true)} dark={dark} />}
+            </div>
+          </PhoneFrame>
+          <div className="screen-label">{label}</div>
+        </div>
+      );
+
+      if (layout === 'main') {
+        return (
+          <PhoneFrame dark={dark}>
+            <div data-screen-label={`Main / ${tab}`} style={{ height: '100%' }}>
+              {renderMain()}
+              {tab !== 'splash' && <BottomNav tab={tab} setTab={setTab} dark={dark} />}
+              {tab === 'list' && <FAB onClick={() => setShowAdd(true)} dark={dark} />}
+              <AddTransactionModal open={showAdd} onClose={() => setShowAdd(false)} dark={dark} />
+              <AddWalletModal open={showAddWallet} onClose={() => setShowAddWallet(false)} dark={dark} />
+            </div>
+          </PhoneFrame>
+        );
+      }
+
+      // Showcase: all screens
+      return (
+        <>
+          <DeviceWithChrome screenTab="splash" label="01 Splash" hideChrome />
+          <DeviceWithChrome screenTab="list" label="02 Dashboard" />
+          <DeviceWithChrome screenTab="summary" label="03 Summary" />
+          <DeviceWithChrome screenTab="premium" label="04 Premium" />
+          <DeviceWithChrome screenTab="settings" label="05 Settings" />
+          <DeviceWithChrome screenTab="empty" label="06 Empty state" />
+          <DeviceWithChrome screenTab="premium-upgrade" label="08 Premium Upgrade" />
+          <DeviceWithChrome screenTab="wallets" label="09 Manage Wallets" />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <PhoneFrame dark={dark}>
+              <div data-screen-label="10 Add Wallet" style={{ height: '100%' }}>
+                <SettingsScreen dark={dark} onToggleDark={() => {}} />
+                <BottomNav tab="settings" setTab={() => {}} dark={dark} />
+                <AddWalletModal open={true} onClose={() => {}} dark={dark} />
+              </div>
+            </PhoneFrame>
+            <div className="screen-label">10 Add Wallet</div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <PhoneFrame dark={dark}>
+              <div data-screen-label="07 Add Transaction" style={{ height: '100%' }}>
+                <Dashboard dark={dark} wallet={wallet} setWallet={setWallet} range={range} setRange={setRange} onOpenAdd={() => {}} />
+                <BottomNav tab="list" setTab={() => {}} dark={dark} />
+                <AddTransactionModal open={true} onClose={() => {}} dark={dark} />
+              </div>
+            </PhoneFrame>
+            <div className="screen-label">07 Add Transaction</div>
+          </div>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

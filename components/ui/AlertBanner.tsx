@@ -24,7 +24,7 @@ export function AlertBanner({ currentExpense, target }: AlertBannerProps) {
         color={isDanger ? '#EF4444' : '#F59E0B'}
       />
       <View className="flex-1 ml-2">
-        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: isDanger ? '#E57373' : '#F59E0B' }}>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: isDanger ? '#C65A4E' : '#F59E0B' }}>
           {isDanger ? 'เกินเป้า!' : 'ใกล้ถึงเป้า'}
         </Text>
         <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">

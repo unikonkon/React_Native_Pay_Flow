@@ -89,7 +89,7 @@ function StructuredView({ data, periodLabel }: { data: StructuredResult; periodL
       {data.expensesToReduce.length > 0 && (
         <View className="bg-card rounded-2xl p-4 border border-border">
           <View className="flex-row items-center mb-3">
-            <Ionicons name="trending-down-outline" size={20} color="#E57373" />
+            <Ionicons name="trending-down-outline" size={20} color="#C65A4E" />
             <Text className="text-foreground font-bold text-base ml-2">หมวดที่ควรลด</Text>
           </View>
           {data.expensesToReduce.map((item, i) => (
@@ -106,7 +106,7 @@ function StructuredView({ data, periodLabel }: { data: StructuredResult; periodL
       {data.actionPlan.length > 0 && (
         <View className="bg-card rounded-2xl p-4 border border-border">
           <View className="flex-row items-center mb-3">
-            <Ionicons name="checkbox-outline" size={20} color="#5CB88A" />
+            <Ionicons name="checkbox-outline" size={20} color="#3E8B68" />
             <Text className="text-foreground font-bold text-base ml-2">แผนปฏิบัติ</Text>
           </View>
           {data.actionPlan.map((plan, i) => (
@@ -121,7 +121,7 @@ function StructuredView({ data, periodLabel }: { data: StructuredResult; periodL
       {data.warnings.length > 0 && (
         <View className="bg-expense/10 rounded-2xl p-4 border border-expense/30">
           <View className="flex-row items-center mb-3">
-            <Ionicons name="warning-outline" size={20} color="#E57373" />
+            <Ionicons name="warning-outline" size={20} color="#C65A4E" />
             <Text className="text-expense font-bold text-base ml-2">คำเตือน</Text>
           </View>
           {data.warnings.map((w, i) => (

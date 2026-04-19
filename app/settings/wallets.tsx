@@ -211,7 +211,7 @@ export default function WalletsScreen() {
         onPress={handleClearAllData}
         className="flex-row items-center justify-center py-3 mx-32 mb-4 rounded-full border border-destructive"
       >
-        <Ionicons name="trash-outline" size={18} color="#E57373" />
+        <Ionicons name="trash-outline" size={18} color="#C65A4E" />
         <Text className="text-destructive ml-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>ล้างข้อมูลทั้งหมด</Text>
       </Pressable>
 
@@ -368,7 +368,7 @@ export default function WalletsScreen() {
                   disabled={actionWallet.id === defaultWalletId}
                   className={`flex-row items-center py-3 px-3 rounded-xl ${actionWallet.id === defaultWalletId ? 'opacity-50' : 'active:bg-destructive/10'}`}
                 >
-                  <Ionicons name="trash-outline" size={20} color="#E57373" />
+                  <Ionicons name="trash-outline" size={20} color="#C65A4E" />
                   <Text className="text-destructive ml-3 flex-1" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15 }}>ลบกระเป๋า</Text>
                 </Pressable>
               </>

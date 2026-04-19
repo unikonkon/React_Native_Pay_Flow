@@ -7,7 +7,7 @@ interface AmountInputProps {
 }
 
 export function AmountInput({ value, onChangeText, type }: AmountInputProps) {
-  const color = type === 'income' ? '#5CB88A' : '#E57373';
+  const color = type === 'income' ? '#3E8B68' : '#C65A4E';
   return (
     <View className="flex-row items-center border-b-2 border-border pb-2 mb-4">
       <Text style={{ fontFamily: 'Inter_900Black', fontSize: 30, fontVariant: ['tabular-nums'], color }}>

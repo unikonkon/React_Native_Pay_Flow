@@ -154,7 +154,7 @@ export function CalculatorPad({
   const saveBgClass = type === 'income' ? 'bg-income' : 'bg-expense';
 
   const saveColor = value > 0 && !saveDisabled
-    ? (type === 'expense' ? '#E87A3D' : '#5CB88A')
+    ? (type === 'expense' ? '#E87A3D' : '#3E8B68')
     : undefined;
 
   return (
