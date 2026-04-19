@@ -213,14 +213,14 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
 
           {/* Category quick row */}
           <View style={{ paddingBottom: 8 }}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 4, gap: 10 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 4, gap: 10 }}>
               {topCategories.map((cat) => {
                 const sel = cat.id === selectedCategory?.id;
                 return (
                   <Pressable
                     key={cat.id}
                     onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); }}
-                    style={{ alignItems: 'center', gap: 4, flexShrink: 0, padding: 2 }}
+                    style={{ alignItems: 'center', gap: 4, padding: 2 }}
                   >
                     <View style={{
                       padding: sel ? 2 : 0, borderRadius: 999,
@@ -244,7 +244,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               {/* เลือกเพิ่ม */}
               <Pressable
                 onPress={() => setShowGridModal(true)}
-                style={{ alignItems: 'center', gap: 4, flexShrink: 0, padding: 2 }}
+                style={{ alignItems: 'center', gap: 4, padding: 2 }}
               >
                 <View style={{
                   width: 46, height: 46, borderRadius: 23,
@@ -255,7 +255,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                 </View>
                 <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, color: '#E87A3D' }}>เลือกเพิ่ม</Text>
               </Pressable>
-            </ScrollView>
+            </View>
           </View>
 
           {/* Frequent pills */}
