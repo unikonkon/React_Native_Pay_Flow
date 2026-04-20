@@ -1,6 +1,6 @@
 import { CalculatorPad } from '@/components/common/CalculatorPad';
 import { useCategoryStore } from '@/lib/stores/category-store';
-import { getDb, getDistinctNotesByCategory, getTopAnalysesByWallet, getTopCategoryIdsByWallet } from '@/lib/stores/db';
+import { getDb, getDistinctNotesByCategory, getFrequentAmountsByWallet, getTopCategoryIdsByWallet } from '@/lib/stores/db';
 import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { useWalletStore } from '@/lib/stores/wallet-store';
@@ -96,27 +96,43 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
     }
   }, [wallets, selectedWallet, selectedWalletId, defaultWalletId]);
 
-  // Load top categories + analyses for quick row & frequent pills
+  // Load top categories for quick row
   useEffect(() => {
     const wId = selectedWallet?.id;
-    if (!wId) { setTopCategoryIds([]); setTopAnalyses([]); return; }
+    if (!wId) { setTopCategoryIds([]); return; }
     let cancelled = false;
     (async () => {
       try {
         const db = getDb();
-        const [cats, ans] = await Promise.all([
-          getTopCategoryIdsByWallet(db, wId, type, recCatLimit),
-          getTopAnalysesByWallet(db, wId, type, recTxLimit),
-        ]);
+        const cats = await getTopCategoryIdsByWallet(db, wId, type, recCatLimit);
         if (cancelled) return;
         setTopCategoryIds(cats.map(c => c.categoryId));
-        setTopAnalyses(ans);
       } catch {
-        if (!cancelled) { setTopCategoryIds([]); setTopAnalyses([]); }
+        if (!cancelled) setTopCategoryIds([]);
       }
     })();
     return () => { cancelled = true; };
-  }, [selectedWallet?.id, type, categories.length, recCatLimit, recTxLimit]);
+  }, [selectedWallet?.id, type, categories.length, recCatLimit]);
+
+  // Load frequent amounts — grouped by `amount` only (optionally within selected category)
+  useEffect(() => {
+    const wId = selectedWallet?.id;
+    if (!wId) { setTopAnalyses([]); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const db = getDb();
+        const ans = await getFrequentAmountsByWallet(
+          db, wId, type, recTxLimit, selectedCategory?.id
+        );
+        if (cancelled) return;
+        setTopAnalyses(ans);
+      } catch {
+        if (!cancelled) setTopAnalyses([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [selectedWallet?.id, type, recTxLimit, selectedCategory?.id]);
 
   const commonCategories = useMemo(
     () => categories.filter(c => c.type === type).slice(0, commonCategoryLimit),
@@ -391,7 +407,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             <View style={{ paddingBottom: 6 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 1 }}>
                 <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-muted-foreground">
-                  รายการที่ใช้บ่อย
+                  {selectedCategory ? `รายการ ${selectedCategory.name} ที่ใช้บ่อย` : 'รายการที่ใช้บ่อย'}
                 </Text>
               </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
