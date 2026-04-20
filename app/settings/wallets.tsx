@@ -6,8 +6,11 @@ import type { Wallet, WalletType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { Alert, FlatList, Modal, Pressable, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, Modal, Pressable, Text, View } from 'react-native';
+import DraggableFlatList, { ScaleDecorator, type RenderItemParams } from 'react-native-draggable-flatlist';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const WALLET_TYPES: { value: WalletType; label: string; icon: string }[] = [
@@ -19,10 +22,10 @@ const WALLET_TYPES: { value: WalletType; label: string; icon: string }[] = [
   { value: 'daily_expense', label: 'ค่าใช้จ่ายรายวัน', icon: 'today-outline' },
 ];
 
-const WALLET_COLORS = ['#22C55E', '#3B82F6', '#EF4444', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6', '#6366F1'];
+const WALLET_COLORS = ['#53C26E', '#3D7EF0', '#E25757', '#E8A93D', '#7E6DE0', '#E06DAB', '#3FB59B', '#4A5FE0'];
 
 export default function WalletsScreen() {
-  const { wallets, addWallet, updateWallet, deleteWallet } = useWalletStore();
+  const { wallets, addWallet, updateWallet, deleteWallet, reorderWallets } = useWalletStore();
   const defaultWalletId = useSettingsStore(s => s.defaultWalletId);
   const updateSettings = useSettingsStore(s => s.updateSettings);
   const reloadTransactions = useTransactionStore(s => s.loadTransactions);
@@ -34,8 +37,24 @@ export default function WalletsScreen() {
   const [selectedType, setSelectedType] = useState<WalletType>('cash');
   const [selectedColor, setSelectedColor] = useState(WALLET_COLORS[0]);
   const [actionWallet, setActionWallet] = useState<Wallet | null>(null);
+  const [txCounts, setTxCounts] = useState<Record<string, number>>({});
 
   const isEditing = !!editingWallet;
+
+  // Load transaction counts per wallet
+  useEffect(() => {
+    (async () => {
+      const db = getDb();
+      const counts: Record<string, number> = {};
+      for (const w of wallets) {
+        counts[w.id] = await getWalletTransactionCount(db, w.id);
+      }
+      setTxCounts(counts);
+    })();
+  }, [wallets]);
+
+  const totalBalance = wallets.reduce((s, w) => s + w.currentBalance, 0);
+  const totalTxCount = Object.values(txCounts).reduce((s, c) => s + c, 0);
 
   const resetForm = useCallback(() => {
     setEditingWallet(null);
@@ -66,23 +85,15 @@ export default function WalletsScreen() {
   const handleSave = useCallback(async () => {
     if (!name.trim()) return;
     const typeInfo = WALLET_TYPES.find(t => t.value === selectedType)!;
-
     if (isEditing && editingWallet) {
       await updateWallet(editingWallet.id, {
-        name: name.trim(),
-        type: selectedType,
-        icon: typeInfo.icon,
-        color: selectedColor,
+        name: name.trim(), type: selectedType, icon: typeInfo.icon, color: selectedColor,
       });
     } else {
       await addWallet({
-        name: name.trim(),
-        type: selectedType,
-        icon: typeInfo.icon,
-        color: selectedColor,
+        name: name.trim(), type: selectedType, icon: typeInfo.icon, color: selectedColor,
       });
     }
-
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     resetForm();
     bottomSheetRef.current?.close();
@@ -97,22 +108,17 @@ export default function WalletsScreen() {
     const message = txCount > 0
       ? `ต้องการลบ "${wallet.name}" ?\nรายการที่เกี่ยวข้อง ${txCount} รายการจะถูกลบด้วย`
       : `ต้องการลบ "${wallet.name}" ?`;
-    Alert.alert(
-      'ลบกระเป๋าเงิน',
-      message,
-      [
-        { text: 'ยกเลิก', style: 'cancel' },
-        {
-          text: 'ลบ',
-          style: 'destructive',
-          onPress: async () => {
-            await deleteWallet(wallet.id);
-            await reloadTransactions();
-            setActionWallet(null);
-          },
+    Alert.alert('ลบกระเป๋าเงิน', message, [
+      { text: 'ยกเลิก', style: 'cancel' },
+      {
+        text: 'ลบ', style: 'destructive',
+        onPress: async () => {
+          await deleteWallet(wallet.id);
+          await reloadTransactions();
+          setActionWallet(null);
         },
-      ]
-    );
+      },
+    ]);
   }, [deleteWallet, defaultWalletId, reloadTransactions]);
 
   const handleClearWalletData = useCallback(async (wallet: Wallet) => {
@@ -121,262 +127,353 @@ export default function WalletsScreen() {
       Alert.alert('ไม่มีข้อมูล', `กระเป๋า "${wallet.name}" ไม่มีรายการรายรับ-รายจ่าย`);
       return;
     }
-    Alert.alert(
-      'ล้างข้อมูลกระเป๋า',
-      `ต้องการลบรายการรายรับ-รายจ่ายทั้งหมด ${txCount} รายการ ของ "${wallet.name}" ?`,
-      [
-        { text: 'ยกเลิก', style: 'cancel' },
-        {
-          text: 'ล้างข้อมูล',
-          style: 'destructive',
-          onPress: async () => {
-            const db = getDb();
-            await db.runAsync('DELETE FROM transactions WHERE wallet_id = ?', [wallet.id]);
-            await db.runAsync('DELETE FROM analysis WHERE wallet_id = ?', [wallet.id]);
-            await reloadTransactions();
-            setActionWallet(null);
-            Alert.alert('สำเร็จ', `ล้างข้อมูล "${wallet.name}" เรียบร้อยแล้ว`);
-          },
+    Alert.alert('ล้างข้อมูลกระเป๋า', `ต้องการลบรายการทั้งหมด ${txCount} รายการ ของ "${wallet.name}" ?`, [
+      { text: 'ยกเลิก', style: 'cancel' },
+      {
+        text: 'ล้างข้อมูล', style: 'destructive',
+        onPress: async () => {
+          const db = getDb();
+          await db.runAsync('DELETE FROM transactions WHERE wallet_id = ?', [wallet.id]);
+          await db.runAsync('DELETE FROM analysis WHERE wallet_id = ?', [wallet.id]);
+          await reloadTransactions();
+          setActionWallet(null);
+          Alert.alert('สำเร็จ', `ล้างข้อมูล "${wallet.name}" เรียบร้อยแล้ว`);
         },
-      ]
-    );
+      },
+    ]);
   }, [reloadTransactions]);
 
-  const handleClearAllData = useCallback(() => {
-    Alert.alert(
-      'ล้างข้อมูลทั้งหมด',
-      'รายการรายรับ-รายจ่ายทั้งหมดจะถูกลบ ดำเนินการต่อ?',
-      [
-        { text: 'ยกเลิก', style: 'cancel' },
-        {
-          text: 'ล้างข้อมูล',
-          style: 'destructive',
-          onPress: async () => {
-            const db = getDb();
-            await db.runAsync('DELETE FROM transactions');
-            await db.runAsync('DELETE FROM analysis');
-            await reloadTransactions();
-            Alert.alert('สำเร็จ', 'ล้างข้อมูลเรียบร้อยแล้ว');
-          },
-        },
-      ]
-    );
-  }, [reloadTransactions]);
+  const handleDragEnd = useCallback(async ({ data }: { data: Wallet[] }) => {
+    await reorderWallets(data.map(w => w.id));
+    Haptics.selectionAsync();
+  }, [reorderWallets]);
 
-  const renderWalletItem = ({ item }: { item: Wallet }) => {
-    const isDefault = item.id === defaultWalletId;
-    const isSystem = item.id === 'wallet-cash';
-    return (
-      <Pressable
-        onPress={() => openEditForm(item)}
-        className="flex-row items-center px-4 py-4 bg-card border-b border-border"
-      >
-        <View
-          className="w-10 h-10 rounded-full items-center justify-center mr-3"
-          style={{ backgroundColor: item.color }}
-        >
-          <Ionicons name={item.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
-        </View>
-        <View className="flex-1">
-          <Text className="text-foreground text-base" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>{item.name}</Text>
-          <Text className="text-muted-foreground text-xs" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }}>
-            {WALLET_TYPES.find(t => t.value === item.type)?.label ?? item.type}
-          </Text>
-        </View>
-        {isDefault && (
-          <View className="bg-primary/10 px-2 py-1 rounded-xl mr-2">
-            <Text className="text-primary text-xs" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }}>ค่าเริ่มต้น</Text>
-          </View>
-        )}
-        <Pressable
-          onPress={() => setActionWallet(item)}
-          hitSlop={8}
-          className="p-1"
-        >
-          <Ionicons name="ellipsis-vertical" size={18} color="#6B5F52" />
-        </Pressable>
-      </Pressable>
-    );
+  const formatBalance = (n: number) => {
+    const abs = Math.abs(n).toLocaleString('en-US');
+    return (n < 0 ? '−฿' : '฿') + abs;
   };
 
-  return (
-    <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
-      <FlatList
-        data={wallets}
-        keyExtractor={(item) => item.id}
-        renderItem={renderWalletItem}
-      />
+  const renderWalletItem = useCallback(({ item, drag, isActive }: RenderItemParams<Wallet>) => {
+    const isDefault = item.id === defaultWalletId;
+    const count = txCounts[item.id] ?? 0;
+    const typeLabel = WALLET_TYPES.find(t => t.value === item.type)?.label ?? item.type;
 
-      <Pressable
-        onPress={handleClearAllData}
-        className="flex-row items-center justify-center py-3 mx-32 mb-4 rounded-full border border-destructive"
-      >
-        <Ionicons name="trash-outline" size={18} color="#C65A4E" />
-        <Text className="text-destructive ml-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>ล้างข้อมูลทั้งหมด</Text>
-      </Pressable>
-
-      <Pressable
-        onPress={openAddForm}
-        className="absolute bottom-6 right-6 w-14 h-14 rounded-full bg-primary items-center justify-center shadow-lg"
-        style={{ elevation: 8 }}
-      >
-        <Ionicons name="add" size={28} color="white" />
-      </Pressable>
-
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={-1}
-        snapPoints={snapPoints}
-        enablePanDownToClose
-        onClose={resetForm}
-        handleIndicatorStyle={{ backgroundColor: '#ccc' }}
-      >
-        <BottomSheetScrollView contentContainerStyle={{ padding: 20 }}>
-          <Text className="text-foreground text-lg mb-4 text-center" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }}>
-            {isEditing ? 'แก้ไขกระเป๋าเงิน' : 'เพิ่มกระเป๋าเงิน'}
-          </Text>
-
-          <Text className="text-foreground mb-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>ชื่อ</Text>
-          <BottomSheetTextInput
-            value={name}
-            onChangeText={setName}
-            placeholder="ชื่อกระเป๋าเงิน"
-            placeholderTextColor="#999"
-            style={{
-              borderWidth: 1,
-              borderColor: '#e5e5e5',
-              borderRadius: 20,
-              padding: 12,
-              fontSize: 16,
-              marginBottom: 16,
-              fontFamily: 'IBMPlexSansThai_400Regular',
-            }}
-          />
-
-          <Text className="text-foreground mb-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>ประเภท</Text>
-          <View className="flex-row flex-wrap gap-2 mb-4">
-            {WALLET_TYPES.map((wt) => (
-              <Pressable
-                key={wt.value}
-                onPress={() => setSelectedType(wt.value)}
-                className={`flex-row items-center px-3 py-2 rounded-full border ${
-                  selectedType === wt.value ? 'border-primary bg-primary/10' : 'border-border bg-card'
-                }`}
-              >
-                <Ionicons name={wt.icon as keyof typeof Ionicons.glyphMap} size={16} color={selectedType === wt.value ? '#E87A3D' : '#666'} />
-                <Text className={`text-sm ml-1 ${selectedType === wt.value ? 'text-primary' : 'text-foreground'}`} style={{ fontFamily: selectedType === wt.value ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13 }}>
-                  {wt.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-
-          <Text className="text-foreground mb-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>สี</Text>
-          <View className="flex-row gap-3 mb-6">
-            {WALLET_COLORS.map((color) => (
-              <Pressable
-                key={color}
-                onPress={() => setSelectedColor(color)}
-                className={`w-9 h-9 rounded-full items-center justify-center ${
-                  selectedColor === color ? 'border-2 border-foreground' : ''
-                }`}
-                style={{ backgroundColor: color }}
-              >
-                {selectedColor === color && (
-                  <Ionicons name="checkmark" size={18} color="white" />
-                )}
-              </Pressable>
-            ))}
-          </View>
-
-          <Pressable
-            onPress={handleSave}
-            className={`py-4 rounded-full items-center bg-primary ${!name.trim() ? 'opacity-50' : ''}`}
-            disabled={!name.trim()}
-          >
-            <Text className="text-white text-lg" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }}>
-              {isEditing ? 'อัพเดท' : 'เพิ่ม'}
-            </Text>
-          </Pressable>
-        </BottomSheetScrollView>
-      </BottomSheet>
-
-      <Modal
-        visible={!!actionWallet}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setActionWallet(null)}
-      >
+    return (
+      <ScaleDecorator>
         <Pressable
-          onPress={() => setActionWallet(null)}
-          className="flex-1 bg-black/40 items-center justify-center"
+          onLongPress={drag}
+          disabled={isActive}
+          style={{
+            marginBottom: 10,
+            backgroundColor: '#fff', borderRadius: 16, padding: 12, paddingHorizontal: 14,
+            flexDirection: 'row', alignItems: 'center', gap: 12,
+            shadowColor: '#2A2320', shadowOpacity: isActive ? 0.12 : 0.05,
+            shadowRadius: isActive ? 20 : 16, shadowOffset: { width: 0, height: 4 }, elevation: isActive ? 8 : 2,
+            position: 'relative', overflow: 'hidden',
+          }}
         >
-          <Pressable
-            onPress={(e) => e.stopPropagation()}
-            className="w-11/12 max-w-md bg-card rounded-2xl p-4 border border-border"
-          >
-            {actionWallet && (
-              <>
-                <View className="flex-row items-center mb-3">
-                  <View
-                    className="w-10 h-10 rounded-full items-center justify-center mr-3"
-                    style={{ backgroundColor: actionWallet.color }}
-                  >
-                    <Ionicons
-                      name={actionWallet.icon as keyof typeof Ionicons.glyphMap}
-                      size={20}
-                      color="white"
-                    />
-                  </View>
-                  <Text className="text-foreground text-lg flex-1" numberOfLines={1} style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }}>
-                    {actionWallet.name}
-                  </Text>
+
+          {/* Icon */}
+          <View style={{
+            width: 40, height: 40, borderRadius: 12,
+            backgroundColor: item.color + '22',
+            borderWidth: 1.5, borderColor: item.color,
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Ionicons name={item.icon as keyof typeof Ionicons.glyphMap} size={18} color={item.color} />
+          </View>
+
+          {/* Name + type */}
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14.5, color: '#2A2320' }} numberOfLines={1}>
+                {item.name}
+              </Text>
+              {isDefault && (
+                <View style={{ backgroundColor: '#FCE8D4', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 999 }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 10, color: '#C85F28' }}>หลัก</Text>
                 </View>
+              )}
+            </View>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#9A8D80', marginTop: 1 }}>
+              {typeLabel} · ใช้ {count} ครั้ง
+            </Text>
+          </View>
 
-                <Pressable
-                  onPress={() => handleSetDefault(actionWallet)}
-                  disabled={actionWallet.id === defaultWalletId}
-                  className={`flex-row items-center py-3 px-3 rounded-xl mb-2 ${actionWallet.id === defaultWalletId ? 'opacity-50' : 'active:bg-secondary'}`}
-                >
-                  <Ionicons name="star-outline" size={20} color="#E87A3D" />
-                  <Text className="text-foreground ml-3 flex-1" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15 }}>
-                    {actionWallet.id === defaultWalletId ? 'เป็นค่าเริ่มต้นอยู่แล้ว' : 'ตั้งเป็นค่าเริ่มต้น'}
-                  </Text>
-                </Pressable>
-
-                <Pressable
-                  onPress={() => {
-                    const w = actionWallet;
-                    setActionWallet(null);
-                    openEditForm(w);
-                  }}
-                  className="flex-row items-center py-3 px-3 rounded-xl mb-2 active:bg-secondary"
-                >
-                  <Ionicons name="create-outline" size={20} color="#6B5F52" />
-                  <Text className="text-foreground ml-3 flex-1" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15 }}>แก้ไข</Text>
-                </Pressable>
-
-                <Pressable
-                  onPress={() => handleClearWalletData(actionWallet)}
-                  className="flex-row items-center py-3 px-3 rounded-xl mb-2 active:bg-amber-50"
-                >
-                  <Ionicons name="document-text-outline" size={20} color="#F59E0B" />
-                  <Text className="text-foreground ml-3 flex-1" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15 }}>ล้างรายการในกระเป๋า</Text>
-                </Pressable>
-
-                <Pressable
-                  onPress={() => handleDelete(actionWallet)}
-                  disabled={actionWallet.id === defaultWalletId}
-                  className={`flex-row items-center py-3 px-3 rounded-xl ${actionWallet.id === defaultWalletId ? 'opacity-50' : 'active:bg-destructive/10'}`}
-                >
-                  <Ionicons name="trash-outline" size={20} color="#C65A4E" />
-                  <Text className="text-destructive ml-3 flex-1" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15 }}>ลบกระเป๋า</Text>
-                </Pressable>
-              </>
-            )}
-          </Pressable>
+          {/* Actions */}
+          <View style={{ alignItems: 'flex-end' }}>
+            <View style={{ flexDirection: 'row', gap: 6, marginTop: 3 }}>
+              <Pressable
+                onPress={() => openEditForm(item)}
+                style={{
+                  width: 38, height: 38, borderRadius: 7,
+                  borderWidth: 1, borderColor: 'rgba(42,35,32,0.28)',
+                  alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="create-outline" size={11} color="#9A8D80" />
+              </Pressable>
+              <Pressable
+                onPress={() => setActionWallet(item)}
+                style={{
+                  width: 38, height: 38, borderRadius: 7,
+                  borderWidth: 1, borderColor: 'rgba(42,35,32,0.28)',
+                  alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="ellipsis-horizontal" size={11} color="#9A8D80" />
+              </Pressable>
+            </View>
+          </View>
         </Pressable>
-      </Modal>
-    </SafeAreaView>
+      </ScaleDecorator>
+    );
+  }, [defaultWalletId, txCounts, openEditForm]);
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+        {/* Header */}
+        <View style={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Pressable
+            onPress={() => router.back()}
+            style={{
+              width: 36, height: 36, borderRadius: 18,
+              backgroundColor: '#F5EEE0',
+              alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Ionicons name="chevron-back" size={18} color="#2A2320" />
+          </Pressable>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 20, color: '#2A2320', flex: 1, letterSpacing: -0.3 }}>
+            จัดการกระเป๋าเงิน
+          </Text>
+        </View>
+
+        {/* Summary card */}
+        <View style={{
+          marginHorizontal: 16, marginBottom: 14, padding: 14, paddingHorizontal: 16, paddingBottom: 16,
+          borderRadius: 18, overflow: 'hidden', position: 'relative',
+        }}>
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#FCE8D4' }} />
+          <View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: '50%', backgroundColor: '#D8CCEC', opacity: 0.5, borderTopLeftRadius: 60 }} />
+          <View style={{ zIndex: 1 }}>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#6B5F55' }}>ยอดรวมทุกกระเป๋า</Text>
+            <Text style={{ fontFamily: 'Inter_900Black', fontSize: 26, color: '#2A2320', marginTop: 2, letterSpacing: -0.5, fontVariant: ['tabular-nums'] }}>
+              ฿{totalBalance.toLocaleString('en-US')}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 14, marginTop: 8 }}>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#6B5F55' }}>
+                <Text style={{ fontFamily: 'Inter_600SemiBold', color: '#2A2320' }}>{wallets.length}</Text> กระเป๋า
+              </Text>
+              <View style={{ width: 1, backgroundColor: 'rgba(42,35,32,0.15)' }} />
+              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#6B5F55' }}>
+                ใช้งาน <Text style={{ fontFamily: 'Inter_600SemiBold', color: '#2A2320' }}>{totalTxCount}</Text> ครั้ง
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Section header */}
+        <View style={{ marginHorizontal: 22, marginBottom: 8, flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#9A8D80', flex: 1, letterSpacing: 0.3 }}>
+            กระเป๋าของฉัน ({wallets.length})
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Ionicons name="grid-outline" size={12} color="#9A8D80" />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#9A8D80' }}>ลากเพื่อจัดลำดับ</Text>
+          </View>
+        </View>
+
+        {/* Draggable wallet list */}
+        <DraggableFlatList
+          data={wallets}
+          keyExtractor={(item) => item.id}
+          renderItem={renderWalletItem}
+          onDragEnd={handleDragEnd}
+          containerStyle={{ flex: 1, paddingHorizontal: 16 }}
+        />
+
+        {/* Footer outside list */}
+        <View style={{ paddingHorizontal: 16, paddingTop: 10, paddingBottom: 16 }}>
+          {/* Add button (dashed) */}
+          <Pressable
+            onPress={openAddForm}
+            style={{
+              borderRadius: 16, padding: 18,
+              borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E87A3D',
+              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}
+          >
+            <Ionicons name="add" size={16} color="#E87A3D" />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14.5, color: '#E87A3D' }}>เพิ่มกระเป๋าเงิน</Text>
+          </Pressable>
+
+          {/* Hint footer */}
+          <View style={{
+            padding: 10, paddingHorizontal: 12, marginTop: 10,
+            backgroundColor: 'rgba(232,181,71,0.15)', borderRadius: 10,
+            flexDirection: 'row', alignItems: 'flex-start', gap: 8,
+          }}>
+            <Ionicons name="information-circle" size={16} color="#E8B547" style={{ marginTop: 1 }} />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#6B5F55', lineHeight: 17, flex: 1 }}>
+              ลบกระเป๋าแล้วรายการธุรกรรมจะถูกลบด้วย คุณสามารถล้างข้อมูลกระเป๋าได้ก่อนลบ
+            </Text>
+          </View>
+        </View>
+
+        {/* Bottom Sheet: Add/Edit Form */}
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={-1}
+          snapPoints={snapPoints}
+          enablePanDownToClose
+          onClose={resetForm}
+          handleIndicatorStyle={{ backgroundColor: '#ccc' }}
+        >
+          <BottomSheetScrollView contentContainerStyle={{ padding: 20 }}>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, color: '#2A2320', textAlign: 'center', marginBottom: 16 }}>
+              {isEditing ? 'แก้ไขกระเป๋าเงิน' : 'เพิ่มกระเป๋าเงิน'}
+            </Text>
+
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#2A2320', marginBottom: 6 }}>ชื่อ</Text>
+            <BottomSheetTextInput
+              value={name}
+              onChangeText={setName}
+              placeholder="ชื่อกระเป๋าเงิน"
+              placeholderTextColor="#9A8D80"
+              style={{
+                height: 42, paddingHorizontal: 14, borderRadius: 10,
+                borderWidth: 1, borderColor: 'rgba(42,35,32,0.08)',
+                fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14, color: '#2A2320',
+                marginBottom: 14,
+              }}
+            />
+
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#2A2320', marginBottom: 6 }}>ประเภท</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+              {WALLET_TYPES.map((wt) => {
+                const on = selectedType === wt.value;
+                return (
+                  <Pressable
+                    key={wt.value}
+                    onPress={() => setSelectedType(wt.value)}
+                    style={{
+                      height: 36, paddingHorizontal: 12, borderRadius: 999,
+                      backgroundColor: on ? '#FCE8D4' : '#F5EEE0',
+                      borderWidth: on ? 1.5 : 1, borderColor: on ? '#E87A3D' : 'transparent',
+                      flexDirection: 'row', alignItems: 'center', gap: 6,
+                    }}
+                  >
+                    <Ionicons name={wt.icon as keyof typeof Ionicons.glyphMap} size={14} color={on ? '#C85F28' : '#9A8D80'} />
+                    <Text style={{
+                      fontFamily: on ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                      fontSize: 13, color: on ? '#C85F28' : '#2A2320',
+                    }}>{wt.label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#2A2320', marginBottom: 8 }}>สี</Text>
+            <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap', marginBottom: 18 }}>
+              {WALLET_COLORS.map((c) => {
+                const on = selectedColor === c;
+                return (
+                  <Pressable
+                    key={c}
+                    onPress={() => setSelectedColor(c)}
+                    style={{
+                      width: 34, height: 34, borderRadius: 17,
+                      backgroundColor: c,
+                      alignItems: 'center', justifyContent: 'center',
+                      borderWidth: on ? 3 : 0, borderColor: '#fff',
+                      shadowColor: on ? c : 'transparent', shadowOpacity: on ? 0.5 : 0, shadowRadius: 6,
+                      shadowOffset: { width: 0, height: 0 }, elevation: on ? 4 : 0,
+                    }}
+                  >
+                    {on && <Ionicons name="checkmark" size={14} color="#fff" />}
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            <Pressable
+              onPress={handleSave}
+              disabled={!name.trim()}
+              style={{
+                height: 48, borderRadius: 999,
+                backgroundColor: name.trim() ? '#E87A3D' : '#F5D9B8',
+                alignItems: 'center', justifyContent: 'center',
+                shadowColor: name.trim() ? '#E87A3D' : 'transparent',
+                shadowOpacity: name.trim() ? 0.35 : 0, shadowRadius: 12,
+                shadowOffset: { width: 0, height: 4 }, elevation: name.trim() ? 6 : 0,
+              }}
+            >
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15.5, color: '#fff' }}>
+                {isEditing ? 'อัพเดท' : 'เพิ่ม'}
+              </Text>
+            </Pressable>
+          </BottomSheetScrollView>
+        </BottomSheet>
+
+        {/* Action Modal */}
+        <Modal visible={!!actionWallet} transparent animationType="fade" onRequestClose={() => setActionWallet(null)}>
+          <Pressable onPress={() => setActionWallet(null)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' }}>
+            <Pressable onPress={(e) => e.stopPropagation()} style={{ width: '88%', maxWidth: 360, backgroundColor: '#fff', borderRadius: 20, padding: 18 }}>
+              {actionWallet && (
+                <>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
+                    <View style={{
+                      width: 40, height: 40, borderRadius: 12,
+                      backgroundColor: actionWallet.color + '22', borderWidth: 1.5, borderColor: actionWallet.color,
+                      alignItems: 'center', justifyContent: 'center', marginRight: 12,
+                    }}>
+                      <Ionicons name={actionWallet.icon as keyof typeof Ionicons.glyphMap} size={18} color={actionWallet.color} />
+                    </View>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, color: '#2A2320', flex: 1 }} numberOfLines={1}>
+                      {actionWallet.name}
+                    </Text>
+                    <Pressable onPress={() => setActionWallet(null)}>
+                      <Ionicons name="close" size={22} color="#9A8D80" />
+                    </Pressable>
+                  </View>
+
+                  <ActionRow icon="star-outline" color="#E87A3D" label={actionWallet.id === defaultWalletId ? 'เป็นค่าเริ่มต้นอยู่แล้ว' : 'ตั้งเป็นค่าเริ่มต้น'}
+                    disabled={actionWallet.id === defaultWalletId} onPress={() => handleSetDefault(actionWallet)} />
+                  <ActionRow icon="create-outline" color="#6B5F52" label="แก้ไข"
+                    onPress={() => { const w = actionWallet; setActionWallet(null); openEditForm(w); }} />
+                  <ActionRow icon="document-text-outline" color="#F59E0B" label="ล้างรายการในกระเป๋า"
+                    onPress={() => handleClearWalletData(actionWallet)} />
+                  <ActionRow icon="trash-outline" color="#D04040" label="ลบกระเป๋า" last
+                    disabled={actionWallet.id === defaultWalletId} onPress={() => handleDelete(actionWallet)} />
+                </>
+              )}
+            </Pressable>
+          </Pressable>
+        </Modal>
+      </SafeAreaView>
+    </GestureHandlerRootView>
+  );
+}
+
+function ActionRow({ icon, color, label, disabled, last, onPress }: {
+  icon: keyof typeof Ionicons.glyphMap; color: string; label: string;
+  disabled?: boolean; last?: boolean; onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      style={{
+        flexDirection: 'row', alignItems: 'center', gap: 12,
+        paddingVertical: 12, paddingHorizontal: 4,
+        borderBottomWidth: last ? 0 : 0.5, borderBottomColor: 'rgba(42,35,32,0.08)',
+        opacity: disabled ? 0.4 : 1,
+      }}
+    >
+      <Ionicons name={icon} size={20} color={color} />
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15, color: '#2A2320', flex: 1 }}>{label}</Text>
+    </Pressable>
   );
 }

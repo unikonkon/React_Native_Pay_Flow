@@ -6,6 +6,7 @@ import {
   insertWallet,
   updateWallet as updateW,
   deleteWallet as deleteW,
+  reorderWallets as reorderW,
 } from '@/lib/stores/db';
 
 interface WalletStore {
@@ -18,6 +19,7 @@ interface WalletStore {
   addWallet: (data: { name: string; type: WalletType; icon: string; color: string }) => Promise<void>;
   updateWallet: (id: string, updates: Partial<{ name: string; type: WalletType; icon: string; color: string }>) => Promise<void>;
   deleteWallet: (id: string) => Promise<boolean>;
+  reorderWallets: (orderedIds: string[]) => Promise<void>;
 }
 
 export const useWalletStore = create<WalletStore>((set, get) => ({
@@ -53,5 +55,11 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
     await deleteW(db, id);
     await get().loadWallets();
     return true;
+  },
+
+  reorderWallets: async (orderedIds) => {
+    const db = getDb();
+    await reorderW(db, orderedIds);
+    await get().loadWallets();
   },
 }));

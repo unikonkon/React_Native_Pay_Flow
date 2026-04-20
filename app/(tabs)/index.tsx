@@ -160,26 +160,30 @@ export default function TransactionsScreen() {
         {/* Summary row — larger numbers like prototype */}
         <View className="flex-row justify-around pb-3">
           <View className="items-center flex-1">
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground">รายรับ</Text>
-            <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 22, fontVariant: ['tabular-nums'], letterSpacing: -0.4 }} className="text-income">{formatCurrency(totalIncome)}</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">รายรับ</Text>
+            <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 20, fontVariant: ['tabular-nums'], letterSpacing: -0.4 }} className="text-income">{formatCurrency(totalIncome)}</Text>
           </View>
           <View className="items-center flex-1">
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground">รายจ่าย</Text>
-            <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 22, fontVariant: ['tabular-nums'], letterSpacing: -0.4 }} className="text-expense">{formatCurrency(totalExpense)}</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">รายจ่าย</Text>
+            <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 20, fontVariant: ['tabular-nums'], letterSpacing: -0.4 }} className="text-expense">{formatCurrency(totalExpense)}</Text>
           </View>
           <View className="items-center flex-1">
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground">คงเหลือ</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">คงเหลือ</Text>
             <Text
               style={{
-                fontFamily: 'Inter_700Bold',
-                fontSize: 22,
+                fontFamily: 'Inter_700Bold', // ใช้น้ำหนักที่เข้มที่สุด
+                fontSize: 20,
                 fontVariant: ['tabular-nums'],
                 letterSpacing: -0.4,
-                color: totalIncome - totalExpense >= 0 ? '#15803D' : '#B91C1C', // เขียวเข้มหรือแดงเข้ม
+                color: totalIncome - totalExpense >= 0 ? '#166534' : '#991B1B', // เขียว/แดงเข้มขึ้น
+                textShadowColor: 'rgba(0,0,0,0.09)', // แรเงาเพิ่มความเข้มชัด
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 1,
               }}
             >
               {formatCurrency(totalIncome - totalExpense)}
             </Text>
+       
           </View>
      
         </View>

@@ -250,6 +250,7 @@ async function migrateDatabase(db: SQLiteDatabase) {
   await migrateDefaultCategories(db);
   await seedDefaultWallet(db);
   await migrateAiHistoryMonth(db);
+  await migrateWalletSortOrder(db);
 }
 
 async function seedDefaultCategories(db: SQLiteDatabase) {
@@ -840,7 +841,7 @@ export async function getAllWallets(db: SQLiteDatabase): Promise<Wallet[]> {
     current_balance: number;
     is_asset: number;
     created_at: string;
-  }>("SELECT * FROM wallets ORDER BY created_at");
+  }>("SELECT * FROM wallets ORDER BY sort_order, created_at");
 
   return rows.map((r) => ({
     id: r.id,
@@ -915,6 +916,20 @@ export async function deleteWallet(
     await db.runAsync("DELETE FROM analysis WHERE wallet_id = ?", [id]);
     await db.runAsync("DELETE FROM wallets WHERE id = ?", [id]);
   });
+}
+
+export async function reorderWallets(
+  db: SQLiteDatabase,
+  orderedIds: string[],
+): Promise<void> {
+  if (orderedIds.length === 0) return;
+  const cases = orderedIds.map((_, i) => `WHEN ? THEN ${i}`).join(" ");
+  const placeholders = orderedIds.map(() => "?").join(",");
+  const params = [...orderedIds, ...orderedIds];
+  await db.runAsync(
+    `UPDATE wallets SET sort_order = CASE id ${cases} END WHERE id IN (${placeholders})`,
+    params,
+  );
 }
 
 export async function getWalletTransactionCount(
@@ -1001,6 +1016,24 @@ async function migrateAiHistoryMonth(db: SQLiteDatabase) {
     await db.execAsync(
       "ALTER TABLE ai_history ADD COLUMN month INTEGER DEFAULT NULL",
     );
+  }
+}
+
+async function migrateWalletSortOrder(db: SQLiteDatabase) {
+  const cols = await db.getAllAsync<{ name: string }>(
+    "PRAGMA table_info(wallets)",
+  );
+  if (!cols.some((c) => c.name === "sort_order")) {
+    await db.execAsync(
+      "ALTER TABLE wallets ADD COLUMN sort_order INTEGER DEFAULT 0",
+    );
+    // Set initial sort order based on existing created_at order
+    const rows = await db.getAllAsync<{ id: string }>(
+      "SELECT id FROM wallets ORDER BY created_at",
+    );
+    for (let i = 0; i < rows.length; i++) {
+      await db.runAsync("UPDATE wallets SET sort_order = ? WHERE id = ?", [i, rows[i].id]);
+    }
   }
 }
 

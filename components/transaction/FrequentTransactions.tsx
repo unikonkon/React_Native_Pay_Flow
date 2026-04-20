@@ -34,8 +34,8 @@ export function FrequentTransactions({ onSelect }: FrequentTransactionsProps) {
   if (analyses.length === 0) return null;
 
   return (
-    <View className="py-3">
-      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground px-4 mb-2.5">รายการใช้บ่อย</Text>
+    <View className="pb-1">
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground px-4 mb-1">รายการใช้บ่อย</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
         <View className="flex-row" style={{ gap: 16 }}>
           {analyses.map((analysis) => {
