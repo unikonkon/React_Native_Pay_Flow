@@ -119,7 +119,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   }, [selectedWallet?.id, type, categories.length, recCatLimit, recTxLimit]);
 
   const commonCategories = useMemo(
-    () => categories.filter(c => c.type === type && c.isCustom === false).slice(0, commonCategoryLimit),
+    () => categories.filter(c => c.type === type).slice(0, commonCategoryLimit),
     [categories, type, commonCategoryLimit]
   );
 

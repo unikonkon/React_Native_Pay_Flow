@@ -61,7 +61,7 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
           className="w-11/12 max-w-md bg-card rounded-2xl p-4 border border-border"
         >
           <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-foreground font-bold text-lg">
+            <Text className="text-foreground font-bold text-lg" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>
               เพิ่มหมวด{type === 'expense' ? 'รายจ่าย' : 'รายรับ'}
             </Text>
             <Pressable onPress={onClose} className="p-1">
@@ -79,16 +79,17 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
               </View>
             </View>
 
-            <Text className="text-foreground font-semibold mb-2">ชื่อ</Text>
+            <Text className="text-foreground font-semibold mb-2" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>ชื่อ</Text>
             <TextInput
               value={name}
               onChangeText={setName}
               placeholder="ชื่อหมวดหมู่"
               placeholderTextColor="#999"
               className="border border-border rounded-xl px-3 py-3 mb-4 text-foreground"
+              style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}
             />
 
-            <Text className="text-foreground font-semibold mb-2">ไอคอน</Text>
+            <Text className="text-foreground font-semibold mb-2" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>ไอคอน</Text>
             <View className="flex-row flex-wrap gap-2 mb-4">
               {ICON_OPTIONS.map((ic) => {
                 const active = icon === ic;
@@ -108,7 +109,7 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
               })}
             </View>
 
-            <Text className="text-foreground font-semibold mb-2">สี</Text>
+            <Text className="text-foreground font-semibold mb-2" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>สี</Text>
             <View className="flex-row flex-wrap gap-3 mb-5">
               {COLOR_OPTIONS.map((c) => (
                 <Pressable
@@ -129,7 +130,7 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
               disabled={!name.trim() || saving}
               className={`py-3 rounded-full items-center bg-primary ${!name.trim() || saving ? 'opacity-50' : ''}`}
             >
-              <Text className="text-primary-foreground font-bold text-base">เพิ่ม</Text>
+              <Text className="text-primary-foreground font-bold text-base" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>เพิ่ม</Text>
             </Pressable>
           </ScrollView>
         </Pressable>

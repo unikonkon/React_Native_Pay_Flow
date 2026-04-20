@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useCallback, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, Switch, Text, View } from 'react-native';
+import { AddCategoryModal } from './AddCategoryModal';
 
 interface Props {
   visible: boolean;
@@ -24,9 +25,10 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
   const allCategories = useCategoryStore(s => s.categories);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [addVisible, setAddVisible] = useState(false);
 
   const allCommonCats = useMemo(
-    () => allCategories.filter(c => c.type === type && c.isCustom === false),
+    () => allCategories.filter(c => c.type === type),
     [allCategories, type]
   );
 
@@ -272,6 +274,42 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                           </Pressable>
                         );
                       })}
+
+                      {/* Add new category button */}
+                      <Pressable
+                        onPress={() => {
+                          if (selectedId) {
+                            setSelectedId(null);
+                            return;
+                          }
+                          Haptics.selectionAsync();
+                          setAddVisible(true);
+                        }}
+                        disabled={selectedId !== null}
+                        style={{ width: 66, alignItems: 'center', gap: 2, padding: 2, opacity: selectedId ? 0.4 : 1 }}
+                      >
+                        <View style={{
+                          width: 40, height: 40, borderRadius: 23,
+                          alignItems: 'center', justifyContent: 'center',
+                          backgroundColor: 'rgba(232,122,61,0.12)',
+                          borderWidth: 1.5,
+                          borderColor: 'rgba(232,122,61,0.4)',
+                          borderStyle: 'dashed',
+                        }}>
+                          <Ionicons name="add" size={22} color="#E87A3D" />
+                        </View>
+                        <Text
+                          style={{
+                            width: 66, textAlign: 'center',
+                            fontFamily: 'IBMPlexSansThai_600SemiBold',
+                            fontSize: 11,
+                            color: '#E87A3D',
+                          }}
+                          numberOfLines={1}
+                        >
+                          เพิ่ม
+                        </Text>
+                      </Pressable>
                     </View>
                     {selectedId && (
                       <Pressable
@@ -288,6 +326,12 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
           </ScrollView>
         </Pressable>
       </Pressable>
+
+      <AddCategoryModal
+        visible={addVisible}
+        type={type}
+        onClose={() => setAddVisible(false)}
+      />
     </Modal>
   );
 }
