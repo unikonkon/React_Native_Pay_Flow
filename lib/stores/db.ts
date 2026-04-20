@@ -407,6 +407,35 @@ export async function getSummaryByRange(
   };
 }
 
+export async function getTransactionsByCategoryAndRange(
+  db: SQLiteDatabase,
+  categoryId: string,
+  start: string,
+  end: string,
+  walletId?: string | null,
+  type?: TransactionType | null,
+): Promise<Transaction[]> {
+  const params: (string | number)[] = [categoryId, start, end];
+  let filters = "";
+  if (walletId) {
+    filters += " AND t.wallet_id = ?";
+    params.push(walletId);
+  }
+  if (type) {
+    filters += " AND t.type = ?";
+    params.push(type);
+  }
+
+  const rows = await db.getAllAsync<RawTransactionRow>(
+    `${TX_SELECT}
+     WHERE t.category_id = ? AND t.date BETWEEN ? AND ?${filters}
+     ORDER BY t.date DESC, t.created_at DESC`,
+    params,
+  );
+
+  return rows.map(mapTransactionRow);
+}
+
 export async function getAllTransactions(
   db: SQLiteDatabase,
 ): Promise<Transaction[]> {

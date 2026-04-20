@@ -105,7 +105,14 @@ export default function AnalyticsScreen() {
           </View>
         </View>
 
-        <PieChartView data={data} title={title} minPercentage={filterMin} />
+        <PieChartView
+          data={data}
+          title={title}
+          minPercentage={filterMin}
+          period={currentPeriod}
+          walletId={selectedWalletId}
+          viewType={viewType}
+        />
 
       </ScrollView>
     </SafeAreaView>

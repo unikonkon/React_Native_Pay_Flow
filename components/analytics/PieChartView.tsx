@@ -1,13 +1,18 @@
 import { formatCurrency } from '@/lib/utils/format';
-import type { CategorySummary } from '@/types';
+import type { Category, CategorySummary, Period } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
-import { Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
+import { CategoryCalendarModal } from './CategoryCalendarModal';
 
 interface PieChartViewProps {
   data: CategorySummary[];
   title: string;
   minPercentage?: number;
+  period?: Period;
+  walletId?: string | null;
+  viewType?: 'expense' | 'income' | 'all';
 }
 
 const CHART_SIZE = 220;
@@ -15,7 +20,9 @@ const STROKE_WIDTH = 38;
 const RADIUS = (CHART_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
-export function PieChartView({ data, title, minPercentage = 0 }: PieChartViewProps) {
+export function PieChartView({ data, title, minPercentage = 0, period, walletId, viewType }: PieChartViewProps) {
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+
   if (data.length === 0) {
     return (
       <View className="items-center py-10">
@@ -43,6 +50,8 @@ export function PieChartView({ data, title, minPercentage = 0 }: PieChartViewPro
       strokeDashoffset: -offset * CIRCUMFERENCE,
     };
   });
+
+  const filtered = data.filter(item => item.percentage >= minPercentage);
 
   return (
     <View className="mb-4">
@@ -103,15 +112,20 @@ export function PieChartView({ data, title, minPercentage = 0 }: PieChartViewPro
         shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 16, shadowOffset: { width: 0, height: 4 },
         elevation: 2, overflow: 'hidden',
       }}>
-        {data.filter(item => item.percentage >= minPercentage).map((item, i, arr) => {
+        {filtered.map((item, i) => {
           const color = item.category?.color ?? '#D3CBC3';
           return (
-            <View
+            <Pressable
               key={item.categoryId}
+              onPress={() => {
+                if (period && item.category) {
+                  setSelectedCategory(item.category);
+                }
+              }}
               style={{
                 flexDirection: 'row', alignItems: 'center', gap: 12,
                 paddingVertical: 14, paddingHorizontal: 16,
-                borderBottomWidth: i < arr.length - 1 ? 0.5 : 0,
+                borderBottomWidth: i < filtered.length - 1 ? 0.5 : 0,
                 borderBottomColor: 'rgba(42,35,32,0.08)',
               }}
             >
@@ -136,10 +150,23 @@ export function PieChartView({ data, title, minPercentage = 0 }: PieChartViewPro
                 <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 15, fontVariant: ['tabular-nums'] }} className="text-foreground">{formatCurrency(item.total)}</Text>
                 <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, fontVariant: ['tabular-nums'], marginTop: 2 }} className="text-muted-foreground">{item.percentage.toFixed(1)}%</Text>
               </View>
-            </View>
+              <Ionicons name="chevron-forward" size={14} color="#A39685" style={{ marginLeft: 2 }} />
+            </Pressable>
           );
         })}
       </View>
+
+      {/* Calendar Modal */}
+      {period && selectedCategory && (
+        <CategoryCalendarModal
+          visible={!!selectedCategory}
+          onClose={() => setSelectedCategory(null)}
+          category={selectedCategory}
+          period={period}
+          walletId={walletId}
+          viewType={viewType}
+        />
+      )}
     </View>
   );
 }
