@@ -58,6 +58,10 @@ export interface Settings {
   recTxColumns: number;
   recTxRows: number;
   defaultCategoryTab: 'recommend' | 'select';
+  showCommonCategories: boolean;
+  showTopCategories: boolean;
+  commonCategoryLimit: number;
+  topCategoryLimit: number;
 }
 
 // ===== Wallet Types =====

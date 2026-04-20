@@ -17,6 +17,10 @@ const DEFAULT_SETTINGS: Settings = {
   recTxColumns: 2,
   recTxRows: 2,
   defaultCategoryTab: 'select',
+  showCommonCategories: true,
+  showTopCategories: false,
+  commonCategoryLimit: 10,
+  topCategoryLimit: 8,
 };
 
 interface SettingsStore extends Settings {
@@ -53,6 +57,10 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       recTxColumns: get().recTxColumns,
       recTxRows: get().recTxRows,
       defaultCategoryTab: get().defaultCategoryTab,
+      showCommonCategories: get().showCommonCategories,
+      showTopCategories: get().showTopCategories,
+      commonCategoryLimit: get().commonCategoryLimit,
+      topCategoryLimit: get().topCategoryLimit,
     };
     const updated = { ...current, ...partial };
     await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));

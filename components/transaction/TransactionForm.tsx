@@ -28,6 +28,9 @@ interface TransactionFormProps {
   onClose: () => void;
 }
 
+/** Fixed column width for category quick rows (icon + label); label truncates with … */
+const CATEGORY_QUICK_ITEM_WIDTH = 66;
+
 export function TransactionForm({ editTransaction, onClose }: TransactionFormProps) {
   const [type, setType] = useState<TransactionType>('expense');
   const [amount, setAmount] = useState(0);
@@ -48,9 +51,12 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   const categories = useCategoryStore(s => s.categories);
   const wallets = useWalletStore(s => s.wallets);
   const defaultWalletId = useSettingsStore(s => s.defaultWalletId);
-  const recCategoryColumns = useSettingsStore(s => s.recCategoryColumns);
   const recTxColumns = useSettingsStore(s => s.recTxColumns);
   const recTxRows = useSettingsStore(s => s.recTxRows);
+  const showCommonCategories = useSettingsStore(s => s.showCommonCategories);
+  const showTopCategories = useSettingsStore(s => s.showTopCategories);
+  const commonCategoryLimit = useSettingsStore(s => s.commonCategoryLimit);
+  const topCategoryLimit = useSettingsStore(s => s.topCategoryLimit);
   const selectedWalletId = useTransactionStore(s => s.selectedWalletId);
   const addTransaction = useTransactionStore(s => s.addTransaction);
   const updateTransaction = useTransactionStore(s => s.updateTransaction);
@@ -60,7 +66,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
     [categories, type]
   );
 
-  const recCatLimit = Math.min(8, Math.max(3, recCategoryColumns || 6));
+  const recCatLimit = Math.min(20, Math.max(3, topCategoryLimit || 8));
   const recTxLimit = Math.min(4, Math.max(1, recTxColumns || 2)) * Math.min(4, Math.max(1, recTxRows || 2));
 
   // Pre-fill when editing
@@ -110,6 +116,11 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
     return () => { cancelled = true; };
   }, [selectedWallet?.id, type, categories.length, recCatLimit, recTxLimit]);
 
+  const commonCategories = useMemo(
+    () => categories.filter(c => c.type === type && c.isCustom === false).slice(0, commonCategoryLimit),
+    [categories, type, commonCategoryLimit]
+  );
+
   const topCategories = useMemo(
     () => topCategoryIds.map(id => categories.find(c => c.id === id)).filter((c): c is Category => !!c),
     [topCategoryIds, categories]
@@ -155,13 +166,16 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   return (
     <View className="flex-1 bg-background">
       {/* Header: settings (left) + pill toggle (center) + close (right) */}
-      <View className="flex-row items-center" style={{ paddingHorizontal: 14, paddingBottom: 6, gap: 8 }}>
+      <View className="flex-row items-center" style={{ paddingHorizontal: 14, paddingBottom: 1, gap: 8 }}>
         <Pressable
           onPress={() => setShowSettingsModal(true)}
-          style={{ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' }}
+          style={{ width: 82, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' }}
           className="bg-secondary"
         >
-          <Ionicons name="options-outline" size={18} color="#2A2320" />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, padding: 3}}>
+            <Ionicons name="options-outline" size={18} color="#9A8D80" />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 , color: '#9A8D80'}} className="text-foreground">ตั้งค่า</Text>
+          </View>
         </Pressable>
 
         <View className="flex-1 flex-row bg-secondary rounded-full" style={{ padding: 3 }}>
@@ -185,10 +199,10 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
 
         <Pressable
           onPress={onClose}
-          style={{ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' }}
+          style={{ width: 62, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' }}
           className="bg-secondary"
         >
-          <Ionicons name="close" size={16} color="#2A2320" />
+          <Ionicons name="close" size={16} color="#9A8D80" />
         </Pressable>
       </View>
 
@@ -199,64 +213,154 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           showsVerticalScrollIndicator={false}
         >
           {/* Amount display — centered large */}
-          <View style={{ paddingVertical: 14, paddingHorizontal: 24, alignItems: 'center' }}>
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginBottom: 2 }} className="text-muted-foreground">จำนวนเงิน</Text>
+          <View style={{ alignItems: 'center' }}>
             <Text style={{
-              fontFamily: 'Inter_900Black', fontSize: 36,
+              fontFamily: 'Inter_900Black', fontSize: 48,
               fontVariant: ['tabular-nums'], letterSpacing: -0.8,
-              color: amountColor, lineHeight: 40,
+              color: amountColor, lineHeight: 40, paddingTop: 24,
             }}>
               {type === 'expense' ? '−' : '+'}{amount > 0 ? amount.toLocaleString('en-US') : '0'}
               <Text style={{ fontSize: 18, fontFamily: 'Inter_400Regular', color: '#9A8D80', marginLeft: 6 }}> ฿</Text>
             </Text>
           </View>
 
-          {/* Category quick row */}
-          <View style={{ paddingBottom: 8 }}>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 4, gap: 10 }}>
-              {topCategories.map((cat) => {
-                const sel = cat.id === selectedCategory?.id;
-                return (
-                  <Pressable
-                    key={cat.id}
-                    onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); }}
-                    style={{ alignItems: 'center', gap: 4, padding: 2 }}
-                  >
-                    <View style={{
-                      padding: sel ? 2 : 0, borderRadius: 999,
-                      borderWidth: 2, borderColor: sel ? '#E87A3D' : 'transparent',
-                    }}>
-                      <View
-                        className="rounded-full items-center justify-center"
-                        style={{ width: 46, height: 46, backgroundColor: cat.color }}
-                      >
-                        <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
+          {/* Category quick row ที่มีอยู่ในกระเป๋า*/}
+          {showCommonCategories && (
+            <View style={{ paddingBottom: 8 }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 1, gap: 4, justifyContent: 'space-between' }}>
+                {commonCategories.map((cat) => {
+                  const sel = cat.id === selectedCategory?.id;
+                  return (
+                    <Pressable
+                      key={cat.id}
+                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); }}
+                      style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
+                    >
+                      <View style={{
+                        padding: sel ? 2 : 0, borderRadius: 999,
+                        borderWidth: 2, borderColor: sel ? '#E87A3D' : 'transparent',
+                      }}>
+                        <View
+                          className="rounded-full items-center justify-center"
+                          style={{ width: 46, height: 46, backgroundColor: cat.color }}
+                        >
+                          <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
+                        </View>
                       </View>
-                    </View>
-                    <Text style={{
-                      fontFamily: sel ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
-                      fontSize: 11, color: sel ? '#2A2320' : '#9A8D80',
-                    }} numberOfLines={1}>{cat.name}</Text>
-                  </Pressable>
-                );
-              })}
+                      <Text
+                        style={{
+                          width: CATEGORY_QUICK_ITEM_WIDTH,
+                          textAlign: 'center',
+                          fontFamily: sel ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
+                          fontSize: 11, color: sel ? '#2A2320' : '#9A8D80',
+                        }}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {cat.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
 
-              {/* เลือกเพิ่ม */}
-              <Pressable
-                onPress={() => setShowGridModal(true)}
-                style={{ alignItems: 'center', gap: 4, padding: 2 }}
-              >
-                <View style={{
-                  width: 46, height: 46, borderRadius: 23,
-                  borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E87A3D',
-                  alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <Ionicons name="add" size={18} color="#E87A3D" />
-                </View>
-                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, color: '#E87A3D' }}>เลือกเพิ่ม</Text>
-              </Pressable>
+                {/* เลือกเพิ่ม */}
+                <Pressable
+                  onPress={() => setShowGridModal(true)}
+                  style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 4, padding: 2 }}
+                >
+                  <View style={{
+                    width: 46, height: 46, borderRadius: 23,
+                    borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E87A3D',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Ionicons name="add" size={18} color="#E87A3D" />
+                  </View>
+                  <Text
+                    style={{
+                      width: CATEGORY_QUICK_ITEM_WIDTH,
+                      textAlign: 'center',
+                      fontFamily: 'IBMPlexSansThai_600SemiBold',
+                      fontSize: 11,
+                      color: '#E87A3D',
+                    }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    เลือกเพิ่ม
+                  </Text>
+                </Pressable>
+              </View>
             </View>
-          </View>
+          )}
+
+          {/* Category quick row ที่ใช้มากที่สุด*/}
+          {showTopCategories && (
+            <View style={{ paddingBottom: 8 }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 1, gap: 4, justifyContent: 'space-between' }}>
+                {topCategories.map((cat) => {
+                  const sel = cat.id === selectedCategory?.id;
+                  return (
+                    <Pressable
+                      key={cat.id}
+                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); }}
+                      style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
+                    >
+                      <View style={{
+                        padding: sel ? 2 : 0, borderRadius: 999,
+                        borderWidth: 2, borderColor: sel ? '#E87A3D' : 'transparent',
+                      }}>
+                        <View
+                          className="rounded-full items-center justify-center"
+                          style={{ width: 46, height: 46, backgroundColor: cat.color }}
+                        >
+                          <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
+                        </View>
+                      </View>
+                      <Text
+                        style={{
+                          width: CATEGORY_QUICK_ITEM_WIDTH,
+                          textAlign: 'center',
+                          fontFamily: sel ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
+                          fontSize: 11, color: sel ? '#2A2320' : '#9A8D80',
+                        }}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {cat.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+
+                {/* เลือกเพิ่ม */}
+                <Pressable
+                  onPress={() => setShowGridModal(true)}
+                  style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 4, padding: 2 }}
+                >
+                  <View style={{
+                    width: 46, height: 46, borderRadius: 23,
+                    borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E87A3D',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Ionicons name="add" size={18} color="#E87A3D" />
+                  </View>
+                  <Text
+                    style={{
+                      width: CATEGORY_QUICK_ITEM_WIDTH,
+                      textAlign: 'center',
+                      fontFamily: 'IBMPlexSansThai_600SemiBold',
+                      fontSize: 11,
+                      color: '#E87A3D',
+                    }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    เลือกเพิ่ม
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
 
           {/* Frequent pills */}
           {topAnalyses.length > 0 && (
@@ -289,10 +393,10 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                         <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={12} color="white" />
                       </View> */}
                       <View>
-                        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#2A2320', maxWidth: 90 }} numberOfLines={1}>
+                        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#2A2320', maxWidth: 90, textAlign: 'center' }} numberOfLines={1}>
                           {a.note || cat.name}
                         </Text>
-                        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 12.5, fontVariant: ['tabular-nums'], color: '#C65A4E', marginTop: 1 }}>
+                        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 12.5, fontVariant: ['tabular-nums'], color: '#C65A4E', marginTop: 1, textAlign: 'center' }}>
                           {formatCurrency(a.amount)}
                         </Text>
                       </View>

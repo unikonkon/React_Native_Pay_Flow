@@ -1,13 +1,8 @@
-import { useCategoryStore } from '@/lib/stores/category-store';
 import { useSettingsStore } from '@/lib/stores/settings-store';
-import { useTransactionStore } from '@/lib/stores/transaction-store';
-import { useAnalysisStore } from '@/lib/stores/analysis-store';
 import type { Category, TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, Text, View } from 'react-native';
-import { AddCategoryModal } from './AddCategoryModal';
+import { Modal, Pressable, ScrollView, Switch, Text, View } from 'react-native';
 
 interface Props {
   visible: boolean;
@@ -16,100 +11,25 @@ interface Props {
   onClose: () => void;
 }
 
-const MIN_COLS = 3; const MAX_COLS = 8;
-const MIN_ROWS = 2; const MAX_ROWS = 6;
-const REC_CAT_MIN_COLS = 3; const REC_CAT_MAX_COLS = 8;
-const REC_CAT_MIN_ROWS = 1; const REC_CAT_MAX_ROWS = 3;
-const REC_TX_MIN_COLS = 1; const REC_TX_MAX_COLS = 4;
-const REC_TX_MIN_ROWS = 1; const REC_TX_MAX_ROWS = 4;
-
-function StepperRow({ label, value, min, max, onChange }: {
-  label: string; value: number; min: number; max: number; onChange: (d: number) => void;
-}) {
-  const btn = 'w-8 h-8 rounded-full items-center justify-center bg-card border border-border';
-  return (
-    <View className="flex-row items-center justify-between" style={{ paddingVertical: 6 }}>
-      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-foreground flex-1">{label}</Text>
-      <View className="flex-row items-center" style={{ gap: 6 }}>
-        <Pressable onPress={() => onChange(-1)} disabled={value <= min} className={`${btn} ${value <= min ? 'opacity-40' : ''}`}>
-          <Ionicons name="remove" size={14} color="#6B5F52" />
-        </Pressable>
-        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 14, width: 20, textAlign: 'center' }} className="text-foreground">{value}</Text>
-        <Pressable onPress={() => onChange(1)} disabled={value >= max} className={`${btn} ${value >= max ? 'opacity-40' : ''}`}>
-          <Ionicons name="add" size={14} color="#6B5F52" />
-        </Pressable>
-      </View>
-    </View>
-  );
-}
-
 export function CategorySettingsModal({ visible, type, categories, onClose }: Props) {
-  const {
-    categoryColumns, categoryRows,
-    recCategoryColumns, recCategoryRows,
-    recTxColumns, recTxRows,
-    updateSettings,
-  } = useSettingsStore();
+  const showCommonCategories = useSettingsStore(s => s.showCommonCategories);
+  const showTopCategories = useSettingsStore(s => s.showTopCategories);
+  const commonCategoryLimit = useSettingsStore(s => s.commonCategoryLimit);
+  const topCategoryLimit = useSettingsStore(s => s.topCategoryLimit);
+  const updateSettings = useSettingsStore(s => s.updateSettings);
 
-  const deleteCategory = useCategoryStore(s => s.deleteCategory);
-  const reorderCategories = useCategoryStore(s => s.reorderCategories);
-  const loadTransactions = useTransactionStore(s => s.loadTransactions);
-  const loadAnalysis = useAnalysisStore(s => s.loadAnalysis);
+  const handleToggle = (key: 'showCommonCategories' | 'showTopCategories', value: boolean) => {
+    Haptics.selectionAsync();
+    updateSettings({ [key]: value });
+  };
 
-  const [addVisible, setAddVisible] = useState(false);
-  const [pickedId, setPickedId] = useState<string | null>(null);
-
-  const columns = Math.min(MAX_COLS, Math.max(MIN_COLS, categoryColumns || 6));
-  const rows = Math.min(MAX_ROWS, Math.max(MIN_ROWS, categoryRows || 3));
-  const recCatCols = Math.min(REC_CAT_MAX_COLS, Math.max(REC_CAT_MIN_COLS, recCategoryColumns || 6));
-  const recCatRows = Math.min(REC_CAT_MAX_ROWS, Math.max(REC_CAT_MIN_ROWS, recCategoryRows || 1));
-  const recTxCols = Math.min(REC_TX_MAX_COLS, Math.max(REC_TX_MIN_COLS, recTxColumns || 2));
-  const recTxRowsN = Math.min(REC_TX_MAX_ROWS, Math.max(REC_TX_MIN_ROWS, recTxRows || 2));
-
-  const adjust = (key: string, delta: number, cur: number, min: number, max: number) => {
-    const next = Math.min(max, Math.max(min, cur + delta));
-    if (next !== cur) {
+  const handleCount = (key: 'commonCategoryLimit' | 'topCategoryLimit', delta: number) => {
+    const current = key === 'commonCategoryLimit' ? commonCategoryLimit : topCategoryLimit;
+    const next = Math.min(20, Math.max(3, current + delta));
+    if (next !== current) {
       Haptics.selectionAsync();
       updateSettings({ [key]: next });
     }
-  };
-
-  const handleDelete = (cat: Category) => {
-    if (!cat.isCustom) return;
-    Alert.alert(
-      'ลบหมวดหมู่',
-      `ต้องการลบ "${cat.name}" ?\nรายการที่ใช้หมวดนี้ในทุกกระเป๋าจะถูกลบทั้งหมด`,
-      [
-        { text: 'ยกเลิก', style: 'cancel' },
-        {
-          text: 'ลบ', style: 'destructive',
-          onPress: async () => {
-            await deleteCategory(cat.id);
-            await loadTransactions();
-            await loadAnalysis();
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          },
-        },
-      ]
-    );
-  };
-
-  const handleManageTap = (cat: Category) => {
-    if (!pickedId) return;
-    if (pickedId === cat.id) {
-      Haptics.selectionAsync();
-      setPickedId(null);
-      return;
-    }
-    const ids = categories.map(c => c.id);
-    const from = ids.indexOf(pickedId);
-    const to = ids.indexOf(cat.id);
-    if (from < 0 || to < 0) { setPickedId(null); return; }
-    const [moved] = ids.splice(from, 1);
-    ids.splice(to, 0, moved);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    reorderCategories(type, ids);
-    setPickedId(null);
   };
 
   return (
@@ -125,94 +45,121 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
           </View>
 
           <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
-            {/* Steppers */}
-            <View className="bg-secondary rounded-2xl" style={{ padding: 12, marginBottom: 14 }}>
-              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 4 }} className="text-foreground">เมนูเลือกหมวด</Text>
-              <StepperRow label="คอลัมน์" value={columns} min={MIN_COLS} max={MAX_COLS} onChange={d => adjust('categoryColumns', d, columns, MIN_COLS, MAX_COLS)} />
-              <StepperRow label="แถว" value={rows} min={MIN_ROWS} max={MAX_ROWS} onChange={d => adjust('categoryRows', d, rows, MIN_ROWS, MAX_ROWS)} />
-
-              <View className="bg-border" style={{ height: 0.5, marginVertical: 8 }} />
-              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 4 }} className="text-foreground">หมวดใช้บ่อย (Quick Row)</Text>
-              <StepperRow label="จำนวน" value={recCatCols} min={REC_CAT_MIN_COLS} max={REC_CAT_MAX_COLS} onChange={d => adjust('recCategoryColumns', d, recCatCols, REC_CAT_MIN_COLS, REC_CAT_MAX_COLS)} />
-
-              <View className="bg-border" style={{ height: 0.5, marginVertical: 8 }} />
-              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 4 }} className="text-foreground">รายการใช้บ่อย (Pills)</Text>
-              <StepperRow label="คอลัมน์" value={recTxCols} min={REC_TX_MIN_COLS} max={REC_TX_MAX_COLS} onChange={d => adjust('recTxColumns', d, recTxCols, REC_TX_MIN_COLS, REC_TX_MAX_COLS)} />
-              <StepperRow label="แถว" value={recTxRowsN} min={REC_TX_MIN_ROWS} max={REC_TX_MAX_ROWS} onChange={d => adjust('recTxRows', d, recTxRowsN, REC_TX_MIN_ROWS, REC_TX_MAX_ROWS)} />
-            </View>
-
-            {/* Reorder hint */}
-            {pickedId ? (
-              <View className="flex-row items-center justify-center mb-3 px-3 py-2 bg-secondary/50 rounded-2xl">
-                <Ionicons name="move" size={14} color="#E87A3D" />
-                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-primary ml-1">แตะปลายทางเพื่อวาง · แตะเดิมเพื่อยกเลิก</Text>
+            {/* Section: หมวดหมู่ที่มีอยู่ในกระเป๋า */}
+            <View style={{ marginBottom: 20 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">
+                    หมวดหมู่ในกระเป๋า
+                  </Text>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">
+                    แสดงหมวดหมู่เริ่มต้นที่มีอยู่ในระบบ
+                  </Text>
+                </View>
+                <Switch
+                  value={showCommonCategories}
+                  onValueChange={(v) => handleToggle('showCommonCategories', v)}
+                  trackColor={{ false: '#D1C7BC', true: '#E87A3D' }}
+                  thumbColor="#fff"
+                />
               </View>
-            ) : (
-              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginBottom: 8 }} className="text-muted-foreground">กดค้างเพื่อย้ายลำดับ · แตะ ✕ เพื่อลบหมวดที่สร้างเอง</Text>
-            )}
 
-            {/* Category grid with delete/reorder */}
-            <View className="flex-row flex-wrap">
-              {categories.map((cat) => {
-                const isPicked = pickedId === cat.id;
-                const isTarget = !!pickedId && !isPicked;
-                return (
-                  <Pressable
-                    key={cat.id}
-                    onPress={() => handleManageTap(cat)}
-                    onLongPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setPickedId(cat.id); }}
-                    delayLongPress={250}
-                    style={{ width: `${100 / columns}%` }}
-                    className="items-center mb-3"
-                  >
-                    <View
-                      className="rounded-full items-center justify-center"
+              {showCommonCategories && (
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                  backgroundColor: 'rgba(42,35,32,0.03)', borderRadius: 12, padding: 12,
+                }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground">
+                    จำนวนที่แสดง
+                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <Pressable
+                      onPress={() => handleCount('commonCategoryLimit', -1)}
                       style={{
-                        width: 50, height: 50,
-                        backgroundColor: cat.color,
-                        opacity: isPicked ? 0.6 : 1,
-                        borderWidth: isPicked ? 2 : isTarget ? 2 : 0,
-                        borderColor: '#E87A3D',
-                        borderStyle: isTarget ? 'dashed' : 'solid',
+                        width: 32, height: 32, borderRadius: 16,
+                        alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: commonCategoryLimit <= 3 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
                       }}
                     >
-                      <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={22} color="white" />
-                      {cat.isCustom && (
-                        <Pressable
-                          onPress={() => handleDelete(cat)}
-                          hitSlop={8}
-                          style={{ position: 'absolute', top: -2, right: -2, width: 18, height: 18, borderRadius: 9, backgroundColor: '#C65A4E', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FBF7F0' }}
-                        >
-                          <Ionicons name="close" size={10} color="white" />
-                        </Pressable>
-                      )}
-                    </View>
-                    <Text
-                      style={{ fontFamily: isPicked ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 11, textAlign: 'center', marginTop: 4 }}
-                      className={isPicked ? 'text-primary' : 'text-foreground'}
-                      numberOfLines={1}
-                    >
-                      {cat.name}
+                      <Ionicons name="remove" size={16} color={commonCategoryLimit <= 3 ? '#D1C7BC' : '#E87A3D'} />
+                    </Pressable>
+                    <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 18, fontVariant: ['tabular-nums'], minWidth: 28, textAlign: 'center' }} className="text-foreground">
+                      {commonCategoryLimit}
                     </Text>
-                  </Pressable>
-                );
-              })}
-
-              {/* Add new */}
-              <Pressable
-                onPress={() => setAddVisible(true)}
-                style={{ width: `${100 / columns}%` }}
-                className="items-center mb-3"
-              >
-                <View style={{ width: 50, height: 50, borderRadius: 25, borderWidth: 2, borderStyle: 'dashed', borderColor: '#E87A3D', alignItems: 'center', justifyContent: 'center', opacity: 0.6 }}>
-                  <Ionicons name="add" size={22} color="#E87A3D" />
+                    <Pressable
+                      onPress={() => handleCount('commonCategoryLimit', 1)}
+                      style={{
+                        width: 32, height: 32, borderRadius: 16,
+                        alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: commonCategoryLimit >= 20 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                      }}
+                    >
+                      <Ionicons name="add" size={16} color={commonCategoryLimit >= 20 ? '#D1C7BC' : '#E87A3D'} />
+                    </Pressable>
+                  </View>
                 </View>
-                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, textAlign: 'center', marginTop: 4 }} className="text-primary">เพิ่ม</Text>
-              </Pressable>
+              )}
+            </View>
+
+            {/* Divider */}
+            <View style={{ height: 1, backgroundColor: 'rgba(42,35,32,0.08)', marginBottom: 20 }} />
+
+            {/* Section: หมวดหมู่ที่ใช้มากที่สุด */}
+            <View style={{ marginBottom: 20 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">
+                    หมวดหมู่ที่ใช้บ่อย
+                  </Text>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">
+                    แสดงหมวดหมู่ที่ใช้มากที่สุดในกระเป๋านี้
+                  </Text>
+                </View>
+                <Switch
+                  value={showTopCategories}
+                  onValueChange={(v) => handleToggle('showTopCategories', v)}
+                  trackColor={{ false: '#D1C7BC', true: '#E87A3D' }}
+                  thumbColor="#fff"
+                />
+              </View>
+
+              {showTopCategories && (
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                  backgroundColor: 'rgba(42,35,32,0.03)', borderRadius: 12, padding: 12,
+                }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground">
+                    จำนวนที่แสดง
+                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <Pressable
+                      onPress={() => handleCount('topCategoryLimit', -1)}
+                      style={{
+                        width: 32, height: 32, borderRadius: 16,
+                        alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: topCategoryLimit <= 3 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                      }}
+                    >
+                      <Ionicons name="remove" size={16} color={topCategoryLimit <= 3 ? '#D1C7BC' : '#E87A3D'} />
+                    </Pressable>
+                    <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 18, fontVariant: ['tabular-nums'], minWidth: 28, textAlign: 'center' }} className="text-foreground">
+                      {topCategoryLimit}
+                    </Text>
+                    <Pressable
+                      onPress={() => handleCount('topCategoryLimit', 1)}
+                      style={{
+                        width: 32, height: 32, borderRadius: 16,
+                        alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: topCategoryLimit >= 20 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                      }}
+                    >
+                      <Ionicons name="add" size={16} color={topCategoryLimit >= 20 ? '#D1C7BC' : '#E87A3D'} />
+                    </Pressable>
+                  </View>
+                </View>
+              )}
             </View>
           </ScrollView>
-
-          <AddCategoryModal visible={addVisible} type={type} onClose={() => setAddVisible(false)} />
         </Pressable>
       </Pressable>
     </Modal>
