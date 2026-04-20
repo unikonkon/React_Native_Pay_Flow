@@ -227,11 +227,12 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
 
                   {/* Reorder grid — same style as TransactionForm quick row */}
                   <View style={{ borderRadius: 12, padding: 8 }}>
-                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginBottom: 8, paddingHorizontal: 2 }}>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#E87A3D', marginBottom: 8, paddingHorizontal: 2 }}>
                       {selectedId ? 'กดอีกตัวเพื่อสลับตำแหน่ง' : 'กดค้างเพื่อเลือกสลับตำแหน่ง'}
                     </Text>
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
-                      {commonCats.map((cat) => {
+                      {allCommonCats.map((cat, idx) => {
+                        const isVisible = idx < commonCategoryLimit;
                         const isSelected = selectedId === cat.id;
                         const isTarget = selectedId !== null && selectedId !== cat.id;
                         return (
@@ -249,11 +250,11 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                             }}>
                               <View style={{
                                 width: 40, height: 40, borderRadius: 23,
-                                backgroundColor: cat.color,
+                                backgroundColor: isVisible ? cat.color : '#D1C7BC',
                                 alignItems: 'center', justifyContent: 'center',
-                                opacity: isSelected ? 1 : (isTarget ? 0.85 : 1),
+                                opacity: isSelected ? 1 : (isVisible ? (isTarget ? 0.85 : 1) : 0.5),
                               }}>
-                                <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
+                                <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color={isVisible ? 'white' : '#F5F0E8'} />
                               </View>
                             </View>
                             <Text
@@ -261,7 +262,7 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                                 width: 66, textAlign: 'center',
                                 fontFamily: isSelected ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
                                 fontSize: 11,
-                                color: isSelected ? '#E87A3D' : (isTarget ? '#2A2320' : '#9A8D80'),
+                                color: isSelected ? '#E87A3D' : (isVisible ? (isTarget ? '#2A2320' : '#9A8D80') : '#C5BAB0'),
                               }}
                               numberOfLines={1}
                               ellipsizeMode="tail"
