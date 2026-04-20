@@ -1,9 +1,9 @@
-import { View, Text, Pressable } from 'react-native';
+import { formatCurrency } from '@/lib/utils/format';
+import type { Transaction } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
-import type { Transaction } from '@/types';
-import { formatCurrency } from '@/lib/utils/format';
+import { Pressable, Text, View } from 'react-native';
 import { SwipeableRow } from './SwipeableRow';
 
 function formatTime(iso?: string): string {
@@ -131,7 +131,7 @@ export function TransactionGroupItem({
       </SwipeableRow>
 
       {isGroup && expanded && (
-        <View className="bg-card">
+        <View className="">
           {items.map((t) => (
             <SwipeableRow
               key={t.id}
@@ -148,8 +148,8 @@ export function TransactionGroupItem({
                   onItemLongPress?.(t);
                 }}
                 android_ripple={{ color: 'rgba(0,0,0,0.08)' }}
-                className="flex-row items-center border-b border-border/60 bg-card"
-                style={{ paddingVertical: 8, paddingLeft: 68, paddingRight: 16, gap: 8 }}
+                className="flex-row items-center border-b border-border/60 bg-card rounded-2xl"
+                style={{ paddingVertical: 8, paddingLeft: 68, paddingRight: 16, gap: 8, borderColor: 'rgba(42,35,32,0.28)' }}
               >
                 <View style={{ width: 8, height: 1 }} className="bg-border" />
                 <View className="flex-1">

@@ -1,8 +1,8 @@
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useRef } from 'react';
 import { Animated, Pressable, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
-import * as Haptics from 'expo-haptics';
 
 interface SwipeableRowProps {
   children: React.ReactNode;
@@ -20,13 +20,13 @@ export function SwipeableRow({ children, onDelete, onCopy }: SwipeableRowProps) 
     dragX: Animated.AnimatedInterpolation<number>,
   ) => {
     const scale = dragX.interpolate({
-      inputRange: [-120, 0],
+      inputRange: [-140, 0],
       outputRange: [1, 0.4],
       extrapolate: 'clamp',
     });
 
     return (
-      <View style={{ flexDirection: 'row', width: 120 }}>
+      <View style={{ flexDirection: 'row', width: 140, gap: 4,paddingLeft: 6 }}>
         <Pressable
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -36,6 +36,7 @@ export function SwipeableRow({ children, onDelete, onCopy }: SwipeableRowProps) 
           style={{
             flex: 1,
             backgroundColor: '#3b82f6',
+            borderRadius: 16,
             justifyContent: 'center',
             alignItems: 'center',
           }}
@@ -54,6 +55,7 @@ export function SwipeableRow({ children, onDelete, onCopy }: SwipeableRowProps) 
           style={{
             flex: 1,
             backgroundColor: '#ef4444',
+            borderRadius: 16,
             justifyContent: 'center',
             alignItems: 'center',
           }}

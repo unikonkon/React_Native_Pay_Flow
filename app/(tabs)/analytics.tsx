@@ -10,11 +10,12 @@ import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { useWalletStore } from '@/lib/stores/wallet-store';
 import { exportToCSV } from '@/lib/utils/data-transfer';
 import { getBarChartBuckets } from '@/lib/utils/period';
-import { Sparkles } from '@/assets/svg';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+const mascotRun = require('@/assets/mascot-run.png');
 
 type ChartTab = 'overview' | 'category' | 'wallets';
 
@@ -82,9 +83,17 @@ export default function AnalyticsScreen() {
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView>
         {/* Header title like prototype */}
-        <View style={{ paddingHorizontal: 18, paddingTop: 8, paddingBottom: 4, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 26, letterSpacing: -0.4 }} className="text-foreground">สรุป</Text>
-          <Sparkles size={12} />
+        <View className="px-4 pt-2 mb-2 flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <Image source={mascotRun} style={{ width: 44, height: 34 }} resizeMode="contain" />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground ml-2">สรุป</Text>
+          </View>
+          {/* Wallet filter */}
+          <WalletFilter
+            selectedWalletId={selectedWalletId}
+            onChange={setSelectedWalletId}
+            className=""
+          />
         </View>
 
         {/* Date range + wallet */}
@@ -96,11 +105,7 @@ export default function AnalyticsScreen() {
               className=""
             />
           </View>
-          <WalletFilter
-            selectedWalletId={selectedWalletId}
-            onChange={setSelectedWalletId}
-            className=""
-          />
+
         </View>
 
         <BalanceCard totalIncome={totalIncome} totalExpense={totalExpense} balance={balance} />

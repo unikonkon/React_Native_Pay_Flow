@@ -133,39 +133,55 @@ export default function TransactionsScreen() {
     <SafeAreaView className="flex-1 bg-background">
       {/* Header */}
       <View className="px-4 pt-2 pb-1">
-        <View className="flex-row items-center mb-2">
-          <Image source={mascotRun} style={{ width: 44, height: 34 }} resizeMode="contain" />
-          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground ml-2">รายการ</Text>
-        </View>
-
-        {/* Wallet + Month row */}
-        <View className="flex-row items-center justify-between mb-3">
+        <View className="flex-row items-center mb-2 justify-between">
+          <View className="flex-row items-center">
+            <Image source={mascotRun} style={{ width: 44, height: 34 }} resizeMode="contain" />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground ml-2">รายการ</Text>
+          </View>
+          {/* Wallet filter */}
           <WalletFilter
             selectedWalletId={selectedWalletId}
             onChange={setSelectedWalletId}
             className=""
           />
-          <PeriodSelector
-            period={currentPeriod}
-            onChange={setCurrentPeriod}
-            className=""
-          />
+        </View>
+
+        {/* Month row */}
+        <View className="flex-row items-center mb-1">
+          <View className="flex-1">
+            <PeriodSelector
+              period={currentPeriod}
+              onChange={setCurrentPeriod}
+              className=""
+            />
+          </View>
         </View>
 
         {/* Summary row — larger numbers like prototype */}
         <View className="flex-row justify-around pb-3">
           <View className="items-center flex-1">
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground mb-1">รายรับ</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground">รายรับ</Text>
             <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 22, fontVariant: ['tabular-nums'], letterSpacing: -0.4 }} className="text-income">{formatCurrency(totalIncome)}</Text>
           </View>
           <View className="items-center flex-1">
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground mb-1">รายจ่าย</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground">รายจ่าย</Text>
             <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 22, fontVariant: ['tabular-nums'], letterSpacing: -0.4 }} className="text-expense">{formatCurrency(totalExpense)}</Text>
           </View>
           <View className="items-center flex-1">
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground mb-1">คงเหลือ</Text>
-            <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 22, fontVariant: ['tabular-nums'], letterSpacing: -0.4 }} className={totalIncome - totalExpense >= 0 ? 'text-income' : 'text-expense'}>{formatCurrency(totalIncome - totalExpense)}</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground">คงเหลือ</Text>
+            <Text
+              style={{
+                fontFamily: 'Inter_700Bold',
+                fontSize: 22,
+                fontVariant: ['tabular-nums'],
+                letterSpacing: -0.4,
+                color: totalIncome - totalExpense >= 0 ? '#15803D' : '#B91C1C', // เขียวเข้มหรือแดงเข้ม
+              }}
+            >
+              {formatCurrency(totalIncome - totalExpense)}
+            </Text>
           </View>
+     
         </View>
       </View>
 

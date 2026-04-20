@@ -116,12 +116,13 @@ export function PeriodSelector({ period, onChange, className }: Props) {
         </Pressable>
         <Pressable
           onPress={handleOpen}
-          className="flex-row items-center px-3 py-1.5 rounded-xl bg-secondary/60 flex-shrink"
+          className="w-full flex-row items-center justify-center px-3.5 py-1.5 gap-2 rounded-full bg-white border border-border flex-shrink"
         >
-          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 17 }} className="text-foreground" numberOfLines={1}>
+          <Ionicons name="calendar-outline" size={16} color="#6B5F52" style={{ marginRight: 6 }} />
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 16 }} className="text-foreground" numberOfLines={1}>
             {formatPeriodLabel(period)}
           </Text>
-          <Ionicons name="chevron-down" size={18} color="#6B5F52" style={{ marginLeft: 4 }} />
+          <Ionicons name="chevron-down" size={14} color="#A39685" style={{ marginLeft: 4 }} />
         </Pressable>
         <Pressable
           onPress={() => { if (canShift) { Haptics.selectionAsync(); onChange(shiftPeriod(period, 1)); } }}
