@@ -1,16 +1,16 @@
+import { AddWalletModal } from '@/components/wallet/AddWalletModal';
+import { deleteApiKey, getApiKey, setApiKey } from '@/lib/api/ai';
+import { useSettingsStore } from '@/lib/stores/settings-store';
+import { getBiometricEnabled, isBiometricAvailable, setBiometricEnabled } from '@/lib/utils/auth';
+import { getNotificationsEnabled, setNotificationsEnabled } from '@/lib/utils/notifications';
+import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable, Alert, ScrollView, Image } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const mascotRun = require('@/assets/mascot-run.png');
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { useSettingsStore } from '@/lib/stores/settings-store';
-import { getApiKey, setApiKey, deleteApiKey } from '@/lib/api/ai';
-import { isBiometricAvailable, getBiometricEnabled, setBiometricEnabled } from '@/lib/utils/auth';
-import { getNotificationsEnabled, setNotificationsEnabled } from '@/lib/utils/notifications';
-import { AddWalletModal } from '@/components/wallet/AddWalletModal';
-import Constants from 'expo-constants';
 
 function SettingsRow({
   icon,
@@ -28,35 +28,47 @@ function SettingsRow({
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center"
       style={{
-        paddingVertical: 14,
-        paddingHorizontal: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
         gap: 12,
+        paddingVertical: 12,
+        paddingHorizontal: 14,
         borderBottomWidth: last ? 0 : 0.5,
-        borderBottomColor: '#EDE4D3',
+        borderBottomColor: 'rgba(42,35,32,0.08)',
       }}
     >
-      <View style={{ width: 22, alignItems: 'center' }}>
-        <Ionicons name={icon} size={20} color="#6B5F52" />
+      <View style={{
+        width: 30, height: 30, borderRadius: 9,
+        backgroundColor: '#FCE8D4',
+        alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Ionicons name={icon} size={16} color="#C85F28" />
       </View>
-      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15 }} className="flex-1 text-foreground">{label}</Text>
-      {value !== undefined && <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-muted-foreground">{value}</Text>}
-      <Ionicons name="chevron-forward" size={14} color="#A39685" />
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14.5, color: '#2A2320', flex: 1 }}>{label}</Text>
+      {value !== undefined && (
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80' }}>{value}</Text>
+      )}
+      <Ionicons name="chevron-forward" size={12} color="#9A8D80" />
     </Pressable>
   );
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <>
-      <View style={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 }}>
-        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">{title}</Text>
-      </View>
-      <View className="bg-card" style={{ marginHorizontal: 16, borderRadius: 16, overflow: 'hidden', shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 16, shadowOffset: { width: 0, height: 4 }, elevation: 2 }}>
+    <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+      <Text style={{
+        fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#9A8D80',
+        paddingHorizontal: 6, paddingBottom: 6, letterSpacing: 0.3,
+      }}>{title}</Text>
+      <View style={{
+        backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden',
+        shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 16,
+        shadowOffset: { width: 0, height: 4 }, elevation: 2,
+      }}>
         {children}
       </View>
-    </>
+    </View>
   );
 }
 
@@ -125,9 +137,10 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      <View className="flex-row items-center" style={{ paddingHorizontal: 18, paddingTop: 8, paddingBottom: 4, gap: 10 }}>
-        <Image source={mascotRun} style={{ width: 44, height: 34 }} resizeMode="contain" />
-        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground">ตั้งค่า</Text>
+      {/* Header */}
+      <View style={{ paddingHorizontal: 18, paddingTop: 8, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <Image source={mascotRun} style={{ width: 40, height: 40 }} resizeMode="contain" />
+        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 26, letterSpacing: -0.4, color: '#2A2320' }}>ตั้งค่า</Text>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
@@ -170,6 +183,14 @@ export default function SettingsScreen() {
           <SettingsRow icon="information-circle-outline" label="เวอร์ชัน" value={appVersion} />
           <SettingsRow icon="paw-outline" label="แมวมันนี่" value="MaewMoney" last />
         </Section>
+
+        {/* Footer */}
+        <Text style={{
+          fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11,
+          color: '#9A8D80', textAlign: 'center', marginTop: 20,
+        }}>
+          แมวมันนี่ v{appVersion} · ทำด้วย <Text style={{ color: '#E87A3D' }}>♥</Text> โดย Faraday
+        </Text>
       </ScrollView>
 
       <AddWalletModal

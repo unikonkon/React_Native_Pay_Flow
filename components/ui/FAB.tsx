@@ -16,7 +16,7 @@ export function FAB({ onPress }: FABProps) {
   return (
     <Pressable
       onPress={handlePress}
-      className="absolute -bottom-20 right-0"
+      className="absolute -bottom-20 right-2"
       style={({ pressed }) => ({
         transform: [{ scale: pressed ? 0.92 : 1 }],
         shadowColor: '#E87A3D',
@@ -28,9 +28,10 @@ export function FAB({ onPress }: FABProps) {
     >
       <Image
         source={mascotPlus}
-        style={{ width: 232, height: 232 }}
+        style={{ width: 232, height: 232, transform: [{ rotate: '-8deg' }] }}
         resizeMode="contain"
       />
+
     </Pressable>
   );
 }

@@ -1,9 +1,9 @@
+import { useWalletStore } from '@/lib/stores/wallet-store';
+import type { WalletType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { useWalletStore } from '@/lib/stores/wallet-store';
-import type { WalletType } from '@/types';
 
 interface Props {
   visible: boolean;
@@ -80,6 +80,7 @@ export function AddWalletModal({ visible, onClose, onCreated }: Props) {
               onChangeText={setName}
               placeholder="ชื่อกระเป๋าเงิน"
               placeholderTextColor="#999"
+              style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}
               className="border border-border rounded-xl px-3 py-3 mb-4 text-foreground"
             />
 

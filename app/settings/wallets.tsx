@@ -249,6 +249,7 @@ export default function WalletsScreen() {
               padding: 12,
               fontSize: 16,
               marginBottom: 16,
+              fontFamily: 'IBMPlexSansThai_400Regular',
             }}
           />
 
