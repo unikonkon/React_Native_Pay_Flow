@@ -124,7 +124,7 @@ export default function SettingsScreen() {
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <View className="flex-row items-center" style={{ paddingHorizontal: 18, paddingTop: 8, paddingBottom: 4, gap: 10 }}>
         <Image source={mascotRun} style={{ width: 44, height: 34 }} resizeMode="contain" />
         <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground">ตั้งค่า</Text>

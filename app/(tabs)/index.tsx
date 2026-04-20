@@ -130,7 +130,7 @@ export default function TransactionsScreen() {
   }, [addTransaction, selectedWalletId]);
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       {/* Header */}
       <View className="px-4 pt-2 pb-1">
         <View className="flex-row items-center mb-2 justify-between">

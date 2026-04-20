@@ -58,7 +58,7 @@ export default function AnalyticsScreen() {
   const filterMin = viewType === 'all' ? 0 : 3;
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScrollView>
         {/* Header */}
         <View className="px-4 pt-2 mb-2">

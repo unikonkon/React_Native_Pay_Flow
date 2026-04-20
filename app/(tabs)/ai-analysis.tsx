@@ -826,7 +826,7 @@ export default function PremiumScreen() {
   // ===== Not Premium: show paywall =====
   if (!isPremium) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
         <PremiumPaywall onUnlock={() => setIsPremium(true)} />
       </SafeAreaView>
     );
@@ -834,7 +834,7 @@ export default function PremiumScreen() {
 
   // ===== Premium: show inner tabs =====
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       {/* Header */}
       <View className="px-4 pt-4 pb-2 flex-row items-center justify-between">
         <View className="flex-row items-center">
