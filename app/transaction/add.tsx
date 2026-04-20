@@ -12,7 +12,7 @@ import { Easing } from 'react-native-reanimated';
 
 export default function AddTransactionScreen() {
   const sheetRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['90%'], []);
+  const snapPoints = useMemo(() => ['93%'], []);
 
   // 50% faster than default (250ms → 125ms)
   const animationConfigs = useBottomSheetTimingConfigs({

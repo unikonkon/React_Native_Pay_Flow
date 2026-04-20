@@ -207,13 +207,8 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
         </Pressable>
       </View>
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <BottomSheetScrollView
-          contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: 16 }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Amount display — centered large */}
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, paddingHorizontal: 14 }}>
+          {/* Amount display — fixed */}
           <View style={{ alignItems: 'center' }}>
             <Text style={{
               fontFamily: 'Inter_900Black', fontSize: 48,
@@ -225,147 +220,157 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             </Text>
           </View>
 
-          {/* Category quick row ที่มีอยู่ในกระเป๋า*/}
-          {showCommonCategories && (
-            <View style={{ paddingBottom: 8 }}>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 1, gap: 4, justifyContent: 'space-between' }}>
-                {commonCategories.map((cat) => {
-                  const sel = cat.id === selectedCategory?.id;
-                  return (
-                    <Pressable
-                      key={cat.id}
-                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setNote(''); setShowPastNotes(true); }}
-                      style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
-                    >
-                      <View style={{
-                        padding: sel ? 2 : 0, borderRadius: 999,
-                        borderWidth: 2, borderColor: sel ? '#E87A3D' : 'transparent',
-                      }}>
-                        <View
-                          className="rounded-full items-center justify-center"
-                          style={{ width: 46, height: 46, backgroundColor: cat.color }}
-                        >
-                          <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
-                        </View>
-                      </View>
-                      <Text
-                        style={{
-                          width: CATEGORY_QUICK_ITEM_WIDTH,
-                          textAlign: 'center',
-                          fontFamily: sel ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
-                          fontSize: 11, color: sel ? '#2A2320' : '#9A8D80',
-                        }}
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
+          {/* Category rows — scrollable, fills remaining space */}
+          <BottomSheetScrollView
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingBottom: 4 }}
+          >
+            {/* Category quick row ที่มีอยู่ในกระเป๋า*/}
+            {showCommonCategories && (
+              <View style={{ paddingBottom: 8 }}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 1, gap: 4, justifyContent: 'space-between' }}>
+                  {commonCategories.map((cat) => {
+                    const sel = cat.id === selectedCategory?.id;
+                    return (
+                      <Pressable
+                        key={cat.id}
+                        onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setNote(''); setShowPastNotes(true); }}
+                        style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
                       >
-                        {cat.name}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-
-                {/* เลือกเพิ่ม */}
-                <Pressable
-                  onPress={() => setShowGridModal(true)}
-                  style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 4, padding: 2 }}
-                >
-                  <View style={{
-                    width: 46, height: 46, borderRadius: 23,
-                    borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E87A3D',
-                    alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <Ionicons name="add" size={18} color="#E87A3D" />
-                  </View>
-                  <Text
-                    style={{
-                      width: CATEGORY_QUICK_ITEM_WIDTH,
-                      textAlign: 'center',
-                      fontFamily: 'IBMPlexSansThai_600SemiBold',
-                      fontSize: 11,
-                      color: '#E87A3D',
-                    }}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    เลือกเพิ่ม
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
-          )}
-
-          {/* Category quick row ที่ใช้มากที่สุด*/}
-          {showTopCategories && (
-            <View style={{ paddingBottom: 8 }}>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 1, gap: 4, justifyContent: 'space-between' }}>
-                {topCategories.map((cat) => {
-                  const sel = cat.id === selectedCategory?.id;
-                  return (
-                    <Pressable
-                      key={cat.id}
-                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setNote(''); setShowPastNotes(true); }}
-                      style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
-                    >
-                      <View style={{
-                        padding: sel ? 2 : 0, borderRadius: 999,
-                        borderWidth: 2, borderColor: sel ? '#E87A3D' : 'transparent',
-                      }}>
-                        <View
-                          className="rounded-full items-center justify-center"
-                          style={{ width: 46, height: 46, backgroundColor: cat.color }}
-                        >
-                          <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
+                        <View style={{
+                          padding: sel ? 2 : 0, borderRadius: 999,
+                          borderWidth: 2, borderColor: sel ? '#E87A3D' : 'transparent',
+                        }}>
+                          <View
+                            className="rounded-full items-center justify-center"
+                            style={{ width: 46, height: 46, backgroundColor: cat.color }}
+                          >
+                            <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
+                          </View>
                         </View>
-                      </View>
-                      <Text
-                        style={{
-                          width: CATEGORY_QUICK_ITEM_WIDTH,
-                          textAlign: 'center',
-                          fontFamily: sel ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
-                          fontSize: 11, color: sel ? '#2A2320' : '#9A8D80',
-                        }}
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                      >
-                        {cat.name}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
+                        <Text
+                          style={{
+                            width: CATEGORY_QUICK_ITEM_WIDTH,
+                            textAlign: 'center',
+                            fontFamily: sel ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
+                            fontSize: 11, color: sel ? '#2A2320' : '#9A8D80',
+                          }}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {cat.name}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
 
-                {/* เลือกเพิ่ม */}
-                <Pressable
-                  onPress={() => setShowGridModal(true)}
-                  style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 4, padding: 2 }}
-                >
-                  <View style={{
-                    width: 46, height: 46, borderRadius: 23,
-                    borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E87A3D',
-                    alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <Ionicons name="add" size={18} color="#E87A3D" />
-                  </View>
-                  <Text
-                    style={{
-                      width: CATEGORY_QUICK_ITEM_WIDTH,
-                      textAlign: 'center',
-                      fontFamily: 'IBMPlexSansThai_600SemiBold',
-                      fontSize: 11,
-                      color: '#E87A3D',
-                    }}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
+                  {/* เลือกเพิ่ม */}
+                  <Pressable
+                    onPress={() => setShowGridModal(true)}
+                    style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 4, padding: 2 }}
                   >
-                    เลือกเพิ่ม
-                  </Text>
-                </Pressable>
+                    <View style={{
+                      width: 46, height: 46, borderRadius: 23,
+                      borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E87A3D',
+                      alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <Ionicons name="add" size={18} color="#E87A3D" />
+                    </View>
+                    <Text
+                      style={{
+                        width: CATEGORY_QUICK_ITEM_WIDTH,
+                        textAlign: 'center',
+                        fontFamily: 'IBMPlexSansThai_600SemiBold',
+                        fontSize: 11,
+                        color: '#E87A3D',
+                      }}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      เลือกเพิ่ม
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
-            </View>
-          )}
+            )}
 
+            {/* Category quick row ที่ใช้มากที่สุด*/}
+            {showTopCategories && (
+              <View style={{ paddingBottom: 8 }}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 1, gap: 4, justifyContent: 'space-between' }}>
+                  {topCategories.map((cat) => {
+                    const sel = cat.id === selectedCategory?.id;
+                    return (
+                      <Pressable
+                        key={cat.id}
+                        onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setNote(''); setShowPastNotes(true); }}
+                        style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
+                      >
+                        <View style={{
+                          padding: sel ? 2 : 0, borderRadius: 999,
+                          borderWidth: 2, borderColor: sel ? '#E87A3D' : 'transparent',
+                        }}>
+                          <View
+                            className="rounded-full items-center justify-center"
+                            style={{ width: 46, height: 46, backgroundColor: cat.color }}
+                          >
+                            <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
+                          </View>
+                        </View>
+                        <Text
+                          style={{
+                            width: CATEGORY_QUICK_ITEM_WIDTH,
+                            textAlign: 'center',
+                            fontFamily: sel ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
+                            fontSize: 11, color: sel ? '#2A2320' : '#9A8D80',
+                          }}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {cat.name}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+
+                  {/* เลือกเพิ่ม */}
+                  <Pressable
+                    onPress={() => setShowGridModal(true)}
+                    style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 4, padding: 2 }}
+                  >
+                    <View style={{
+                      width: 46, height: 46, borderRadius: 23,
+                      borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E87A3D',
+                      alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <Ionicons name="add" size={18} color="#E87A3D" />
+                    </View>
+                    <Text
+                      style={{
+                        width: CATEGORY_QUICK_ITEM_WIDTH,
+                        textAlign: 'center',
+                        fontFamily: 'IBMPlexSansThai_600SemiBold',
+                        fontSize: 11,
+                        color: '#E87A3D',
+                      }}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      เลือกเพิ่ม
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            )}
+          </BottomSheetScrollView>
+
+          {/* Bottom fixed section */}
+          <View style={{ flexShrink: 0, paddingBottom: 6 }}>
           {/* Frequent pills */}
           {topAnalyses.length > 0 && (
-            <View style={{ paddingBottom: 10 }}>
+            <View style={{ paddingBottom: 6 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 1 }}>
                 <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-muted-foreground">
                   รายการที่ใช้บ่อย
@@ -390,9 +395,6 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                       }}
                       className={isActive ? '' : 'bg-card'}
                     >
-                      {/* <View className="rounded-full items-center justify-center" style={{ width: 26, height: 26, backgroundColor: cat.color }}>
-                        <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={12} color="white" />
-                      </View> */}
                       <View>
                         <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#2A2320', maxWidth: 90, textAlign: 'center' }} numberOfLines={1}>
                           {a.note || cat.name}
@@ -408,8 +410,8 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             </View>
           )}
 
-          {/* Date + Wallet chips */}
-          <View className="flex-row items-center mb-2" style={{ gap: 8, overflow: 'hidden' }}>
+          {/* Date + Wallet chips — fixed */}
+          <View className="flex-row items-center" style={{ gap: 8, overflow: 'hidden', marginBottom: 6, marginTop: 4 }}>
             <Pressable
               onPress={() => setShowDatePicker(true)}
               style={{ flexDirection: 'row', alignItems: 'center', gap: 5, padding: 4, flexShrink: 0 }}
@@ -475,7 +477,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             </Modal>
           )}
 
-          {/* Note input + past notes (in one row) */}
+          {/* Note input + past notes — fixed */}
           <View
             style={{
               borderRadius: 14,
@@ -483,7 +485,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               borderColor: 'rgba(42,35,32,0.08)',
               padding: 10,
               paddingHorizontal: 14,
-              marginBottom: 8,
+              marginBottom: 4,
               shadowColor: '#2A2320',
               shadowOpacity: 0.03,
               shadowRadius: 2,
@@ -491,7 +493,6 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               gap: 8,
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: undefined, // let className win for dark/light mode
             }}
             className="bg-card"
           >
@@ -558,7 +559,6 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               )
             }
           </View>
-    
 
           {/* Calculator */}
           <CalculatorPad
@@ -569,7 +569,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             saveLabel={isEditMode ? 'อัพเดท' : 'บันทึก'}
             saveDisabled={!amount || !selectedCategory}
           />
-        </BottomSheetScrollView>
+          </View>
       </KeyboardAvoidingView>
 
       {/* Modals */}
