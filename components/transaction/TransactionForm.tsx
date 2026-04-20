@@ -234,7 +234,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                   return (
                     <Pressable
                       key={cat.id}
-                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setShowPastNotes(true); }}
+                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setNote(''); setShowPastNotes(true); }}
                       style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
                     >
                       <View style={{
@@ -303,7 +303,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                   return (
                     <Pressable
                       key={cat.id}
-                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setShowPastNotes(true); }}
+                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setNote(''); setShowPastNotes(true); }}
                       style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
                     >
                       <View style={{
@@ -475,49 +475,90 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             </Modal>
           )}
 
-          {/* Note input + inline amount */}
-          <View style={{
-            flexDirection: 'row', alignItems: 'center', gap: 10,
-            borderRadius: 14, borderWidth: 1, borderColor: 'rgba(42,35,32,0.08)',
-            padding: 10, paddingHorizontal: 14, marginBottom: 8,
-            shadowColor: '#2A2320', shadowOpacity: 0.03, shadowRadius: 2, shadowOffset: { width: 0, height: 1 },
-          }} className="bg-card">
+          {/* Note input + past notes (in one row) */}
+          <View
+            style={{
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: 'rgba(42,35,32,0.08)',
+              padding: 10,
+              paddingHorizontal: 14,
+              marginBottom: 8,
+              shadowColor: '#2A2320',
+              shadowOpacity: 0.03,
+              shadowRadius: 2,
+              shadowOffset: { width: 0, height: 1 },
+              gap: 8,
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: undefined, // let className win for dark/light mode
+            }}
+            className="bg-card"
+          >
             <BottomSheetTextInput
               value={note}
               onChangeText={setNote}
-              placeholder="บันทึก..."
+              placeholder="บันทึก.."
               placeholderTextColor="#9A8D80"
               onFocus={() => setNoteFocused(true)}
               onBlur={() => setTimeout(() => setNoteFocused(false), 150)}
-              style={{ flex: 1, fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15, color: '#2A2320' }}
+              style={{
+                flex: 1,
+                fontFamily: 'IBMPlexSansThai_400Regular',
+                fontSize: 15,
+                color: '#2A2320',
+                paddingVertical: 0,
+                paddingRight: 6,
+                minHeight: 24,
+                minWidth: 56,
+              }}
             />
-            <Text style={{
-              fontFamily: 'Inter_900Black', fontSize: 22,
-              fontVariant: ['tabular-nums'], letterSpacing: -0.3, color: amountColor,
-            }}>
-              ฿{amount > 0 ? amount.toLocaleString('en-US') : '0'}
-            </Text>
+            {(noteFocused || showPastNotes) &&
+              pastNotes.filter(n => !note || n.toLowerCase().includes(note.toLowerCase())).length > 0 && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}
+                  style={{ flexShrink: 1, flexGrow: 0, minHeight: 24, marginLeft: 2 }}
+                >
+                  {pastNotes
+                    .filter(n => !note || n.toLowerCase().includes(note.toLowerCase()))
+                    .map(n => (
+                      <Pressable
+                        key={n}
+                        onPress={() => { setNote(n); setNoteFocused(false); setShowPastNotes(false); Haptics.selectionAsync(); }}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 4,
+                          paddingHorizontal: 10,
+                          paddingVertical: 5,
+                          borderRadius: 999,
+                          backgroundColor: 'rgba(42,35,32,0.05)',
+                          maxWidth: 120,
+                        }}
+                      >
+                        <Ionicons name="time-outline" size={11} color="#9A8D80" />
+                        <Text
+                          style={{
+                            fontFamily: 'IBMPlexSansThai_400Regular',
+                            fontSize: 12,
+                            color: '#2A2320',
+                            maxWidth: 90,
+                          }}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {n}
+                        </Text>
+                      </Pressable>
+                    ))}
+                </ScrollView>
+              )
+            }
           </View>
-
-          {/* Past notes */}
-          {(noteFocused || showPastNotes) && pastNotes.length > 0 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2" keyboardShouldPersistTaps="handled">
-              <View className="flex-row" style={{ gap: 6 }}>
-                {pastNotes
-                  .filter(n => !note || n.toLowerCase().includes(note.toLowerCase()))
-                  .map(n => (
-                    <Pressable
-                      key={n}
-                      onPress={() => { setNote(n); setNoteFocused(false); setShowPastNotes(false); Haptics.selectionAsync(); }}
-                      className="flex-row items-center px-3 py-1.5 rounded-full border border-border bg-secondary"
-                    >
-                      <Ionicons name="time-outline" size={12} color="#9A8D80" />
-                      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-foreground ml-1" numberOfLines={1}>{n}</Text>
-                    </Pressable>
-                  ))}
-              </View>
-            </ScrollView>
-          )}
+    
 
           {/* Calculator */}
           <CalculatorPad

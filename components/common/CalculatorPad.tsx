@@ -158,9 +158,9 @@ export function CalculatorPad({
     : undefined;
 
   return (
-    <View style={{ paddingVertical: 10 }}>
+    <View style={{ paddingVertical: 1 }}>
       {BUTTONS.map((row, rowIdx) => (
-        <View key={rowIdx} className="flex-row" style={{ marginBottom: 8 }}>
+        <View key={rowIdx} className="flex-row" style={{ marginBottom: 4 }}>
           {row.map((btn, colIdx) => {
             const isNumber = btn.kind === 'num';
             return (
@@ -169,7 +169,7 @@ export function CalculatorPad({
                 onPress={() => handlePress(btn.label)}
                 android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
                 className={`flex-1 items-center justify-center ${isNumber ? 'bg-card' : 'bg-secondary'}`}
-                style={{ marginHorizontal: 4, paddingVertical: 16, borderRadius: 14 }}
+                style={{ marginHorizontal: 4, paddingVertical: 16, borderRadius: 12 }}
               >
                 {btn.icon ? (
                   <Ionicons name="backspace-outline" size={20} color="#6B5F52" />
@@ -185,12 +185,12 @@ export function CalculatorPad({
       ))}
 
       {/* Last row: 00 | 0 | Save (spans 2 columns) */}
-      <View className="flex-row" style={{ marginBottom: 4 }}>
+      <View className="flex-row" style={{ marginBottom: 2 }}>
         <Pressable
           onPress={() => handlePress('00')}
           android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
           className="flex-1 items-center justify-center bg-card"
-          style={{ marginHorizontal: 4, paddingVertical: 16, borderRadius: 14 }}
+          style={{ marginHorizontal: 4, paddingVertical: 10, borderRadius: 12 }}
         >
           <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 20, color: '#2B2118' }}>00</Text>
         </Pressable>
@@ -198,7 +198,7 @@ export function CalculatorPad({
           onPress={() => handlePress('0')}
           android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
           className="flex-1 items-center justify-center bg-card"
-          style={{ marginHorizontal: 4, paddingVertical: 16, borderRadius: 14 }}
+          style={{ marginHorizontal: 4, paddingVertical: 10, borderRadius: 12 }}
         >
           <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 20, color: '#2B2118' }}>0</Text>
         </Pressable>
@@ -207,7 +207,7 @@ export function CalculatorPad({
           disabled={saveDisabled}
           android_ripple={{ color: 'rgba(255,255,255,0.2)' }}
           style={{
-            flex: 2, marginHorizontal: 4, paddingVertical: 18, borderRadius: 16,
+            flex: 2, marginHorizontal: 4, paddingVertical: 12, borderRadius: 14,
             alignItems: 'center', justifyContent: 'center',
             backgroundColor: saveColor ?? '#F8F2E7',
             opacity: saveDisabled ? 0.5 : 1,
