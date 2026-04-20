@@ -1,19 +1,28 @@
-import { MiawHero, MiawThinking, GoldCracks } from '@/assets/svg';
+import { GoldCracks, MiawThinking } from '@/assets/svg';
 import { AiResultView } from '@/components/ai/AiResultView';
 import { analyzeFinances, getApiKey, getThaiMonthName } from '@/lib/api/ai';
 import { useAiHistoryStore } from '@/lib/stores/ai-history-store';
-import { getAvailableMonths, getAvailableYears, getDb, getTransactionsByRange, getTransactionsByYear } from '@/lib/stores/db';
-import { useWalletStore } from '@/lib/stores/wallet-store';
-import { useTransactionStore } from '@/lib/stores/transaction-store';
-import { useCategoryStore } from '@/lib/stores/category-store';
-import { useAnalysisStore } from '@/lib/stores/analysis-store';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
-import { useThemeStore } from '@/lib/stores/theme-store';
+import { useAnalysisStore } from '@/lib/stores/analysis-store';
+import { useCategoryStore } from '@/lib/stores/category-store';
+import { getAvailableMonths, getAvailableYears, getDb, getTransactionsByRange, getTransactionsByYear } from '@/lib/stores/db';
 import { useSettingsStore } from '@/lib/stores/settings-store';
+import { useThemeStore } from '@/lib/stores/theme-store';
+import { useTransactionStore } from '@/lib/stores/transaction-store';
+import { useWalletStore } from '@/lib/stores/wallet-store';
+import {
+  exportAllData,
+  exportAllDataExcel,
+  getExportCounts,
+  pickAndImportData,
+  pickAndImportDataExcel,
+  type ExportCounts,
+  type ImportResult,
+} from '@/lib/utils/data-transfer';
 import type { AiHistory } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
   FadeIn,
@@ -26,15 +35,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  exportAllData,
-  exportAllDataExcel,
-  getExportCounts,
-  pickAndImportData,
-  pickAndImportDataExcel,
-  type ExportCounts,
-  type ImportResult,
-} from '@/lib/utils/data-transfer';
 
 type PromptType = 'structured' | 'full';
 type InnerTab = 'ai' | 'data';
@@ -54,84 +54,162 @@ function getPeriodLabel(year: number, month: number | null): string {
 
 // ===== Premium Paywall =====
 
+const mascotPlus = require('@/assets/mascot-cosmic.png');
+
+const PREMIUM_FEATURES: { icon: keyof typeof Ionicons.glyphMap; title: string; desc: string }[] = [
+  { icon: 'sparkles-outline', title: 'AI วิเคราะห์การใช้จ่าย', desc: 'มิวช่วยดูพฤติกรรมการใช้เงิน ทุกสัปดาห์' },
+  { icon: 'download-outline', title: 'Export รายงาน PDF/Excel', desc: 'ส่งให้นักบัญชีหรือเก็บเป็นหลักฐาน' },
+  { icon: 'color-palette-outline', title: 'ธีมพิเศษ + มิวเปลี่ยนชุด', desc: '12 ธีม และชุดมิวตามฤดูกาล' },
+];
+
 function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
+  const [plan, setPlan] = useState<'month' | 'year'>('year');
 
   return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 140 }}>
-      {/* Hero with mascot */}
-      <View className="items-center" style={{ paddingTop: 12 }}>
-        <MiawHero size={160} />
-        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 24, marginTop: 4 }} className="text-foreground">
-          แมวมันนี่ Premium
-        </Text>
-        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14, marginTop: 4, textAlign: 'center', paddingHorizontal: 32 }} className="text-muted-foreground">
-          ปลดล็อกฟีเจอร์ขั้นสูงเพื่อจัดการเงินอย่างมืออาชีพ
-        </Text>
+    <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+      {/* Hero card with gradient */}
+      <View style={{
+        marginHorizontal: 16, marginTop: 8, marginBottom: 14,
+        paddingVertical: 22, paddingHorizontal: 20,
+        borderRadius: 28, overflow: 'hidden',
+        position: 'relative',
+      }}>
+        {/* Gradient background */}
+        <View style={{
+          ...StyleSheet.absoluteFillObject,
+          backgroundColor: '#FCE8D4',
+        }} />
+        <View style={{
+          position: 'absolute', top: 0, right: 0, bottom: 0, left: '40%',
+          backgroundColor: '#D8CCEC', opacity: 0.6,
+          borderTopLeftRadius: 80,
+        }} />
+        {/* Gold cracks decoration */}
+        <View style={{ position: 'absolute', top: 10, left: -10, opacity: 0.55 }}>
+          <GoldCracks width={130} height={50} opacity={0.5} />
+        </View>
+        <View style={{ position: 'absolute', bottom: -10, right: -20, opacity: 0.4 }}>
+          <GoldCracks width={100} height={40} opacity={0.4} />
+        </View>
+
+        {/* Content */}
+        <View style={{ zIndex: 2 }}>
+          <View style={{
+            alignSelf: 'flex-start',
+            flexDirection: 'row', alignItems: 'center', gap: 5,
+            paddingHorizontal: 10, paddingVertical: 4,
+            backgroundColor: 'rgba(255,255,255,0.5)',
+            borderRadius: 999,
+          }}>
+            <Ionicons name="sparkles" size={10} color="#6B4A9E" />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#6B4A9E' }}>มิว Premium</Text>
+          </View>
+          <Text style={{
+            fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 24,
+            color: '#2A2320', marginTop: 10, letterSpacing: -0.4, lineHeight: 30,
+          }}>
+            {'ปลดล็อกพลังทั้งหมด\nของมิวกันเถอะ'}
+          </Text>
+          <Text style={{
+            fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13,
+            color: '#6B5F55', marginTop: 6, maxWidth: 210,
+          }}>
+            บันทึกไม่จำกัด พร้อมฟีเจอร์สุดคุ้มอีก 3 อย่าง
+          </Text>
+        </View>
+
+        {/* Mascot */}
+        <Image
+          source={mascotPlus}
+          style={{
+            position: 'absolute', right: -98, bottom: -19,
+            width: 328, height: 188,
+            transform: [{ rotate: '-8deg' }],
+            zIndex: 1,
+          }}
+          resizeMode="contain"
+        />
       </View>
 
-      {/* Features card */}
-      <View className="bg-card border border-border" style={{ margin: 16, marginTop: 24, padding: 18, borderRadius: 20 }}>
-        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, marginBottom: 14 }} className="text-foreground">
-          ฟีเจอร์ Premium
-        </Text>
-        <FeatureRow icon="sparkles" label="AI วิเคราะห์การเงิน" desc="วิเคราะห์รายรับ-รายจ่ายอัจฉริยะด้วย AI" />
-        <FeatureRow icon="swap-horizontal" label="ส่งออก / นำเข้าข้อมูล" desc="สำรองและกู้คืนข้อมูลได้ทุกเมื่อ" />
-        <FeatureRow icon="analytics" label="รายงานเชิงลึก" desc="สรุปผลแบบละเอียดรายเดือนและรายปี" />
-        <FeatureRow icon="shield-checkmark" label="สำรองข้อมูลอัตโนมัติ" desc="ป้องกันข้อมูลสูญหาย" last />
+      {/* Feature list */}
+      <View style={{ marginHorizontal: 16, marginBottom: 14, gap: 10 }}>
+        {PREMIUM_FEATURES.map((f, i) => (
+          <View key={i} style={{
+            flexDirection: 'row', alignItems: 'center', gap: 12,
+            backgroundColor: '#fff', borderRadius: 20, padding: 14, paddingHorizontal: 16,
+            shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 16,
+            shadowOffset: { width: 0, height: 4 }, elevation: 2,
+          }}>
+            <View style={{
+              width: 38, height: 38, borderRadius: 12,
+              backgroundColor: i % 2 === 0 ? '#FCE8D4' : '#D8CCEC',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Ionicons name={f.icon} size={16} color={i % 2 === 0 ? '#C85F28' : '#6B4A9E'} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14.5, color: '#2A2320' }}>{f.title}</Text>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginTop: 2 }}>{f.desc}</Text>
+            </View>
+          </View>
+        ))}
       </View>
 
-      {/* Packages */}
-      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 }} className="text-foreground">
-        เลือกแพ็กเกจ
-      </Text>
-      <View className="flex-row" style={{ gap: 10, paddingHorizontal: 16 }}>
+      {/* Pricing cards */}
+      <View className="flex-row" style={{ gap: 10, paddingHorizontal: 16, marginBottom: 8 }}>
         {/* Monthly */}
         <Pressable
-          onPress={() => setSelectedPlan('monthly')}
-          className="flex-1 bg-card"
+          onPress={() => setPlan('month')}
+          className="flex-1"
           style={{
-            padding: 16,
-            borderRadius: 18,
-            borderWidth: selectedPlan === 'monthly' ? 2 : 1,
-            borderColor: selectedPlan === 'monthly' ? '#E87A3D' : '#EDE4D3',
-            backgroundColor: selectedPlan === 'monthly' ? 'rgba(232,122,61,0.08)' : undefined,
+            padding: 14, paddingBottom: 16, borderRadius: 20,
+            borderWidth: 2,
+            borderColor: plan === 'month' ? '#E87A3D' : 'rgba(42,35,32,0.08)',
+            backgroundColor: plan === 'month' ? '#fff' : 'transparent',
+            shadowColor: plan === 'month' ? '#2A2320' : 'transparent',
+            shadowOpacity: plan === 'month' ? 0.05 : 0,
+            shadowRadius: 16, shadowOffset: { width: 0, height: 4 },
+            elevation: plan === 'month' ? 2 : 0,
           }}
         >
-          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground">รายเดือน</Text>
-          <Text style={{ fontFamily: 'Inter_900Black', fontSize: 24, marginTop: 4 }} className="text-foreground">฿99</Text>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 2 }} className="text-muted-foreground">/เดือน</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80' }}>รายเดือน</Text>
+          <Text style={{ fontFamily: 'Inter_900Black', fontSize: 26, color: '#2A2320', marginTop: 4 }}>฿99</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginTop: 2 }}>/ เดือน</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#9A8D80', marginTop: 6 }}>ยกเลิกได้ทุกเมื่อ</Text>
         </Pressable>
 
         {/* Yearly */}
         <View className="flex-1" style={{ position: 'relative' }}>
           <View style={{
-            position: 'absolute', top: -10, right: 8, zIndex: 2,
-            paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999,
+            position: 'absolute', top: -10, right: 10, zIndex: 2,
+            paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999,
             backgroundColor: '#E8B547',
           }}>
-            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 11, color: '#fff' }}>ประหยัด 25%</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 10, color: '#2A2320' }}>คุ้มสุด ★</Text>
           </View>
           <Pressable
-            onPress={() => setSelectedPlan('yearly')}
-            className="bg-card"
+            onPress={() => setPlan('year')}
             style={{
-              padding: 16,
-              borderRadius: 18,
-              borderWidth: selectedPlan === 'yearly' ? 2 : 1,
-              borderColor: selectedPlan === 'yearly' ? '#E87A3D' : '#EDE4D3',
-              backgroundColor: selectedPlan === 'yearly' ? 'rgba(232,122,61,0.08)' : undefined,
+              padding: 14, paddingBottom: 16, borderRadius: 20,
+              borderWidth: 2,
+              borderColor: plan === 'year' ? '#E87A3D' : 'rgba(42,35,32,0.08)',
+              backgroundColor: plan === 'year' ? '#fff' : 'transparent',
+              shadowColor: plan === 'year' ? '#2A2320' : 'transparent',
+              shadowOpacity: plan === 'year' ? 0.05 : 0,
+              shadowRadius: 16, shadowOffset: { width: 0, height: 4 },
+              elevation: plan === 'year' ? 2 : 0,
             }}
           >
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground">รายปี</Text>
-            <Text style={{ fontFamily: 'Inter_900Black', fontSize: 24, marginTop: 4 }} className="text-foreground">฿899</Text>
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 2 }} className="text-muted-foreground">/ปี (฿74.91/เดือน)</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80' }}>รายปี</Text>
+            <Text style={{ fontFamily: 'Inter_900Black', fontSize: 26, color: '#2A2320', marginTop: 4 }}>฿899</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginTop: 2 }}>/ ปี</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, color: '#C85F28', marginTop: 6 }}>ประหยัด 25%</Text>
           </Pressable>
         </View>
       </View>
 
       {/* CTA Button */}
-      <View style={{ paddingHorizontal: 16, paddingTop: 20 }}>
+      <View style={{ paddingHorizontal: 16, marginTop: 8 }}>
         <Pressable
           onPress={() => {
             Alert.alert(
@@ -144,49 +222,27 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
             );
           }}
           style={{
-            paddingVertical: 16, borderRadius: 16,
+            height: 52, borderRadius: 999,
             backgroundColor: '#E87A3D',
             shadowColor: '#E87A3D', shadowOpacity: 0.35, shadowRadius: 20, shadowOffset: { width: 0, height: 8 },
             elevation: 8,
             flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}
         >
-          <Ionicons name="diamond" size={18} color="white" />
-          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, color: '#fff' }}>สมัครสมาชิก Premium</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, color: '#fff' }}>เริ่มใช้ Premium</Text>
+          <Ionicons name="paw" size={14} color="#fff" />
         </Pressable>
       </View>
 
-      {/* Footer note */}
-      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, textAlign: 'center', paddingHorizontal: 24, paddingTop: 16 }} className="text-muted-foreground">
-        สามารถยกเลิกได้ทุกเมื่อ · ต่ออายุอัตโนมัติ · ไม่มีค่าใช้จ่ายแอบแฝง
+      {/* Footer */}
+      <Text style={{
+        fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11,
+        textAlign: 'center', color: '#9A8D80',
+        paddingHorizontal: 24, paddingTop: 12,
+      }}>
+        ทดลองฟรี 7 วัน · ยกเลิกได้ก่อนคิดเงิน
       </Text>
     </ScrollView>
-  );
-}
-
-function FeatureRow({ icon, label, desc, last }: {
-  icon: keyof typeof Ionicons.glyphMap; label: string; desc: string; last?: boolean;
-}) {
-  return (
-    <View className="flex-row items-start" style={{
-      paddingVertical: 12,
-      gap: 12,
-      borderBottomWidth: last ? 0 : 0.5,
-      borderBottomColor: '#EDE4D3',
-    }}>
-      <View style={{
-        width: 32, height: 32, borderRadius: 10,
-        alignItems: 'center', justifyContent: 'center',
-        backgroundColor: '#E87A3D',
-      }}>
-        <Ionicons name={icon} size={16} color="white" />
-      </View>
-      <View className="flex-1">
-        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">{label}</Text>
-        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">{desc}</Text>
-      </View>
-      <Ionicons name="checkmark-circle" size={20} color="#3E8B68" style={{ marginTop: 2 }} />
-    </View>
   );
 }
 
