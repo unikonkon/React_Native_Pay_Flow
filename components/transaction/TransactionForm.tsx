@@ -405,8 +405,8 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           {/* Frequent pills */}
           {showFrequentPills && topAnalyses.length > 0 && (
             <View style={{ paddingBottom: 6 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 1 }}>
-                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-muted-foreground">
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 8 }} className="text-muted-foreground">
                   {selectedCategory ? `รายการ ${selectedCategory.name} ที่ใช้บ่อย` : 'รายการที่ใช้บ่อย'}
                 </Text>
               </View>
@@ -421,7 +421,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                       onPress={() => handleFrequentPill(a)}
                       style={{
                         flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 6,
-                        paddingVertical: 3, paddingHorizontal: 12, paddingLeft: 6, borderRadius: 14,
+                        paddingVertical: 8, paddingHorizontal: 12, borderRadius: 14,
                         borderWidth: isActive ? 1.5 : 1,
                         borderColor: isActive ? '#E87A3D' : 'rgba(42,35,32,0.08)',
                         backgroundColor: isActive ? 'rgba(232,122,61,0.08)' : undefined,
