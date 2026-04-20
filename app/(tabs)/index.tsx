@@ -8,7 +8,7 @@ import { WalletFilter } from '@/components/wallet/WalletFilter';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
-import { formatCurrency } from '@/lib/utils/format';
+import { formatCurrency, getToday } from '@/lib/utils/format';
 import type { Analysis, Transaction } from '@/types';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
@@ -124,7 +124,7 @@ export default function TransactionsScreen() {
       categoryId: analysis.categoryId,
       walletId: selectedWalletId ?? analysis.walletId,
       note: analysis.note,
-      date: new Date().toISOString().split('T')[0],
+      date: getToday(),
     });
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, [addTransaction, selectedWalletId]);

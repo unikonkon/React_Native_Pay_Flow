@@ -57,8 +57,12 @@ export function getCurrentMonth(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
+export function toLocalDateISO(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export function getToday(): string {
-  return new Date().toISOString().split("T")[0];
+  return toLocalDateISO(new Date());
 }
 
 export function shiftMonth(month: string, offset: number): string {
@@ -86,12 +90,13 @@ export const THAI_DAYS = [
 ];
 
 export function formatRelativeDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  if (isSameDay(d, today)) return "วันนี้";
-  if (isSameDay(d, yesterday)) return "เมื่อวาน";
+  const todayStr = getToday();
+  if (dateStr === todayStr) return "วันนี้";
+
+  const y = new Date();
+  y.setDate(y.getDate() - 1);
+  if (dateStr === toLocalDateISO(y)) return "เมื่อวาน";
+
   return formatDateThai(dateStr);
 }
 

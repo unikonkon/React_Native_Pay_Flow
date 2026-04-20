@@ -4,7 +4,7 @@ import { getDb, getDistinctNotesByCategory, getFrequentAmountsByWallet, getTopCa
 import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { useWalletStore } from '@/lib/stores/wallet-store';
-import { formatCurrency } from '@/lib/utils/format';
+import { formatCurrency, toLocalDateISO } from '@/lib/utils/format';
 import type { Analysis, Category, Transaction, TransactionType, Wallet } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
@@ -148,9 +148,9 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
     if (!amount || !selectedCategory) return;
     const walletId = selectedWallet?.id ?? defaultWalletId;
     if (isEditMode && editTransaction) {
-      await updateTransaction(editTransaction.id, { type, amount, categoryId: selectedCategory.id, walletId, note: note.trim() || undefined, date: date.toISOString().split('T')[0] });
+      await updateTransaction(editTransaction.id, { type, amount, categoryId: selectedCategory.id, walletId, note: note.trim() || undefined, date: toLocalDateISO(date) });
     } else {
-      await addTransaction({ type, amount, categoryId: selectedCategory.id, walletId, note: note.trim() || undefined, date: date.toISOString().split('T')[0] });
+      await addTransaction({ type, amount, categoryId: selectedCategory.id, walletId, note: note.trim() || undefined, date: toLocalDateISO(date) });
     }
     onClose();
   }, [amount, selectedCategory, selectedWallet, defaultWalletId, type, note, date, isEditMode, editTransaction, addTransaction, updateTransaction, onClose]);
