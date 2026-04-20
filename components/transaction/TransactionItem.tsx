@@ -1,8 +1,8 @@
-import { View, Text, Pressable } from 'react-native';
+import { formatCurrency } from '@/lib/utils/format';
+import type { Transaction } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import type { Transaction } from '@/types';
-import { formatCurrency } from '@/lib/utils/format';
+import { Pressable, Text, View } from 'react-native';
 
 function formatTime(iso?: string): string {
   if (!iso) return '';

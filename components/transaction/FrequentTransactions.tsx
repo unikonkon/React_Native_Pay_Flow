@@ -35,7 +35,7 @@ export function FrequentTransactions({ onSelect }: FrequentTransactionsProps) {
 
   return (
     <View className="pb-1">
-      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }} className="text-muted-foreground px-4 mb-1">รายการใช้บ่อย</Text>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-muted-foreground px-4 mb-1">รายการใช้บ่อย</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
         <View className="flex-row" style={{ gap: 16 }}>
           {analyses.map((analysis) => {
@@ -57,10 +57,10 @@ export function FrequentTransactions({ onSelect }: FrequentTransactionsProps) {
                     color="white"
                   />
                 </View>
-                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-foreground text-center mt-1.5" numberOfLines={1}>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-foreground text-center mt-1.5" numberOfLines={1}>
                   {analysis.note || cat?.name || 'อื่นๆ'}
                 </Text>
-                <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">
+                <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 12, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">
                   {formatCurrency(analysis.amount)}
                 </Text>
               </Pressable>
