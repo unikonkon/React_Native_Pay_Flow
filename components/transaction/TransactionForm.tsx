@@ -209,17 +209,34 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
       </View>
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, paddingHorizontal: 14 }}>
-          {/* Amount display — fixed */}
-          <View style={{ alignItems: 'center' }}>
-            <Text style={{
-              fontFamily: 'Inter_900Black', fontSize: 48,
-              fontVariant: ['tabular-nums'], letterSpacing: -0.8,
-              color: amountColor, lineHeight: 40, paddingTop: 24,
-            }}>
-              {type === 'expense' ? '−' : '+'}{amount > 0 ? amount.toLocaleString('en-US') : '0'}
-              <Text style={{ fontSize: 18, fontFamily: 'Inter_400Regular', color: '#9A8D80', marginLeft: 6 }}> ฿</Text>
-            </Text>
+          {/* Amount display + selected category — fixed */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 16, paddingBottom: 4, justifyContent: 'center', position: 'relative' }}>
+            {/* Selected category at far left */}
+            <View style={{ position: 'absolute', left: 0, justifyContent: 'center', height: '100%', minWidth: 60, alignItems: 'flex-start' }}>
+              {selectedCategory && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: selectedCategory.color, alignItems: 'center', justifyContent: 'center' }}>
+                    <Ionicons name={selectedCategory.icon as keyof typeof Ionicons.glyphMap} size={10} color="white" />
+                  </View>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#2A2320' }}>
+                    {selectedCategory.name}
+                  </Text>
+                </View>
+              )}
+            </View>
+            {/* Amount display centered */}
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{
+                fontFamily: 'Inter_900Black', fontSize: 48,
+                fontVariant: ['tabular-nums'], letterSpacing: -0.8,
+                color: amountColor, lineHeight: 48,
+              }}>
+                {type === 'expense' ? '−' : '+'}{amount > 0 ? amount.toLocaleString('en-US') : '0'}
+                <Text style={{ fontSize: 18, fontFamily: 'Inter_400Regular', color: '#9A8D80', marginLeft: 6 }}> ฿</Text>
+              </Text>
+            </View>
           </View>
+     
 
           {/* Category rows — scrollable, fills remaining space */}
           <BottomSheetScrollView
@@ -578,6 +595,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
         visible={showGridModal}
         categories={filteredCategories}
         selectedId={selectedCategory?.id}
+        type={type}
         onSelect={setSelectedCategory}
         onClose={() => setShowGridModal(false)}
       />

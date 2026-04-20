@@ -1,18 +1,23 @@
-import type { Category } from '@/types';
+import type { Category, TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { AddCategoryModal } from './AddCategoryModal';
 
 interface Props {
   visible: boolean;
   categories: Category[];
   selectedId?: string;
+  type?: TransactionType;
   onSelect: (cat: Category) => void;
   onClose: () => void;
   columns?: number;
 }
 
-export function CategoryGridModal({ visible, categories, selectedId, onSelect, onClose, columns = 5 }: Props) {
+export function CategoryGridModal({ visible, categories, selectedId, type, onSelect, onClose, columns = 5 }: Props) {
+  const [addVisible, setAddVisible] = useState(false);
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable onPress={onClose} className="flex-1 bg-black/40 items-center justify-center">
@@ -65,10 +70,44 @@ export function CategoryGridModal({ visible, categories, selectedId, onSelect, o
                   </Pressable>
                 );
               })}
+
+              {/* เพิ่มหมวดหมู่ */}
+              {type && (
+                <Pressable
+                  onPress={() => setAddVisible(true)}
+                  style={{ width: `${100 / columns}%` }}
+                  className="items-center mb-3"
+                >
+                  <View style={{
+                    width: 50, height: 50, borderRadius: 25,
+                    borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E87A3D',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Ionicons name="add" size={22} color="#E87A3D" />
+                  </View>
+                  <Text
+                    style={{
+                      fontFamily: 'IBMPlexSansThai_600SemiBold',
+                      fontSize: 11, textAlign: 'center', marginTop: 4, color: '#E87A3D',
+                    }}
+                    numberOfLines={1}
+                  >
+                    เพิ่ม
+                  </Text>
+                </Pressable>
+              )}
             </View>
           </ScrollView>
         </Pressable>
       </Pressable>
+
+      {type && (
+        <AddCategoryModal
+          visible={addVisible}
+          type={type}
+          onClose={() => setAddVisible(false)}
+        />
+      )}
     </Modal>
   );
 }
