@@ -60,6 +60,7 @@ export interface Settings {
   defaultCategoryTab: 'recommend' | 'select';
   showCommonCategories: boolean;
   showTopCategories: boolean;
+  showFrequentPills: boolean;
   commonCategoryLimit: number;
   topCategoryLimit: number;
 }

@@ -14,11 +14,12 @@ interface Props {
 export function CategorySettingsModal({ visible, type, categories, onClose }: Props) {
   const showCommonCategories = useSettingsStore(s => s.showCommonCategories);
   const showTopCategories = useSettingsStore(s => s.showTopCategories);
+  const showFrequentPills = useSettingsStore(s => s.showFrequentPills);
   const commonCategoryLimit = useSettingsStore(s => s.commonCategoryLimit);
   const topCategoryLimit = useSettingsStore(s => s.topCategoryLimit);
   const updateSettings = useSettingsStore(s => s.updateSettings);
 
-  const handleToggle = (key: 'showCommonCategories' | 'showTopCategories', value: boolean) => {
+  const handleToggle = (key: 'showCommonCategories' | 'showTopCategories' | 'showFrequentPills', value: boolean) => {
     Haptics.selectionAsync();
     updateSettings({ [key]: value });
   };
@@ -59,7 +60,7 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                 <Switch
                   value={showCommonCategories}
                   onValueChange={(v) => handleToggle('showCommonCategories', v)}
-                  trackColor={{ false: '#D1C7BC', true: '#E87A3D' }}
+                  trackColor={{ false: '#A89888', true: '#E87A3D' }}
                   thumbColor="#fff"
                 />
               </View>
@@ -118,7 +119,7 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                 <Switch
                   value={showTopCategories}
                   onValueChange={(v) => handleToggle('showTopCategories', v)}
-                  trackColor={{ false: '#D1C7BC', true: '#E87A3D' }}
+                  trackColor={{ false: '#A89888', true: '#E87A3D' }}
                   thumbColor="#fff"
                 />
               </View>
@@ -158,6 +159,29 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                   </View>
                 </View>
               )}
+            </View>
+
+            {/* Divider */}
+            <View style={{ height: 1, backgroundColor: 'rgba(42,35,32,0.08)', marginBottom: 20 }} />
+
+            {/* Section: รายการที่ใช้บ่อย */}
+            <View style={{ marginBottom: 20 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">
+                    รายการที่ใช้บ่อย
+                  </Text>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">
+                    แสดงรายการบันทึกที่ใช้บ่อยเพื่อเลือกซ้ำได้เร็ว
+                  </Text>
+                </View>
+                <Switch
+                  value={showFrequentPills}
+                  onValueChange={(v) => handleToggle('showFrequentPills', v)}
+                  trackColor={{ false: '#A89888', true: '#E87A3D' }}
+                  thumbColor="#fff"
+                />
+              </View>
             </View>
           </ScrollView>
         </Pressable>

@@ -19,6 +19,7 @@ const DEFAULT_SETTINGS: Settings = {
   defaultCategoryTab: 'select',
   showCommonCategories: true,
   showTopCategories: false,
+  showFrequentPills: true,
   commonCategoryLimit: 10,
   topCategoryLimit: 8,
 };
@@ -59,6 +60,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       defaultCategoryTab: get().defaultCategoryTab,
       showCommonCategories: get().showCommonCategories,
       showTopCategories: get().showTopCategories,
+      showFrequentPills: get().showFrequentPills,
       commonCategoryLimit: get().commonCategoryLimit,
       topCategoryLimit: get().topCategoryLimit,
     };

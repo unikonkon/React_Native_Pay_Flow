@@ -56,6 +56,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   const recTxRows = useSettingsStore(s => s.recTxRows);
   const showCommonCategories = useSettingsStore(s => s.showCommonCategories);
   const showTopCategories = useSettingsStore(s => s.showTopCategories);
+  const showFrequentPills = useSettingsStore(s => s.showFrequentPills);
   const commonCategoryLimit = useSettingsStore(s => s.commonCategoryLimit);
   const topCategoryLimit = useSettingsStore(s => s.topCategoryLimit);
   const selectedWalletId = useTransactionStore(s => s.selectedWalletId);
@@ -369,7 +370,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           {/* Bottom fixed section */}
           <View style={{ flexShrink: 0, paddingBottom: 6 }}>
           {/* Frequent pills */}
-          {topAnalyses.length > 0 && (
+          {showFrequentPills && topAnalyses.length > 0 && (
             <View style={{ paddingBottom: 6 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 1 }}>
                 <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-muted-foreground">
