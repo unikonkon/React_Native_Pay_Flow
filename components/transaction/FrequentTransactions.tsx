@@ -1,22 +1,37 @@
-import { View, Text, Pressable, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import type { Analysis, Category } from '@/types';
+import { useCategoryStore } from '@/lib/stores/category-store';
+import { getDb, getFrequentAmountsByWallet } from '@/lib/stores/db';
+import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { formatCurrency } from '@/lib/utils/format';
+import type { Analysis } from '@/types';
+import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 
 interface FrequentTransactionsProps {
-  analyses: Analysis[];
-  categories: Category[];
   onSelect: (analysis: Analysis) => void;
 }
 
-export function FrequentTransactions({ analyses, categories, onSelect }: FrequentTransactionsProps) {
+export function FrequentTransactions({ onSelect }: FrequentTransactionsProps) {
+  const categories = useCategoryStore(s => s.categories);
+  const selectedWalletId = useTransactionStore(s => s.selectedWalletId);
+  const [analyses, setAnalyses] = useState<Analysis[]>([]);
+
+  useEffect(() => {
+    const wId = selectedWalletId || 'wallet-cash';
+    let cancelled = false;
+    (async () => {
+      try {
+        const db = getDb();
+        const results = await getFrequentAmountsByWallet(db, wId, 'expense', 10);
+        if (!cancelled) setAnalyses(results);
+      } catch {
+        if (!cancelled) setAnalyses([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [selectedWalletId]);
+
   if (analyses.length === 0) return null;
-
-  const getCategoryById = (id: string) => categories.find(c => c.id === id);
-
-  const handleSelect = (analysis: Analysis) => {
-    onSelect(analysis);
-  };
 
   return (
     <View className="py-3">
@@ -24,11 +39,11 @@ export function FrequentTransactions({ analyses, categories, onSelect }: Frequen
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
         <View className="flex-row" style={{ gap: 16 }}>
           {analyses.map((analysis) => {
-            const cat = getCategoryById(analysis.categoryId);
+            const cat = categories.find(c => c.id === analysis.categoryId);
             return (
               <Pressable
                 key={analysis.id}
-                onPress={() => handleSelect(analysis)}
+                onPress={() => onSelect(analysis)}
                 className="items-center"
                 style={{ width: 56 }}
               >
@@ -43,7 +58,7 @@ export function FrequentTransactions({ analyses, categories, onSelect }: Frequen
                   />
                 </View>
                 <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-foreground text-center mt-1.5" numberOfLines={1}>
-                  {cat?.name ?? 'อื่นๆ'}
+                  {analysis.note || cat?.name || 'อื่นๆ'}
                 </Text>
                 <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">
                   {formatCurrency(analysis.amount)}

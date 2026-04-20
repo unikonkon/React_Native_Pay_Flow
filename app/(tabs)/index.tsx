@@ -7,7 +7,6 @@ import { PeriodSelector } from '@/components/ui/PeriodSelector';
 import { WalletFilter } from '@/components/wallet/WalletFilter';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
-import { useCategoryStore } from '@/lib/stores/category-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { formatCurrency } from '@/lib/utils/format';
 import type { Analysis, Transaction } from '@/types';
@@ -33,8 +32,6 @@ export default function TransactionsScreen() {
   const totalIncome = useTransactionStore(s => s.totalIncome);
   const totalExpense = useTransactionStore(s => s.totalExpense);
 
-  const categories = useCategoryStore(s => s.categories);
-  const analyses = useAnalysisStore(s => s.analyses);
   const loadAnalysis = useAnalysisStore(s => s.loadAnalysis);
   const { isMonthlyTargetEnabled, monthlyExpenseTarget } = useAlertSettingsStore();
 
@@ -178,8 +175,6 @@ export default function TransactionsScreen() {
       )}
 
       <FrequentTransactions
-        analyses={analyses}
-        categories={categories}
         onSelect={handleFrequentSelect}
       />
 
