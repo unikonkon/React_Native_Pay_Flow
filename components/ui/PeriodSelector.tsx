@@ -106,7 +106,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
 
   return (
     <View className={className}>
-      <View className="flex-row items-center justify-between">
+      <View className="flex-row items-center justify-between rounded-full bg-white border border-border">
         <Pressable
           onPress={() => { if (canShift) { Haptics.selectionAsync(); onChange(shiftPeriod(period, -1)); } }}
           disabled={!canShift}
@@ -116,7 +116,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
         </Pressable>
         <Pressable
           onPress={handleOpen}
-          className="w-full flex-row items-center justify-center px-3.5 py-1.5 gap-2 rounded-full bg-white border border-border flex-shrink"
+          className="w-full flex-row items-center justify-center px-3.5 py-1.5 gap-2  flex-shrink"
         >
           <Ionicons name="calendar-outline" size={16} color="#6B5F52" style={{ marginRight: 6 }} />
           <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 16 }} className="text-foreground" numberOfLines={1}>

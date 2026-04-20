@@ -1,23 +1,16 @@
-import { BalanceCard } from '@/components/analytics/BalanceCard';
-import { BarChartView } from '@/components/analytics/BarChartView';
 import { PieChartView } from '@/components/analytics/PieChartView';
-import { WalletsContent } from '@/components/analytics/WalletsContent';
 import { PeriodSelector } from '@/components/ui/PeriodSelector';
 import { WalletFilter } from '@/components/wallet/WalletFilter';
 import { useSummary } from '@/hooks/useSummary';
-import { getAllTransactions, getDb, getSummariesByBuckets } from '@/lib/stores/db';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
-import { useWalletStore } from '@/lib/stores/wallet-store';
-import { exportToCSV } from '@/lib/utils/data-transfer';
-import { getBarChartBuckets } from '@/lib/utils/period';
-import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useRef, useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const mascotRun = require('@/assets/mascot-run.png');
 
-type ChartTab = 'overview' | 'category' | 'wallets';
+type ViewType = 'expense' | 'income' | 'all';
 
 export default function AnalyticsScreen() {
   const transactions = useTransactionStore(s => s.transactions);
@@ -26,14 +19,9 @@ export default function AnalyticsScreen() {
   const loadTransactions = useTransactionStore(s => s.loadTransactions);
   const selectedWalletId = useTransactionStore(s => s.selectedWalletId);
   const setSelectedWalletId = useTransactionStore(s => s.setSelectedWalletId);
-  const totalIncome = useTransactionStore(s => s.totalIncome);
-  const totalExpense = useTransactionStore(s => s.totalExpense);
+  const [viewType, setViewType] = useState<ViewType>('expense');
 
-  const wallets = useWalletStore(s => s.wallets);
-  const [chartTab, setChartTab] = useState<ChartTab>('category');
-
-  const balance = totalIncome - totalExpense;
-  const { expenseByCategory } = useSummary(transactions);
+  const { expenseByCategory, incomeByCategory } = useSummary(transactions);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
@@ -46,57 +34,49 @@ export default function AnalyticsScreen() {
     };
   }, [currentPeriod, loadTransactions]);
 
-  const [barData, setBarData] = useState<{ labels: string[]; incomeData: number[]; expenseData: number[] }>({
-    labels: [], incomeData: [], expenseData: [],
-  });
-
-  useEffect(() => {
-    const fetchBarData = async () => {
-      const buckets = getBarChartBuckets(currentPeriod);
-      const labels = buckets.map(b => b.label);
-      try {
-        const db = getDb();
-        const rows = await getSummariesByBuckets(db, buckets, selectedWalletId ?? undefined);
-        setBarData({
-          labels,
-          incomeData: rows.map(r => r.income),
-          expenseData: rows.map(r => r.expense),
-        });
-      } catch {
-        setBarData({ labels, incomeData: labels.map(() => 0), expenseData: labels.map(() => 0) });
+  const allByCategory = useMemo(() => {
+    const map = new Map<string, typeof expenseByCategory[number]>();
+    for (const item of [...expenseByCategory, ...incomeByCategory]) {
+      const existing = map.get(item.categoryId);
+      if (existing) {
+        existing.total += item.total;
+        existing.count += item.count;
+      } else {
+        map.set(item.categoryId, { ...item });
       }
-    };
-    fetchBarData();
-  }, [currentPeriod, selectedWalletId]);
-
-  const handleExport = async () => {
-    try {
-      const db = getDb();
-      const allTx = await getAllTransactions(db);
-      await exportToCSV(allTx);
-    } catch {
-      Alert.alert('ข้อผิดพลาด', 'ไม่สามารถส่งออกข้อมูลได้');
     }
-  };
+    const result = Array.from(map.values());
+    const grandTotal = result.reduce((s, r) => s + r.total, 0);
+    for (const r of result) {
+      r.percentage = grandTotal > 0 ? (r.total / grandTotal) * 100 : 0;
+    }
+    return result.sort((a, b) => b.total - a.total);
+  }, [expenseByCategory, incomeByCategory]);
+
+  const data = viewType === 'expense' ? expenseByCategory : viewType === 'income' ? incomeByCategory : allByCategory;
+  const title = viewType === 'expense' ? 'สัดส่วนรายจ่ายตามหมวดหมู่' : viewType === 'income' ? 'สัดส่วนรายรับตามหมวดหมู่' : 'สัดส่วนรวมตามหมวดหมู่';
+  const filterMin = viewType === 'all' ? 0 : 3;
 
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView>
-        {/* Header title like prototype */}
-        <View className="px-4 pt-2 mb-2 flex-row items-center justify-between">
-          <View className="flex-row items-center">
-            <Image source={mascotRun} style={{ width: 44, height: 34 }} resizeMode="contain" />
-            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground ml-2">สรุป</Text>
+        {/* Header */}
+        <View className="px-4 pt-2 mb-2">
+          <View className="flex-row items-center mb-2 justify-between">
+            <View className="flex-row items-center">
+              <Image source={mascotRun} style={{ width: 44, height: 34 }} resizeMode="contain" />
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground ml-2">สรุป</Text>
+            </View>
+            {/* Wallet filter */}
+            <WalletFilter
+              selectedWalletId={selectedWalletId}
+              onChange={setSelectedWalletId}
+              className=""
+            />
           </View>
-          {/* Wallet filter */}
-          <WalletFilter
-            selectedWalletId={selectedWalletId}
-            onChange={setSelectedWalletId}
-            className=""
-          />
         </View>
 
-        {/* Date range + wallet */}
+        {/* Period selector + expense/income toggle */}
         <View style={{ paddingHorizontal: 18, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <View style={{ flex: 1 }}>
             <PeriodSelector
@@ -105,53 +85,28 @@ export default function AnalyticsScreen() {
               className=""
             />
           </View>
-
+          {/* Expense / Income / All toggle */}
+          <View className="flex-row bg-white rounded-full border border-border overflow-hidden">
+            {([['expense', 'จ่าย'], ['income', 'รับ'], ['all', 'รวม']] as const).map(([key, label]) => (
+              <Pressable
+                key={key}
+                onPress={() => { Haptics.selectionAsync(); setViewType(key); }}
+                style={{ backgroundColor: viewType === key ? '#2B2118' : 'transparent' }}
+                className="px-3 py-1.5 rounded-full"
+              >
+                <Text style={{
+                  fontFamily: 'IBMPlexSansThai_600SemiBold',
+                  fontSize: 13,
+                  paddingHorizontal: 6,
+                  color: viewType === key ? '#fff' : '#6B5F52',
+                }}>{label}</Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
 
-        <BalanceCard totalIncome={totalIncome} totalExpense={totalExpense} balance={balance} />
+        <PieChartView data={data} title={title} minPercentage={filterMin} />
 
-        {/* Pill-style tabs like prototype */}
-        <View className="flex-row mx-4 mb-4 bg-secondary rounded-full" style={{ padding: 4 }}>
-          {(['overview', 'category', 'wallets'] as ChartTab[]).map(tab => (
-            <Pressable
-              key={tab}
-              onPress={() => setChartTab(tab)}
-              className="flex-1 items-center rounded-full"
-              style={{
-                paddingVertical: 10,
-                paddingHorizontal: 8,
-                backgroundColor: chartTab === tab ? '#E87A3D' : 'transparent',
-              }}
-            >
-              <Text style={{
-                fontFamily: 'IBMPlexSansThai_600SemiBold',
-                fontSize: 13,
-                color: chartTab === tab ? '#fff' : '#A39685',
-              }}>
-                {tab === 'overview' ? 'รายรับ/รายจ่าย' : tab === 'category' ? 'รายหมวด' : 'กระเป๋า'}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        {chartTab === 'overview' && (
-          <BarChartView labels={barData.labels} incomeData={barData.incomeData} expenseData={barData.expenseData} />
-        )}
-        {chartTab === 'category' && (
-          <PieChartView data={expenseByCategory} title="สัดส่วนรายจ่ายตามหมวดหมู่" />
-        )}
-        {chartTab === 'wallets' && (
-          <WalletsContent wallets={wallets} transactions={transactions} />
-        )}
-
-        <Pressable
-          onPress={handleExport}
-          className="flex-row items-center justify-center mx-4 my-6 bg-secondary border border-border"
-          style={{ paddingVertical: 14, borderRadius: 14 }}
-        >
-          <Ionicons name="download-outline" size={20} color="#6B5F52" />
-          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground ml-2">ส่งออก Excel</Text>
-        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
