@@ -287,10 +287,10 @@ function AiLoadingView() {
       <View className="mb-4">
         <MiawThinking size={100} />
       </View>
-      <Animated.Text key={stepIndex} entering={FadeIn.duration(400)} className="text-foreground font-semibold text-base mb-1">
+      <Animated.Text key={stepIndex} entering={FadeIn.duration(400)} style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 16, color: '#2A2320', marginBottom: 4 }}>
         {step.text}
       </Animated.Text>
-      <Text className="text-muted-foreground text-xs mb-4">โปรดรอสักครู่</Text>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginBottom: 16 }}>โปรดรอสักครู่</Text>
       <View className="w-full gap-3">
         {[0, 1, 2].map(i => <ShimmerBar key={i} index={i} />)}
       </View>
@@ -348,7 +348,7 @@ function HistoryModal({
       <Pressable onPress={onClose} className="flex-1 bg-black/40" />
       <View className="absolute bottom-0 left-0 right-0 bg-background rounded-t-2xl" style={{ height: '90%' }}>
           <View className="flex-row items-center justify-between px-4 pt-4 pb-2">
-            <Text className="text-foreground font-bold text-lg">ประวัติการวิเคราะห์</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, color: '#2A2320' }}>ประวัติการวิเคราะห์</Text>
             <Pressable onPress={onClose} className="p-1">
               <Ionicons name="close" size={22} color="#666" />
             </Pressable>
@@ -360,7 +360,7 @@ function HistoryModal({
               onPress={() => { setFilterYear(null); setFilterMonth(null); }}
               className={`px-3 py-1.5 rounded-full border ${filterYear === null ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
             >
-              <Text className={`text-sm ${filterYear === null ? 'text-primary font-semibold' : 'text-foreground'}`}>ทุกปี</Text>
+              <Text style={{ fontFamily: filterYear === null ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterYear === null ? '#E87A3D' : '#2A2320' }}>ทุกปี</Text>
             </Pressable>
             {years.map(y => (
               <Pressable
@@ -368,7 +368,7 @@ function HistoryModal({
                 onPress={() => { setFilterYear(y); setFilterMonth(null); }}
                 className={`px-3 py-1.5 rounded-full border ${filterYear === y ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
               >
-                <Text className={`text-sm ${filterYear === y ? 'text-primary font-semibold' : 'text-foreground'}`}>{y + 543}</Text>
+                <Text style={{ fontFamily: filterYear === y ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterYear === y ? '#E87A3D' : '#2A2320' }}>{y + 543}</Text>
               </Pressable>
             ))}
           </View>
@@ -379,7 +379,7 @@ function HistoryModal({
                 onPress={() => setFilterMonth(null)}
                 className={`px-3 py-1.5 rounded-full border ${filterMonth === null ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
               >
-                <Text className={`text-sm ${filterMonth === null ? 'text-primary font-semibold' : 'text-foreground'}`}>ทุกเดือน</Text>
+                <Text style={{ fontFamily: filterMonth === null ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterMonth === null ? '#E87A3D' : '#2A2320' }}>ทุกเดือน</Text>
               </Pressable>
               {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
                 <Pressable
@@ -387,7 +387,7 @@ function HistoryModal({
                   onPress={() => setFilterMonth(m)}
                   className={`px-3 py-1.5 rounded-full border ${filterMonth === m ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
                 >
-                  <Text className={`text-xs ${filterMonth === m ? 'text-primary font-semibold' : 'text-foreground'}`}>{THAI_MONTHS_SHORT[m]}</Text>
+                  <Text style={{ fontFamily: filterMonth === m ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, color: filterMonth === m ? '#E87A3D' : '#2A2320' }}>{THAI_MONTHS_SHORT[m]}</Text>
                 </Pressable>
               ))}
             </View>
@@ -398,13 +398,13 @@ function HistoryModal({
               onPress={() => setFilterWalletId('all')}
               className={`px-3 py-1.5 rounded-full border ${filterWalletId === 'all' ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
             >
-              <Text className={`text-sm ${filterWalletId === 'all' ? 'text-primary font-semibold' : 'text-foreground'}`}>ทุกกระเป๋า</Text>
+              <Text style={{ fontFamily: filterWalletId === 'all' ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterWalletId === 'all' ? '#E87A3D' : '#2A2320' }}>ทุกกระเป๋า</Text>
             </Pressable>
             <Pressable
               onPress={() => setFilterWalletId('none')}
               className={`px-3 py-1.5 rounded-full border ${filterWalletId === 'none' ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
             >
-              <Text className={`text-xs ${filterWalletId === 'none' ? 'text-primary font-semibold' : 'text-foreground'}`}>ไม่ระบุ</Text>
+              <Text style={{ fontFamily: filterWalletId === 'none' ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, color: filterWalletId === 'none' ? '#E87A3D' : '#2A2320' }}>ไม่ระบุ</Text>
             </Pressable>
             {wallets.map(w => (
               <Pressable
@@ -412,7 +412,7 @@ function HistoryModal({
                 onPress={() => setFilterWalletId(w.id)}
                 className={`px-3 py-1.5 rounded-full border ${filterWalletId === w.id ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
               >
-                <Text className={`text-xs ${filterWalletId === w.id ? 'text-primary font-semibold' : 'text-foreground'}`}>{w.name}</Text>
+                <Text style={{ fontFamily: filterWalletId === w.id ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, color: filterWalletId === w.id ? '#E87A3D' : '#2A2320' }}>{w.name}</Text>
               </Pressable>
             ))}
           </View>
@@ -420,7 +420,7 @@ function HistoryModal({
           {/* List */}
           <ScrollView className="px-4 pb-6">
             {filtered.length === 0 ? (
-              <Text className="text-muted-foreground text-sm text-center py-8">ไม่พบประวัติ</Text>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80', textAlign: 'center', paddingVertical: 32 }}>ไม่พบประวัติ</Text>
             ) : (
               filtered.map(h => (
                 <Pressable
@@ -430,12 +430,12 @@ function HistoryModal({
                   className="flex-row items-center px-4 py-3 bg-card border-b border-border rounded-xl mb-2"
                 >
                   <Ionicons name="document-text-outline" size={20} color="#E87A3D" />
-                  <View className="flex-1 ml-3">
-                    <Text className="text-foreground font-medium">
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: '#2A2320' }}>
                       {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
                     </Text>
-                    <Text className="text-muted-foreground text-xs">
-                      {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} • {new Date(h.createdAt).toLocaleDateString('th-TH')}
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#9A8D80', marginTop: 2 }}>
+                      {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
                     </Text>
                   </View>
                   <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -528,14 +528,14 @@ function DataTransferTab() {
           className={`flex-1 flex-row items-center justify-center py-2.5 ${dataTab === 'export' ? 'bg-primary' : 'bg-card'}`}
         >
           <Ionicons name="cloud-upload-outline" size={16} color={dataTab === 'export' ? 'white' : '#666'} />
-          <Text className={`ml-1.5 font-semibold text-sm ${dataTab === 'export' ? 'text-white' : 'text-muted-foreground'}`}>ส่งออก</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: dataTab === 'export' ? '#fff' : '#9A8D80', marginLeft: 6 }}>ส่งออก</Text>
         </Pressable>
         <Pressable
           onPress={() => { setDataTab('import'); clearFeedback(); }}
           className={`flex-1 flex-row items-center justify-center py-2.5 ${dataTab === 'import' ? 'bg-primary' : 'bg-card'}`}
         >
           <Ionicons name="cloud-download-outline" size={16} color={dataTab === 'import' ? 'white' : '#666'} />
-          <Text className={`ml-1.5 font-semibold text-sm ${dataTab === 'import' ? 'text-white' : 'text-muted-foreground'}`}>นำเข้า</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: dataTab === 'import' ? '#fff' : '#9A8D80', marginLeft: 6 }}>นำเข้า</Text>
         </Pressable>
       </View>
 
@@ -545,13 +545,13 @@ function DataTransferTab() {
           onPress={() => { setFormat('txt'); clearFeedback(); }}
           className={`flex-1 items-center py-2 mx-1 rounded-lg border ${format === 'txt' ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
         >
-          <Text className={`text-xs font-semibold ${format === 'txt' ? 'text-primary' : 'text-muted-foreground'}`}>TXT (JSON)</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: format === 'txt' ? '#E87A3D' : '#9A8D80' }}>TXT (JSON)</Text>
         </Pressable>
         <Pressable
           onPress={() => { setFormat('excel'); clearFeedback(); }}
           className={`flex-1 items-center py-2 mx-1 rounded-lg border ${format === 'excel' ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
         >
-          <Text className={`text-xs font-semibold ${format === 'excel' ? 'text-primary' : 'text-muted-foreground'}`}>Excel (.xlsx)</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: format === 'excel' ? '#E87A3D' : '#9A8D80' }}>Excel (.xlsx)</Text>
         </Pressable>
       </View>
 
@@ -561,7 +561,7 @@ function DataTransferTab() {
           <View className="bg-card rounded-2xl p-4 mb-4 border border-border">
             <View className="flex-row items-center mb-3">
               <Ionicons name={format === 'txt' ? 'document-text-outline' : 'grid-outline'} size={20} color="#E87A3D" />
-              <Text className="text-foreground font-semibold text-base ml-2">ข้อมูลที่จะส่งออก</Text>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, color: '#2A2320', marginLeft: 8 }}>ข้อมูลที่จะส่งออก</Text>
             </View>
             {counts ? (
               <View className="gap-2">
@@ -582,7 +582,7 @@ function DataTransferTab() {
           <View className="bg-blue-50 rounded-xl p-3 mb-4 border border-blue-200">
             <View className="flex-row items-start">
               <Ionicons name="information-circle" size={18} color="#3b82f6" style={{ marginTop: 1 }} />
-              <Text className="text-blue-700 text-xs ml-2 flex-1">
+              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#3b82f6', marginLeft: 8, flex: 1 }}>
                 {format === 'txt'
                   ? 'ข้อมูลจะถูกส่งออกเป็นไฟล์ .txt (JSON) รวมข้อมูลทั้งหมดในแอป สามารถใช้นำเข้ากลับได้'
                   : 'ข้อมูลจะถูกส่งออกเป็นไฟล์ .xlsx รวมข้อมูลทั้งหมด สามารถเปิดด้วย Google Sheets, Excel หรือนำเข้ากลับได้'}
@@ -595,7 +595,7 @@ function DataTransferTab() {
             <View className="bg-green-50 rounded-xl p-3 mb-4 border border-green-200">
               <View className="flex-row items-center">
                 <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
-                <Text className="text-green-700 text-sm ml-2 font-medium">ส่งออกข้อมูลเรียบร้อย!</Text>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#22c55e', marginLeft: 8 }}>ส่งออกข้อมูลเรียบร้อย!</Text>
               </View>
             </View>
           )}
@@ -603,7 +603,7 @@ function DataTransferTab() {
             <View className="bg-red-50 rounded-xl p-3 mb-4 border border-red-200">
               <View className="flex-row items-start">
                 <Ionicons name="close-circle" size={18} color="#ef4444" style={{ marginTop: 1 }} />
-                <Text className="text-red-700 text-xs ml-2 flex-1">{exportError}</Text>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#ef4444', marginLeft: 8, flex: 1 }}>{exportError}</Text>
               </View>
             </View>
           )}
@@ -614,7 +614,7 @@ function DataTransferTab() {
             {loading ? <ActivityIndicator color="white" /> : (
               <View className="flex-row items-center">
                 <Ionicons name="share-outline" size={20} color="white" />
-                <Text className="text-white font-bold text-base ml-2">
+                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#fff', marginLeft: 8 }}>
                   ส่งออกข้อมูลทั้งหมด ({format === 'txt' ? '.txt' : '.xlsx'})
                 </Text>
               </View>
@@ -627,9 +627,9 @@ function DataTransferTab() {
           <View className="bg-card rounded-2xl p-4 mb-4 border border-border">
             <View className="flex-row items-center mb-3">
               <Ionicons name="folder-open-outline" size={20} color="#E87A3D" />
-              <Text className="text-foreground font-semibold text-base ml-2">นำเข้าจากไฟล์สำรอง</Text>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, color: '#2A2320', marginLeft: 8 }}>นำเข้าจากไฟล์สำรอง</Text>
             </View>
-            <Text className="text-muted-foreground text-sm">
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80' }}>
               {format === 'txt'
                 ? 'เลือกไฟล์ .txt ที่ส่งออกจาก CeasFlow เพื่อนำข้อมูลเข้าสู่แอป'
                 : 'เลือกไฟล์ .xlsx ที่ส่งออกจาก CeasFlow เพื่อนำข้อมูลเข้าสู่แอป'}
@@ -641,10 +641,10 @@ function DataTransferTab() {
             <View className="flex-row items-start">
               <Ionicons name="warning" size={18} color="#f59e0b" style={{ marginTop: 1 }} />
               <View className="ml-2 flex-1">
-                <Text className="text-amber-800 text-xs font-semibold mb-1">หมายเหตุ</Text>
-                <Text className="text-amber-700 text-xs">• กระเป๋าที่ชื่อซ้ำจะสร้างเป็นชื่อใหม่ เช่น "เงินสด (2)"</Text>
-                <Text className="text-amber-700 text-xs">• ข้อมูลเดิมในแอปจะไม่ถูกลบ</Text>
-                <Text className="text-amber-700 text-xs">• หมวดหมู่ default ที่มีอยู่แล้วจะไม่ถูกสร้างซ้ำ</Text>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#92400e', marginBottom: 4 }}>หมายเหตุ</Text>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#b45309' }}>• กระเป๋าที่ชื่อซ้ำจะสร้างเป็นชื่อใหม่ เช่น "เงินสด (2)"</Text>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#b45309' }}>• ข้อมูลเดิมในแอปจะไม่ถูกลบ</Text>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#b45309' }}>• หมวดหมู่ default ที่มีอยู่แล้วจะไม่ถูกสร้างซ้ำ</Text>
               </View>
             </View>
           </View>
@@ -654,7 +654,7 @@ function DataTransferTab() {
             <View className="bg-green-50 rounded-2xl p-4 mb-4 border border-green-200">
               <View className="flex-row items-center mb-3">
                 <Ionicons name="checkmark-circle" size={22} color="#22c55e" />
-                <Text className="text-green-700 font-bold text-base ml-2">นำเข้าสำเร็จ!</Text>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#15803d', marginLeft: 8 }}>นำเข้าสำเร็จ!</Text>
               </View>
               <View className="gap-1.5">
                 <ResultRow label="กระเป๋าเงิน" count={importResult.wallets} extra={importResult.walletsRenamed > 0 ? `เปลี่ยนชื่อ ${importResult.walletsRenamed}` : undefined} />
@@ -663,7 +663,7 @@ function DataTransferTab() {
                 <ResultRow label="การวิเคราะห์" count={importResult.analysis} />
                 <ResultRow label="ประวัติ AI" count={importResult.aiHistory} />
                 {importResult.settingsRestored && (
-                  <Text className="text-green-700 text-xs">✓ คืนค่าตั้งค่าแอปแล้ว</Text>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#15803d' }}>✓ คืนค่าตั้งค่าแอปแล้ว</Text>
                 )}
               </View>
             </View>
@@ -672,7 +672,7 @@ function DataTransferTab() {
             <View className="bg-red-50 rounded-xl p-3 mb-4 border border-red-200">
               <View className="flex-row items-center">
                 <Ionicons name="close-circle" size={18} color="#ef4444" />
-                <Text className="text-red-700 text-sm ml-2">{importResult.error}</Text>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#ef4444', marginLeft: 8 }}>{importResult.error}</Text>
               </View>
             </View>
           )}
@@ -683,12 +683,12 @@ function DataTransferTab() {
             {loading ? (
               <View className="flex-row items-center">
                 <ActivityIndicator color="white" />
-                <Text className="text-white font-medium text-base ml-2">กำลังนำเข้า...</Text>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, color: '#fff', marginLeft: 8 }}>กำลังนำเข้า...</Text>
               </View>
             ) : (
               <View className="flex-row items-center">
                 <Ionicons name="document-attach-outline" size={20} color="white" />
-                <Text className="text-white font-bold text-base ml-2">
+                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#fff', marginLeft: 8 }}>
                   เลือกไฟล์ {format === 'txt' ? '.txt' : '.xlsx'} แล้วนำเข้า
                 </Text>
               </View>
@@ -702,10 +702,10 @@ function DataTransferTab() {
         <View pointerEvents="auto" className="absolute inset-0 items-center justify-center bg-black/40" style={{ zIndex: 50 }}>
           <View className="bg-card rounded-2xl px-6 py-5 items-center border border-border min-w-[220px]">
             <ActivityIndicator size="large" color="#E87A3D" />
-            <Text className="text-foreground text-base font-semibold mt-3">
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, color: '#2A2320', marginTop: 12 }}>
               {dataTab === 'export' ? 'กำลังส่งออกข้อมูล...' : 'กำลังนำเข้าข้อมูล...'}
             </Text>
-            <Text className="text-muted-foreground text-xs mt-1">กรุณารอสักครู่</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginTop: 4 }}>กรุณารอสักครู่</Text>
           </View>
         </View>
       )}
@@ -719,8 +719,8 @@ function CountRow({ icon, label, count, suffix }: {
   return (
     <View className="flex-row items-center">
       <Ionicons name={icon} size={16} color="#666" />
-      <Text className="text-foreground text-sm ml-2 flex-1">{label}</Text>
-      <Text className="text-muted-foreground text-sm font-medium">
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#2A2320', marginLeft: 8, flex: 1 }}>{label}</Text>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#9A8D80' }}>
         {suffix && count > 0 ? suffix : `${count} รายการ`}
       </Text>
     </View>
@@ -730,8 +730,8 @@ function CountRow({ icon, label, count, suffix }: {
 function ResultRow({ label, count, extra }: { label: string; count: number; extra?: string }) {
   return (
     <View className="flex-row items-center">
-      <Text className="text-green-700 text-xs flex-1">• {label}</Text>
-      <Text className="text-green-800 text-xs font-medium">
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#15803d', flex: 1 }}>• {label}</Text>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#166534' }}>
         {count} รายการ{extra ? ` (${extra})` : ''}
       </Text>
     </View>
@@ -892,195 +892,266 @@ export default function PremiumScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       {/* Header */}
-      <View className="px-4 pt-4 pb-2 flex-row items-center justify-between">
-        <View className="flex-row items-center">
-          <Ionicons name="diamond" size={20} color="#E87A3D" />
-          <Text className="text-foreground text-2xl font-bold ml-2">Premium</Text>
-        </View>
+      <View style={{ paddingHorizontal: 18, paddingTop: 8, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <Ionicons name="diamond" size={22} color="#C85F28" />
+        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 26, letterSpacing: -0.4, color: '#2A2320' }}>Premium</Text>
       </View>
 
-      {/* Inner Tab Bar */}
-      <View className="flex-row mx-4 mb-3 rounded-xl overflow-hidden border border-border">
-        <Pressable
-          onPress={() => setInnerTab('ai')}
-          className={`flex-1 flex-row items-center justify-center py-2.5 ${innerTab === 'ai' ? 'bg-primary' : 'bg-card'}`}
-        >
-          <Ionicons name="sparkles-outline" size={16} color={innerTab === 'ai' ? 'white' : '#666'} />
-          <Text className={`ml-1.5 font-semibold text-sm ${innerTab === 'ai' ? 'text-white' : 'text-muted-foreground'}`}>
-            AI วิเคราะห์
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setInnerTab('data')}
-          className={`flex-1 flex-row items-center justify-center py-2.5 ${innerTab === 'data' ? 'bg-primary' : 'bg-card'}`}
-        >
-          <Ionicons name="swap-horizontal-outline" size={16} color={innerTab === 'data' ? 'white' : '#666'} />
-          <Text className={`ml-1.5 font-semibold text-sm ${innerTab === 'data' ? 'text-white' : 'text-muted-foreground'}`}>
-            ข้อมูล
-          </Text>
-        </Pressable>
+      {/* Segmented tab */}
+      <View style={{
+        marginHorizontal: 16, marginBottom: 14, padding: 4, borderRadius: 14,
+        backgroundColor: '#F5EEE0', flexDirection: 'row', gap: 4,
+      }}>
+        {([['ai', 'sparkles-outline', 'AI วิเคราะห์'], ['data', 'swap-horizontal-outline', 'ข้อมูล']] as const).map(([key, icon, label]) => (
+          <Pressable
+            key={key}
+            onPress={() => setInnerTab(key as InnerTab)}
+            style={{
+              flex: 1, height: 44, borderRadius: 12,
+              backgroundColor: innerTab === key ? '#E87A3D' : 'transparent',
+              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+            }}
+          >
+            <Ionicons name={icon} size={14} color={innerTab === key ? '#fff' : '#9A8D80'} />
+            <Text style={{
+              fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14.5,
+              color: innerTab === key ? '#fff' : '#9A8D80',
+            }}>{label}</Text>
+          </Pressable>
+        ))}
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: 0 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
         {innerTab === 'ai' ? (
           <>
             {!hasApiKey && (
-              <View className="bg-expense/10 rounded-xl p-3 mb-4 flex-row items-center">
+              <View style={{ marginHorizontal: 16, marginBottom: 14, padding: 12, borderRadius: 12, backgroundColor: 'rgba(239,68,68,0.08)', flexDirection: 'row', alignItems: 'center' }}>
                 <Ionicons name="warning-outline" size={18} color="#EF4444" />
-                <Text className="text-foreground text-sm ml-2 flex-1">
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#2A2320', marginLeft: 8, flex: 1 }}>
                   กรุณาตั้งค่า Gemini API Key ในหน้าตั้งค่าก่อนใช้งาน
                 </Text>
               </View>
             )}
 
-            {/* Year Selector */}
-            <Text className="text-foreground font-semibold mb-2">ปี</Text>
-            {availableYears.length === 0 ? (
-              <View className="bg-secondary/50 rounded-xl p-3 mb-4">
-                <Text className="text-muted-foreground text-sm text-center">
-                  ยังไม่มีข้อมูลรายการ{selectedWalletId ? 'ในกระเป๋านี้' : ''}
-                </Text>
-              </View>
-            ) : (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
-                <View className="flex-row gap-2">
+            {/* ปี */}
+            <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, color: '#2A2320', marginBottom: 8 }}>ปี</Text>
+              {availableYears.length === 0 ? (
+                <View style={{ padding: 12, borderRadius: 12, backgroundColor: '#F5EEE0' }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80', textAlign: 'center' }}>
+                    ยังไม่มีข้อมูลรายการ{selectedWalletId ? 'ในกระเป๋านี้' : ''}
+                  </Text>
+                </View>
+              ) : (
+                <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
                   {availableYears.map(y => (
                     <Pressable
                       key={y}
                       onPress={() => handleSelectYear(y)}
-                      className={`px-4 py-2 rounded-full border ${selectedYear === y ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+                      style={{
+                        height: 34, paddingHorizontal: 14, borderRadius: 999,
+                        backgroundColor: selectedYear === y ? '#fff' : 'transparent',
+                        borderWidth: 1.5,
+                        borderColor: selectedYear === y ? '#E87A3D' : '#D9CFC3',
+                        alignItems: 'center', justifyContent: 'center',
+                      }}
                     >
-                      <Text className={`${selectedYear === y ? 'text-primary font-semibold' : 'text-foreground'}`}>{y}</Text>
+                      <Text style={{
+                        fontFamily: selectedYear === y ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                        fontSize: 13, color: selectedYear === y ? '#C85F28' : '#9A8D80',
+                      }}>{y}</Text>
                     </Pressable>
                   ))}
                 </View>
-              </ScrollView>
-            )}
+              )}
+            </View>
 
-            {/* Month Selector */}
+            {/* เดือน */}
             {availableMonths.length > 0 && (
-              <>
-                <Text className="text-foreground font-semibold mb-2">เดือน</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
-                  <View className="flex-row gap-2">
+              <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, color: '#2A2320', marginBottom: 8 }}>เดือน</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
                     <Pressable
                       onPress={() => setSelectedMonth(null)}
-                      className={`px-3 py-2 rounded-full border ${selectedMonth === null ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+                      style={{
+                        height: 34, paddingHorizontal: 14, borderRadius: 999,
+                        backgroundColor: selectedMonth === null ? '#fff' : 'transparent',
+                        borderWidth: 1.5,
+                        borderColor: selectedMonth === null ? '#E87A3D' : '#D9CFC3',
+                        alignItems: 'center', justifyContent: 'center',
+                      }}
                     >
-                      <Text className={`text-sm ${selectedMonth === null ? 'text-primary font-semibold' : 'text-foreground'}`}>ทั้งปี</Text>
+                      <Text style={{
+                        fontFamily: selectedMonth === null ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                        fontSize: 13, color: selectedMonth === null ? '#C85F28' : '#9A8D80',
+                      }}>ทั้งปี</Text>
                     </Pressable>
                     {availableMonths.map(m => (
                       <Pressable
                         key={m}
                         onPress={() => setSelectedMonth(m)}
-                        className={`px-3 py-2 rounded-full border ${selectedMonth === m ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+                        style={{
+                          height: 34, paddingHorizontal: 14, borderRadius: 999,
+                          backgroundColor: selectedMonth === m ? '#fff' : 'transparent',
+                          borderWidth: 1.5,
+                          borderColor: selectedMonth === m ? '#E87A3D' : '#D9CFC3',
+                          alignItems: 'center', justifyContent: 'center',
+                        }}
                       >
-                        <Text className={`text-sm ${selectedMonth === m ? 'text-primary font-semibold' : 'text-foreground'}`}>{THAI_MONTHS_SHORT[m]}</Text>
+                        <Text style={{
+                          fontFamily: selectedMonth === m ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                          fontSize: 13, color: selectedMonth === m ? '#C85F28' : '#9A8D80',
+                        }}>{THAI_MONTHS_SHORT[m]}</Text>
                       </Pressable>
                     ))}
                   </View>
                 </ScrollView>
-              </>
+              </View>
             )}
 
-            {/* Wallet Selector */}
-            <Text className="text-foreground font-semibold mb-2">กระเป๋าเงิน</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
-              <View className="flex-row gap-2">
-                <Pressable
-                  onPress={() => handleSelectWallet(null)}
-                  className={`px-3 py-2 rounded-full border ${!selectedWalletId ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
-                >
-                  <Text className={`text-sm ${!selectedWalletId ? 'text-primary font-semibold' : 'text-foreground'}`}>ทุกกระเป๋า</Text>
-                </Pressable>
-                {wallets.map(w => (
+            {/* กระเป๋าเงิน */}
+            <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, color: '#2A2320', marginBottom: 8 }}>กระเป๋าเงิน</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
                   <Pressable
-                    key={w.id}
-                    onPress={() => handleSelectWallet(w.id)}
-                    className={`flex-row items-center px-3 py-2 rounded-full border ${selectedWalletId === w.id ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+                    onPress={() => handleSelectWallet(null)}
+                    style={{
+                      height: 34, paddingHorizontal: 14, borderRadius: 999,
+                      backgroundColor: !selectedWalletId ? '#fff' : 'transparent',
+                      borderWidth: 1.5,
+                      borderColor: !selectedWalletId ? '#E87A3D' : '#D9CFC3',
+                      alignItems: 'center', justifyContent: 'center',
+                    }}
                   >
-                    <View className="w-5 h-5 rounded-full items-center justify-center mr-1" style={{ backgroundColor: w.color }}>
-                      <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={10} color="white" />
-                    </View>
-                    <Text className={`text-sm ${selectedWalletId === w.id ? 'text-primary font-semibold' : 'text-foreground'}`}>{w.name}</Text>
+                    <Text style={{
+                      fontFamily: !selectedWalletId ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                      fontSize: 13, color: !selectedWalletId ? '#C85F28' : '#9A8D80',
+                    }}>ทุกกระเป๋า</Text>
+                  </Pressable>
+                  {wallets.map(w => (
+                    <Pressable
+                      key={w.id}
+                      onPress={() => handleSelectWallet(w.id)}
+                      style={{
+                        height: 34, paddingHorizontal: 14, borderRadius: 999,
+                        backgroundColor: selectedWalletId === w.id ? '#fff' : 'transparent',
+                        borderWidth: 1.5,
+                        borderColor: selectedWalletId === w.id ? '#E87A3D' : '#D9CFC3',
+                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      }}
+                    >
+                      <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: w.color, alignItems: 'center', justifyContent: 'center' }}>
+                        <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={8} color="#fff" />
+                      </View>
+                      <Text style={{
+                        fontFamily: selectedWalletId === w.id ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                        fontSize: 13, color: selectedWalletId === w.id ? '#C85F28' : '#9A8D80',
+                      }}>{w.name}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+
+            {/* รูปแบบ */}
+            <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, color: '#2A2320', marginBottom: 8 }}>รูปแบบ</Text>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                {([['structured', 'วิเคราะห์แบบสรุป'], ['full', 'วิเคราะห์แบบละเอียด']] as const).map(([k, l]) => (
+                  <Pressable
+                    key={k}
+                    onPress={() => setPromptType(k)}
+                    style={{
+                      flex: 1, height: 44, borderRadius: 12,
+                      backgroundColor: promptType === k ? '#E87A3D' : '#fff',
+                      borderWidth: 1.5,
+                      borderColor: promptType === k ? '#E87A3D' : '#D9CFC3',
+                      alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    <Text style={{
+                      fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14,
+                      color: promptType === k ? '#fff' : '#2A2320',
+                    }}>{l}</Text>
                   </Pressable>
                 ))}
               </View>
-            </ScrollView>
-
-            {/* Prompt Type */}
-            <Text className="text-foreground font-semibold mb-2">รูปแบบ</Text>
-            <View className="flex-row mb-4 rounded-xl overflow-hidden border border-border">
-              <Pressable
-                onPress={() => setPromptType('structured')}
-                className={`flex-1 py-2.5 items-center ${promptType === 'structured' ? 'bg-primary' : 'bg-card'}`}
-              >
-                <Text className={`text-sm font-semibold ${promptType === 'structured' ? 'text-primary-foreground' : 'text-foreground'}`}>
-                  วิเคราะห์แบบสรุป
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setPromptType('full')}
-                className={`flex-1 py-2.5 items-center ${promptType === 'full' ? 'bg-primary' : 'bg-card'}`}
-              >
-                <Text className={`text-sm font-semibold ${promptType === 'full' ? 'text-primary-foreground' : 'text-foreground'}`}>
-                  วิเคราะห์แบบละเอียด
-                </Text>
-              </Pressable>
             </View>
 
-            {/* Analyze Button */}
+            {/* เริ่มวิเคราะห์ */}
             <Pressable
               onPress={handleAnalyze}
               disabled={isLoading || !hasApiKey || availableYears.length === 0}
-              className={`flex-row items-center justify-center py-4 rounded-xl mb-6 ${isLoading || !hasApiKey || availableYears.length === 0 ? 'bg-primary/50' : 'bg-primary'}`}
+              style={{
+                marginHorizontal: 16, marginTop: 6, marginBottom: 18,
+                height: 54, borderRadius: 14,
+                backgroundColor: isLoading || !hasApiKey || availableYears.length === 0 ? 'rgba(232,122,61,0.5)' : '#E87A3D',
+                shadowColor: '#E87A3D', shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+                elevation: 8,
+                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}
             >
-              {isLoading ? <ActivityIndicator color="white" /> : <Ionicons name="sparkles" size={20} color="white" />}
-              <Text className="text-white font-bold text-lg ml-2">
+              {isLoading ? <ActivityIndicator color="white" /> : <Ionicons name="sparkles" size={18} color="#fff" />}
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, color: '#fff' }}>
                 {isLoading ? 'กำลังวิเคราะห์...' : 'เริ่มวิเคราะห์'}
               </Text>
             </Pressable>
 
-            {isLoading && <AiLoadingView />}
+            {isLoading && <View style={{ marginHorizontal: 16 }}><AiLoadingView /></View>}
 
-            {/* History */}
+            {/* ประวัติการวิเคราะห์ */}
             {histories.length > 0 && !isLoading && (
-              <View>
-                <View className="flex-row items-center justify-between mb-3">
-                  <Text className="text-foreground font-bold text-base">ประวัติการวิเคราะห์</Text>
+              <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#2A2320', flex: 1 }}>ประวัติการวิเคราะห์</Text>
                   {histories.length > 5 && (
-                    <Pressable onPress={() => setHistoryModalVisible(true)} className="flex-row items-center">
-                      <Text className="text-primary text-sm font-semibold mr-1">ดูทั้งหมด ({histories.length})</Text>
-                      <Ionicons name="chevron-forward" size={14} color="#E87A3D" />
+                    <Pressable onPress={() => setHistoryModalVisible(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#E87A3D' }}>ดูทั้งหมด ({histories.length})</Text>
+                      <Ionicons name="chevron-forward" size={12} color="#E87A3D" />
                     </Pressable>
                   )}
                 </View>
-                {recentHistories.map(h => (
-                  <Pressable
-                    key={h.id}
-                    onPress={() => handleViewHistory(h)}
-                    onLongPress={() => handleDeleteHistory(h)}
-                    className="flex-row items-center px-4 py-3 bg-card border-b border-border rounded-xl mb-2"
-                  >
-                    <Ionicons name="document-text-outline" size={20} color="#E87A3D" />
-                    <View className="flex-1 ml-3">
-                      <Text className="text-foreground font-medium">
-                        {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
-                      </Text>
-                      <Text className="text-muted-foreground text-xs">
-                        {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} • {new Date(h.createdAt).toLocaleDateString('th-TH')}
-                      </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={16} color="#ccc" />
-                  </Pressable>
-                ))}
+                <View style={{ gap: 10 }}>
+                  {recentHistories.map(h => (
+                    <Pressable
+                      key={h.id}
+                      onPress={() => handleViewHistory(h)}
+                      onLongPress={() => handleDeleteHistory(h)}
+                      style={{
+                        backgroundColor: '#fff', borderRadius: 16, padding: 14,
+                        flexDirection: 'row', alignItems: 'center', gap: 10,
+                        shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 16,
+                        shadowOffset: { width: 0, height: 4 }, elevation: 2,
+                      }}
+                    >
+                      <View style={{
+                        width: 30, height: 30, borderRadius: 8,
+                        backgroundColor: '#FCE8D4',
+                        alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <Ionicons name="document-text-outline" size={14} color="#C85F28" />
+                      </View>
+                      <View style={{ flex: 1, minWidth: 0 }}>
+                        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: '#2A2320' }} numberOfLines={1}>
+                          {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
+                        </Text>
+                        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#9A8D80', marginTop: 2 }}>
+                          {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
+                        </Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={14} color="#9A8D80" />
+                    </Pressable>
+                  ))}
+                </View>
               </View>
             )}
 
             {/* Current Result */}
             {currentResult && !isLoading && (
-              <View className="mb-6">
-                <Text className="text-foreground font-bold text-base mb-3">ผลวิเคราะห์</Text>
+              <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#2A2320', marginBottom: 10 }}>ผลวิเคราะห์</Text>
                 <AiResultView
                   responseType={currentResult.type as any}
                   responseData={currentResult.data}
@@ -1090,7 +1161,9 @@ export default function PremiumScreen() {
             )}
           </>
         ) : (
-          <DataTransferTab />
+          <View style={{ paddingHorizontal: 16 }}>
+            <DataTransferTab />
+          </View>
         )}
       </ScrollView>
 
