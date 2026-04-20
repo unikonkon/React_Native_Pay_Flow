@@ -40,6 +40,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   const [note, setNote] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [noteFocused, setNoteFocused] = useState(false);
+  const [showPastNotes, setShowPastNotes] = useState(false);
   const [pastNotes, setPastNotes] = useState<string[]>([]);
   const [showGridModal, setShowGridModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -233,7 +234,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                   return (
                     <Pressable
                       key={cat.id}
-                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); }}
+                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setShowPastNotes(true); }}
                       style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
                     >
                       <View style={{
@@ -302,7 +303,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                   return (
                     <Pressable
                       key={cat.id}
-                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); }}
+                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setShowPastNotes(true); }}
                       style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
                     >
                       <View style={{
@@ -499,7 +500,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           </View>
 
           {/* Past notes */}
-          {noteFocused && pastNotes.length > 0 && (
+          {(noteFocused || showPastNotes) && pastNotes.length > 0 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2" keyboardShouldPersistTaps="handled">
               <View className="flex-row" style={{ gap: 6 }}>
                 {pastNotes
@@ -507,7 +508,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                   .map(n => (
                     <Pressable
                       key={n}
-                      onPress={() => { setNote(n); setNoteFocused(false); Haptics.selectionAsync(); }}
+                      onPress={() => { setNote(n); setNoteFocused(false); setShowPastNotes(false); Haptics.selectionAsync(); }}
                       className="flex-row items-center px-3 py-1.5 rounded-full border border-border bg-secondary"
                     >
                       <Ionicons name="time-outline" size={12} color="#9A8D80" />
