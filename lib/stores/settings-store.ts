@@ -1,22 +1,22 @@
-import { create } from 'zustand';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { Settings } from '@/types';
+import type { Settings } from "@/types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { create } from "zustand";
 
-const SETTINGS_KEY = 'app_settings';
+const SETTINGS_KEY = "app_settings";
 
 const DEFAULT_SETTINGS: Settings = {
-  currency: 'THB',
-  dateFormat: 'DD/MM/YYYY',
+  currency: "THB",
+  dateFormat: "DD/MM/YYYY",
   defaultTab: 0,
-  theme: 'system',
-  defaultWalletId: 'wallet-cash',
+  theme: "system",
+  defaultWalletId: "wallet-cash",
   categoryColumns: 6,
   categoryRows: 3,
   recCategoryColumns: 6,
   recCategoryRows: 1,
   recTxColumns: 2,
   recTxRows: 2,
-  defaultCategoryTab: 'select',
+  defaultCategoryTab: "select",
   showCommonCategories: true,
   showTopCategories: false,
   showFrequentPills: true,
