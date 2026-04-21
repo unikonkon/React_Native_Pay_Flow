@@ -73,7 +73,7 @@ export default function AnalyticsScreen() {
               onChange={setSelectedWalletId}
               className=""
             />
-          </View>
+          </View>     
         </View>
 
         {/* Period selector + expense/income toggle */}
@@ -102,7 +102,7 @@ export default function AnalyticsScreen() {
                 }}>{label}</Text>
               </Pressable>
             ))}
-          </View>
+          </View>         
         </View>
 
         <PieChartView

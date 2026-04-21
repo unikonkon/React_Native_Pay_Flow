@@ -6,12 +6,18 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 
-const THAI_MONTHS = [
+export const THAI_MONTHS = [
   'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
   'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
 ];
 
 const DAY_LABELS = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+
+export interface MonthData {
+  year: number;
+  month: number; // 0-based
+  days: { day: number; amount: number; txs: Transaction[] }[];
+}
 
 interface Props {
   visible: boolean;
@@ -20,12 +26,6 @@ interface Props {
   period: Period;
   walletId?: string | null;
   viewType?: 'expense' | 'income' | 'all';
-}
-
-interface MonthData {
-  year: number;
-  month: number; // 0-based
-  days: { day: number; amount: number; txs: Transaction[] }[];
 }
 
 export function CategoryCalendarModal({ visible, onClose, category, period, walletId, viewType }: Props) {
@@ -189,7 +189,7 @@ export function CategoryCalendarModal({ visible, onClose, category, period, wall
 
 // ===== Calendar Month Component =====
 
-const CalendarMonth = React.memo(function CalendarMonth({ data, color, selectedDay, onSelectDay }: {
+export const CalendarMonth = React.memo(function CalendarMonth({ data, color, selectedDay, onSelectDay }: {
   data: MonthData;
   color: string;
   selectedDay: string | null;
@@ -295,13 +295,13 @@ const CalendarMonth = React.memo(function CalendarMonth({ data, color, selectedD
 
 // ===== Helpers =====
 
-function formatCompact(amount: number): string {
+export function formatCompact(amount: number): string {
   if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)}M`;
   if (amount >= 1000) return `${(amount / 1000).toFixed(amount >= 10000 ? 0 : 1)}K`;
   return formatCurrency(amount);
 }
 
-function formatThaiFullDate(dateStr: string): string {
+export function formatThaiFullDate(dateStr: string): string {
   const d = new Date(dateStr);
   const day = d.getDate();
   const month = THAI_MONTHS[d.getMonth()];

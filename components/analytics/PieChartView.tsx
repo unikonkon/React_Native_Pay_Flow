@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
+import { AllTransactionsCalendarModal } from './AllTransactionsCalendarModal';
 import { CategoryCalendarModal } from './CategoryCalendarModal';
 
 interface PieChartViewProps {
@@ -22,6 +23,7 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 export function PieChartView({ data, title, minPercentage = 0, period, walletId, viewType }: PieChartViewProps) {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [showAllModal, setShowAllModal] = useState(false);
 
   if (data.length === 0) {
     return (
@@ -54,10 +56,10 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
   const filtered = data.filter(item => item.percentage >= minPercentage);
 
   return (
-    <View className="mb-4">
+    <View className="mb-2">
       {/* Donut card */}
       <View className="bg-card mx-4 mb-4" style={{
-        padding: 20, paddingHorizontal: 16, paddingBottom: 24, borderRadius: 24,
+        padding: 20, paddingHorizontal: 16, paddingBottom: 20, borderRadius: 24,
         shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 16, shadowOffset: { width: 0, height: 4 },
         elevation: 2,
       }}>
@@ -104,6 +106,16 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
             </View>
           </View>
         </View>
+
+      {/* list all data Transcation */}
+        <Pressable
+          onPress={() => { if (period) setShowAllModal(true); }}
+          className="mt-7 flex-row items-center justify-center"
+          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+        >
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">รายการทั้งหมด</Text>
+          <Ionicons name="chevron-forward" size={14} color="#A39685" style={{ marginLeft: 4 }} />
+        </Pressable>
       </View>
 
       {/* Breakdown list card */}
@@ -162,6 +174,17 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
           visible={!!selectedCategory}
           onClose={() => setSelectedCategory(null)}
           category={selectedCategory}
+          period={period}
+          walletId={walletId}
+          viewType={viewType}
+        />
+      )}
+
+      {/* All Transactions Calendar Modal */}
+      {period && (
+        <AllTransactionsCalendarModal
+          visible={showAllModal}
+          onClose={() => setShowAllModal(false)}
           period={period}
           walletId={walletId}
           viewType={viewType}
