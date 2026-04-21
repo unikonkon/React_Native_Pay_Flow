@@ -63,6 +63,7 @@ export interface Settings {
   showFrequentPills: boolean;
   commonCategoryLimit: number;
   topCategoryLimit: number;
+  addTxSheetHeight: number; // Bottom sheet height (%) for add-transaction modal, range 50–95
 }
 
 // ===== Wallet Types =====

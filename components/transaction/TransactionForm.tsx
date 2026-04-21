@@ -207,9 +207,9 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           style={{ width: 82, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' }}
           className="bg-secondary"
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, padding: 3}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, padding: 3 }}>
             <Ionicons name="options-outline" size={18} color="#9A8D80" />
-            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 , color: '#9A8D80'}} className="text-foreground">ตั้งค่า</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: '#9A8D80' }} className="text-foreground">ตั้งค่า</Text>
           </View>
         </Pressable>
 
@@ -242,218 +242,218 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
       </View>
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, paddingHorizontal: 14 }}>
-          {/* Amount display + selected category — fixed */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 16, paddingBottom: 8, justifyContent: 'center', position: 'relative' }}>
-            {/* Selected category at far left */}
-            <View style={{ position: 'absolute', left: 0, justifyContent: 'center', height: '100%', minWidth: 60, alignItems: 'flex-start' }}>
-              {selectedCategory && (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: selectedCategory.color, alignItems: 'center', justifyContent: 'center' }}>
-                    <Ionicons name={selectedCategory.icon as keyof typeof Ionicons.glyphMap} size={10} color="white" />
-                  </View>
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#2A2320' }}>
-                    {selectedCategory.name}
-                  </Text>
+        {/* Amount display + selected category — fixed */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 16, paddingBottom: 8, justifyContent: 'center', position: 'relative' }}>
+          {/* Selected category at far left */}
+          <View style={{ position: 'absolute', left: 0, justifyContent: 'center', height: '100%', minWidth: 60, alignItems: 'flex-start' }}>
+            {selectedCategory && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: selectedCategory.color, alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name={selectedCategory.icon as keyof typeof Ionicons.glyphMap} size={10} color="white" />
                 </View>
-              )}
-            </View>
-            {/* Amount display centered */}
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              {calcHasOperator && calcExpression ? (
-                <Text style={{
-                  fontFamily: 'Inter_700Bold', fontSize: 16,
-                  fontVariant: ['tabular-nums'], color: '#9A8D80',
-                  marginBottom: 8,
-                }}>
-                  {calcExpression}
+                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#2A2320' }}>
+                  {selectedCategory.name}
                 </Text>
-              ) : null}
-              <Text style={{
-                fontFamily: 'Inter_900Black', fontSize: 48,
-                fontVariant: ['tabular-nums'], letterSpacing: -0.8,
-                color: amountColor, lineHeight: 48,
-              }}>
-                {type === 'expense' ? '−' : '+'}{amount > 0 ? amount.toLocaleString('en-US') : '0'}
-                <Text style={{ fontSize: 18, fontFamily: 'Inter_400Regular', color: '#9A8D80', marginLeft: 6 }}> ฿</Text>
-              </Text>
-            </View>
+              </View>
+            )}
           </View>
-     
+          {/* Amount display centered */}
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            {calcHasOperator && calcExpression ? (
+              <Text style={{
+                fontFamily: 'Inter_700Bold', fontSize: 16,
+                fontVariant: ['tabular-nums'], color: '#9A8D80',
+                marginBottom: 8,
+              }}>
+                {calcExpression}
+              </Text>
+            ) : null}
+            <Text style={{
+              fontFamily: 'Inter_900Black', fontSize: 48,
+              fontVariant: ['tabular-nums'], letterSpacing: -0.8,
+              color: amountColor, lineHeight: 48,
+            }}>
+              {type === 'expense' ? '−' : '+'}{amount > 0 ? amount.toLocaleString('en-US') : '0'}
+              <Text style={{ fontSize: 18, fontFamily: 'Inter_400Regular', color: '#9A8D80', marginLeft: 6 }}> ฿</Text>
+            </Text>
+          </View>
+        </View>
 
-          {/* Category rows — scrollable, fills remaining space */}
-          <BottomSheetScrollView
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            style={{ flex: 1 }}
-            contentContainerStyle={{ paddingBottom: 4 }}
-          >
-            {/* Category quick row ที่มีอยู่ในกระเป๋า*/}
-            {showCommonCategories && (
-              <View style={{ paddingBottom: 8 }}>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 1, gap: 4, justifyContent: 'space-between' }}>
-                  {commonCategories.map((cat) => {
-                    const sel = cat.id === selectedCategory?.id;
-                    return (
-                      <Pressable
-                        key={cat.id}
-                        onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setNote(''); setShowPastNotes(true); }}
-                        style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
-                      >
-                        <View style={{
-                          padding: sel ? 2 : 0, borderRadius: 999,
-                          borderWidth: 2, borderColor: sel ? '#E87A3D' : 'transparent',
-                        }}>
-                          <View
-                            className="rounded-full items-center justify-center"
-                            style={{ width: 46, height: 46, backgroundColor: cat.color }}
-                          >
-                            <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
-                          </View>
-                          {sel && (
-                            <View
-                              pointerEvents="none"
-                              style={{
-                                position: 'absolute',
-                                top: -5,
-                                right: -15,
-                                transform: [{ rotate: '-18deg' }],
-                              }}
-                            >
-                              <PawPrint size={22} color="#E87A3D" />
-                            </View>
-                          )}
-                        </View>
-                        <Text
-                          style={{
-                            width: CATEGORY_QUICK_ITEM_WIDTH,
-                            textAlign: 'center',
-                            fontFamily: sel ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
-                            fontSize: 11, color: sel ? '#2A2320' : '#9A8D80',
-                          }}
-                          numberOfLines={1}
-                          ellipsizeMode="tail"
-                        >
-                          {cat.name}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
 
-                  {/* เลือกเพิ่ม */}
-                  <Pressable
-                    onPress={() => setShowGridModal(true)}
-                    style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 4, padding: 2 }}
-                  >
-                    <View style={{
-                      width: 46, height: 46, borderRadius: 23,
-                      borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E87A3D',
-                      alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <Ionicons name="add" size={18} color="#E87A3D" />
-                    </View>
-                    <Text
-                      style={{
-                        width: CATEGORY_QUICK_ITEM_WIDTH,
-                        textAlign: 'center',
-                        fontFamily: 'IBMPlexSansThai_600SemiBold',
-                        fontSize: 11,
-                        color: '#E87A3D',
-                      }}
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
+        {/* Category rows — scrollable, fills remaining space */}
+        <BottomSheetScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 4 }}
+        >
+          {/* Category quick row ที่มีอยู่ในกระเป๋า*/}
+          {showCommonCategories && (
+            <View style={{ paddingBottom: 8 }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 1, gap: 4, justifyContent: 'space-between' }}>
+                {commonCategories.map((cat) => {
+                  const sel = cat.id === selectedCategory?.id;
+                  return (
+                    <Pressable
+                      key={cat.id}
+                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setNote(''); setShowPastNotes(true); }}
+                      style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
                     >
-                      เลือกเพิ่ม
-                    </Text>
-                  </Pressable>
-                </View>
-              </View>
-            )}
-
-            {/* Category quick row ที่ใช้มากที่สุด*/}
-            {showTopCategories && (
-              <View style={{ paddingBottom: 8 }}>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 1, gap: 4, justifyContent: 'space-between' }}>
-                  {topCategories.map((cat) => {
-                    const sel = cat.id === selectedCategory?.id;
-                    return (
-                      <Pressable
-                        key={cat.id}
-                        onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setNote(''); setShowPastNotes(true); }}
-                        style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
-                      >
-                        <View style={{
-                          padding: sel ? 2 : 0, borderRadius: 999,
-                          borderWidth: 2, borderColor: sel ? '#E87A3D' : 'transparent',
-                        }}>
-                          <View
-                            className="rounded-full items-center justify-center"
-                            style={{ width: 46, height: 46, backgroundColor: cat.color }}
-                          >
-                            <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
-                          </View>
-                          {sel && (
-                            <View
-                              pointerEvents="none"
-                              style={{
-                                position: 'absolute',
-                                top: -5,
-                                right: -15,
-                                transform: [{ rotate: '-18deg' }],
-                              }}
-                            >
-                              <PawPrint size={22} color="#E87A3D" />
-                            </View>
-                          )}
-                        </View>
-                        <Text
-                          style={{
-                            width: CATEGORY_QUICK_ITEM_WIDTH,
-                            textAlign: 'center',
-                            fontFamily: sel ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
-                            fontSize: 11, color: sel ? '#2A2320' : '#9A8D80',
-                          }}
-                          numberOfLines={1}
-                          ellipsizeMode="tail"
+                      <View style={{
+                        padding: sel ? 2 : 0, borderRadius: 999,
+                        borderWidth: 2, borderColor: sel ? '#E87A3D' : 'transparent',
+                      }}>
+                        <View
+                          className="rounded-full items-center justify-center"
+                          style={{ width: 46, height: 46, backgroundColor: cat.color }}
                         >
-                          {cat.name}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
+                          <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
+                        </View>
+                        {sel && (
+                          <View
+                            pointerEvents="none"
+                            style={{
+                              position: 'absolute',
+                              top: -5,
+                              right: -15,
+                              transform: [{ rotate: '-18deg' }],
+                            }}
+                          >
+                            <PawPrint size={22} color="#E87A3D" />
+                          </View>
+                        )}
+                      </View>
+                      <Text
+                        style={{
+                          width: CATEGORY_QUICK_ITEM_WIDTH,
+                          textAlign: 'center',
+                          fontFamily: sel ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
+                          fontSize: 11, color: sel ? '#2A2320' : '#9A8D80',
+                        }}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {cat.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
 
-                  {/* เลือกเพิ่ม */}
-                  <Pressable
-                    onPress={() => setShowGridModal(true)}
-                    style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 4, padding: 2 }}
+                {/* เลือกเพิ่ม */}
+                <Pressable
+                  onPress={() => setShowGridModal(true)}
+                  style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 4, padding: 2 }}
+                >
+                  <View style={{
+                    width: 46, height: 46, borderRadius: 23,
+                    borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E87A3D',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Ionicons name="add" size={18} color="#E87A3D" />
+                  </View>
+                  <Text
+                    style={{
+                      width: CATEGORY_QUICK_ITEM_WIDTH,
+                      textAlign: 'center',
+                      fontFamily: 'IBMPlexSansThai_600SemiBold',
+                      fontSize: 11,
+                      color: '#E87A3D',
+                    }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
                   >
-                    <View style={{
-                      width: 46, height: 46, borderRadius: 23,
-                      borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E87A3D',
-                      alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <Ionicons name="add" size={18} color="#E87A3D" />
-                    </View>
-                    <Text
-                      style={{
-                        width: CATEGORY_QUICK_ITEM_WIDTH,
-                        textAlign: 'center',
-                        fontFamily: 'IBMPlexSansThai_600SemiBold',
-                        fontSize: 11,
-                        color: '#E87A3D',
-                      }}
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
-                    >
-                      เลือกเพิ่ม
-                    </Text>
-                  </Pressable>
-                </View>
+                    เลือกเพิ่ม
+                  </Text>
+                </Pressable>
               </View>
-            )}
-          </BottomSheetScrollView>
+            </View>
+          )}
 
-          {/* Bottom fixed section */}
-          <View style={{ flexShrink: 0, paddingBottom: 6 }}>
+          {/* Category quick row ที่ใช้มากที่สุด*/}
+          {showTopCategories && (
+            <View style={{ paddingBottom: 8 }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 1, gap: 4, justifyContent: 'space-between' }}>
+                {topCategories.map((cat) => {
+                  const sel = cat.id === selectedCategory?.id;
+                  return (
+                    <Pressable
+                      key={cat.id}
+                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setNote(''); setShowPastNotes(true); }}
+                      style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
+                    >
+                      <View style={{
+                        padding: sel ? 2 : 0, borderRadius: 999,
+                        borderWidth: 2, borderColor: sel ? '#E87A3D' : 'transparent',
+                      }}>
+                        <View
+                          className="rounded-full items-center justify-center"
+                          style={{ width: 46, height: 46, backgroundColor: cat.color }}
+                        >
+                          <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
+                        </View>
+                        {sel && (
+                          <View
+                            pointerEvents="none"
+                            style={{
+                              position: 'absolute',
+                              top: -5,
+                              right: -15,
+                              transform: [{ rotate: '-18deg' }],
+                            }}
+                          >
+                            <PawPrint size={22} color="#E87A3D" />
+                          </View>
+                        )}
+                      </View>
+                      <Text
+                        style={{
+                          width: CATEGORY_QUICK_ITEM_WIDTH,
+                          textAlign: 'center',
+                          fontFamily: sel ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
+                          fontSize: 11, color: sel ? '#2A2320' : '#9A8D80',
+                        }}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {cat.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+
+                {/* เลือกเพิ่ม */}
+                <Pressable
+                  onPress={() => setShowGridModal(true)}
+                  style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 4, padding: 2 }}
+                >
+                  <View style={{
+                    width: 46, height: 46, borderRadius: 23,
+                    borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#E87A3D',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Ionicons name="add" size={18} color="#E87A3D" />
+                  </View>
+                  <Text
+                    style={{
+                      width: CATEGORY_QUICK_ITEM_WIDTH,
+                      textAlign: 'center',
+                      fontFamily: 'IBMPlexSansThai_600SemiBold',
+                      fontSize: 11,
+                      color: '#E87A3D',
+                    }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    เลือกเพิ่ม
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
+        </BottomSheetScrollView>
+
+        {/* Bottom fixed section */}
+        <View style={{ flexShrink: 0, paddingBottom: 6 }}>
           {/* Frequent pills */}
           {showFrequentPills && topAnalyses.length > 0 && (
             <View style={{ paddingBottom: 6 }}>
@@ -482,10 +482,11 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                       className={isActive ? '' : 'bg-card'}
                     >
                       <View>
-                        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#2A2320', maxWidth: 90, textAlign: 'center' }} numberOfLines={1}>
+                        {/* รายการที่ใช้บ่อย เป็นชื่อหมวดหมู่ หรือ รายละเอียดรายการบันทึก */}
+                        {/* <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#2A2320', maxWidth: 90, textAlign: 'center' }} numberOfLines={1}>
                           {a.note || cat.name}
-                        </Text>
-                        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 12.5, fontVariant: ['tabular-nums'], color: '#C65A4E', marginTop: 1, textAlign: 'center' }}>
+                        </Text> */}
+                        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 20, fontVariant: ['tabular-nums'], color: '#C65A4E', marginTop: 1, textAlign: 'center' }}>
                           {formatCurrency(a.amount)}
                         </Text>
                       </View>
@@ -656,7 +657,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             saveDisabled={!amount || !selectedCategory}
             onExpressionChange={handleExpressionChange}
           />
-          </View>
+        </View>
       </KeyboardAvoidingView>
 
       {/* Modals */}

@@ -1,4 +1,5 @@
 import { TransactionForm } from '@/components/transaction/TransactionForm';
+import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -12,7 +13,8 @@ import { Easing } from 'react-native-reanimated';
 
 export default function AddTransactionScreen() {
   const sheetRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['87%'], []);
+  const addTxSheetHeight = useSettingsStore(s => s.addTxSheetHeight);
+  const snapPoints = useMemo(() => [`${addTxSheetHeight}%`], [addTxSheetHeight]);
 
   // 50% faster than default (250ms → 125ms)
   const animationConfigs = useBottomSheetTimingConfigs({

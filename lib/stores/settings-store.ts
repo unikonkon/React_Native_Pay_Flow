@@ -22,6 +22,7 @@ const DEFAULT_SETTINGS: Settings = {
   showFrequentPills: true,
   commonCategoryLimit: 10,
   topCategoryLimit: 8,
+  addTxSheetHeight: 87,
 };
 
 interface SettingsStore extends Settings {
@@ -63,6 +64,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       showFrequentPills: get().showFrequentPills,
       commonCategoryLimit: get().commonCategoryLimit,
       topCategoryLimit: get().topCategoryLimit,
+      addTxSheetHeight: get().addTxSheetHeight,
     };
     const updated = { ...current, ...partial };
     await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));

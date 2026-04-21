@@ -20,6 +20,7 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
   const showFrequentPills = useSettingsStore(s => s.showFrequentPills);
   const commonCategoryLimit = useSettingsStore(s => s.commonCategoryLimit);
   const topCategoryLimit = useSettingsStore(s => s.topCategoryLimit);
+  const addTxSheetHeight = useSettingsStore(s => s.addTxSheetHeight);
   const updateSettings = useSettingsStore(s => s.updateSettings);
   const reorderCategories = useCategoryStore(s => s.reorderCategories);
   const allCategories = useCategoryStore(s => s.categories);
@@ -48,6 +49,14 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
     if (next !== current) {
       Haptics.selectionAsync();
       updateSettings({ [key]: next });
+    }
+  };
+
+  const handleSheetHeight = (delta: number) => {
+    const next = Math.min(95, Math.max(50, addTxSheetHeight + delta));
+    if (next !== addTxSheetHeight) {
+      Haptics.selectionAsync();
+      updateSettings({ addTxSheetHeight: next });
     }
   };
 
@@ -89,6 +98,54 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
           </View>
 
           <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
+
+            {/* Section: ความสูงของหน้าต่าง */}
+            <View style={{ marginBottom: 10 }}>
+              <View style={{ marginBottom: 8 }}>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">
+                  ความสูงของหน้าต่าง
+                </Text>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">
+                  ปรับความสูงของหน้าต่างเพิ่มรายการ (50–95%)
+                </Text>
+              </View>
+              <View style={{
+                flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                backgroundColor: 'rgba(42,35,32,0.03)', borderRadius: 12, padding: 12,
+              }}>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground">
+                  ความสูงปัจจุบัน
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <Pressable
+                    onPress={() => handleSheetHeight(-1)}
+                    style={{
+                      width: 32, height: 32, borderRadius: 16,
+                      alignItems: 'center', justifyContent: 'center',
+                      backgroundColor: addTxSheetHeight <= 50 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                    }}
+                  >
+                    <Ionicons name="remove" size={16} color={addTxSheetHeight <= 50 ? '#D1C7BC' : '#E87A3D'} />
+                  </Pressable>
+                  <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 18, fontVariant: ['tabular-nums'], minWidth: 46, textAlign: 'center' }} className="text-foreground">
+                    {addTxSheetHeight}%
+                  </Text>
+                  <Pressable
+                    onPress={() => handleSheetHeight(1)}
+                    style={{
+                      width: 32, height: 32, borderRadius: 16,
+                      alignItems: 'center', justifyContent: 'center',
+                      backgroundColor: addTxSheetHeight >= 95 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                    }}
+                  >
+                    <Ionicons name="add" size={16} color={addTxSheetHeight >= 95 ? '#D1C7BC' : '#E87A3D'} />
+                  </Pressable>
+                </View>
+              </View>
+            </View>
+
+            {/* Divider */}
+            <View style={{ height: 1, backgroundColor: 'rgba(42,35,32,0.08)', marginBottom: 20 }} />
 
             {/* Section: หมวดหมู่ที่ใช้มากที่สุด */}
             <View style={{ marginBottom: 10 }}>
