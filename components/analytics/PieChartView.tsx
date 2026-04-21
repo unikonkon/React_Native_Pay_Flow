@@ -21,6 +21,13 @@ const STROKE_WIDTH = 38;
 const RADIUS = (CHART_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
+// Distinct palette for segments without a custom category color
+const FALLBACK_PALETTE = [
+  '#E8A24D', '#6BA87A', '#D08BA8', '#8B9BD4',
+  '#C2915C', '#6FB3B8', '#B586C5', '#E8836E',
+  '#9BB07A', '#D48F6A',
+];
+
 export function PieChartView({ data, title, minPercentage = 0, period, walletId, viewType }: PieChartViewProps) {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [showAllModal, setShowAllModal] = useState(false);
@@ -35,21 +42,50 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
 
   const total = data.reduce((s, d) => s + d.total, 0);
 
+  // Color map keyed by categoryId — uses category.color if set, otherwise picks from
+  // FALLBACK_PALETTE by original data index so small (<3%) segments without a custom
+  // color still get distinct, non-repeating shades. Shared between donut and list.
+  const colorByCategoryId = new Map<string, string>();
+  data.forEach((item, i) => {
+    colorByCategoryId.set(
+      item.categoryId,
+      item.category?.color ?? FALLBACK_PALETTE[i % FALLBACK_PALETTE.length],
+    );
+  });
+  const colorFor = (item: CategorySummary) => colorByCategoryId.get(item.categoryId) ?? '#D3CBC3';
+
   // Build donut segments
-  const segments: { color: string; fraction: number }[] = data.slice(0, 8).map((item) => ({
-    color: item.category?.color ?? '#D3CBC3',
+  const segments = data.slice(0, 8).map((item) => ({
+    color: colorFor(item),
     fraction: total > 0 ? item.total / total : 0,
+    icon: (item.category?.icon ?? 'help-circle') as keyof typeof Ionicons.glyphMap,
+    categoryId: item.categoryId,
+    name: item.category?.name ?? 'อื่น ๆ',
   }));
 
-  // Calculate stroke offsets for each segment
+  // Calculate stroke offsets + label position (mid-angle on the ring) for each segment
+  const NAME_RADIUS = CHART_SIZE / 2 + 6; // just outside the outer ring edge
   let accumulated = 0;
   const arcs = segments.map((seg) => {
     const offset = accumulated;
+    const midFrac = offset + seg.fraction / 2;
     accumulated += seg.fraction;
+    const angle = midFrac * 2 * Math.PI;
+    const sinA = Math.sin(angle);
+    const cosA = Math.cos(angle);
     return {
       color: seg.color,
+      icon: seg.icon,
+      categoryId: seg.categoryId,
+      name: seg.name,
+      fraction: seg.fraction,
       strokeDasharray: `${seg.fraction * CIRCUMFERENCE} ${CIRCUMFERENCE}`,
       strokeDashoffset: -offset * CIRCUMFERENCE,
+      labelX: CHART_SIZE / 2 + RADIUS * sinA,
+      labelY: CHART_SIZE / 2 - RADIUS * cosA,
+      nameX: CHART_SIZE / 2 + NAME_RADIUS * sinA,
+      nameY: CHART_SIZE / 2 - NAME_RADIUS * cosA,
+      sinA,
     };
   });
 
@@ -64,7 +100,7 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
         elevation: 2,
       }}>
         <View style={{ alignItems: 'center' }}>
-          <View style={{ width: CHART_SIZE, height: CHART_SIZE, position: 'relative' }}>
+          <View style={{ width: CHART_SIZE, height: CHART_SIZE, position: 'relative', overflow: 'visible' }}>
             <Svg width={CHART_SIZE} height={CHART_SIZE}>
               {/* Background ring */}
               <Circle
@@ -93,13 +129,77 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
                 ))}
               </G>
             </Svg>
+            {/* Segment labels (categories > 3%) */}
+            {arcs.filter(a => a.fraction > 0.03).map((arc) => (
+              <View
+                key={arc.categoryId}
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  left: arc.labelX - 13,
+                  top: arc.labelY - 13,
+                  width: 26,
+                  height: 26,
+                  borderRadius: 13,
+                  backgroundColor: '#fff',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  shadowColor: '#2A2320',
+                  shadowOpacity: 0.12,
+                  shadowRadius: 3,
+                  shadowOffset: { width: 0, height: 1 },
+                  elevation: 2,
+                }}
+              >
+                <Ionicons name={arc.icon} size={14} color={arc.color} />
+              </View>
+            ))}
+            {/* Segment name labels (outside the ring) */}
+            {arcs.filter(a => a.fraction > 0.03).map((arc) => {
+              const LABEL_W = 90;
+              const isRight = arc.sinA > 0.15;
+              const isLeft = arc.sinA < -0.15;
+              const posStyle = isRight
+                ? { left: arc.nameX, alignItems: 'flex-start' as const }
+                : isLeft
+                  ? { right: CHART_SIZE - arc.nameX, alignItems: 'flex-end' as const }
+                  : { left: arc.nameX - LABEL_W / 2, alignItems: 'center' as const };
+              const textAlign: 'left' | 'right' | 'center' = isRight ? 'left' : isLeft ? 'right' : 'center';
+              return (
+                <View
+                  key={`name-${arc.categoryId}`}
+                  pointerEvents="none"
+                  style={{
+                    position: 'absolute',
+                    top: arc.nameY - 7,
+                    width: LABEL_W,
+                    ...posStyle,
+                  }}
+                >
+                  <Text
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={{
+                      fontFamily: 'IBMPlexSansThai_600SemiBold',
+                      fontSize: 10,
+                      color: '#2B2118',
+                      textAlign,
+                      width: LABEL_W,
+                    }}
+                  >
+                    {arc.name}
+                  </Text>
+                </View>
+              );
+            })}
+
             {/* Center text overlay */}
             <View style={{
               position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
               alignItems: 'center', justifyContent: 'center',
             }}>
               <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">ยอดรวม</Text>
-              <Text style={{ fontFamily: 'Inter_900Black', fontSize: 28, fontVariant: ['tabular-nums'], letterSpacing: -0.5 }} className="text-foreground">
+              <Text style={{ fontFamily: 'Inter_900Black', fontSize: 26, fontVariant: ['tabular-nums'], letterSpacing: -0.5 }} className="text-foreground">
                 {formatCurrency(total)}
               </Text>
               <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 2 }} className="text-muted-foreground">บาท</Text>
@@ -107,7 +207,7 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
           </View>
         </View>
 
-      {/* list all data Transcation */}
+        {/* list all data Transcation */}
         <Pressable
           onPress={() => { if (period) setShowAllModal(true); }}
           className="mt-7 flex-row items-center justify-center"

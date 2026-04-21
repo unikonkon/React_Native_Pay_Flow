@@ -55,7 +55,7 @@ export default function AnalyticsScreen() {
 
   const data = viewType === 'expense' ? expenseByCategory : viewType === 'income' ? incomeByCategory : allByCategory;
   const title = viewType === 'expense' ? 'สัดส่วนรายจ่ายตามหมวดหมู่' : viewType === 'income' ? 'สัดส่วนรายรับตามหมวดหมู่' : 'สัดส่วนรวมตามหมวดหมู่';
-  const filterMin = viewType === 'all' ? 0 : 3;
+  const filterMin = viewType === 'all' ? 0 : 0;
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
