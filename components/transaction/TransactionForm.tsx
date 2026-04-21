@@ -1,3 +1,4 @@
+import { PawPrint } from '@/assets/svg';
 import { CalculatorPad } from '@/components/common/CalculatorPad';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { getDb, getDistinctNotesByCategory, getFrequentAmountsByWallet, getTopCategoryIdsByWallet } from '@/lib/stores/db';
@@ -308,6 +309,19 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                           >
                             <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
                           </View>
+                          {sel && (
+                            <View
+                              pointerEvents="none"
+                              style={{
+                                position: 'absolute',
+                                top: -5,
+                                right: -15,
+                                transform: [{ rotate: '-18deg' }],
+                              }}
+                            >
+                              <PawPrint size={22} color="#E87A3D" />
+                            </View>
+                          )}
                         </View>
                         <Text
                           style={{
@@ -377,6 +391,19 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                           >
                             <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
                           </View>
+                          {sel && (
+                            <View
+                              pointerEvents="none"
+                              style={{
+                                position: 'absolute',
+                                top: -5,
+                                right: -15,
+                                transform: [{ rotate: '-18deg' }],
+                              }}
+                            >
+                              <PawPrint size={22} color="#E87A3D" />
+                            </View>
+                          )}
                         </View>
                         <Text
                           style={{

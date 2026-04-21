@@ -1,8 +1,9 @@
+import { PawPrint } from '@/assets/svg';
 import type { TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useCallback, useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Animated, Pressable, Text, View } from 'react-native';
 
 interface CalculatorPadProps {
   value: number;
@@ -60,11 +61,33 @@ export function CalculatorPad({
 }: CalculatorPadProps) {
   const [expression, setExpression] = useState(value > 0 ? String(value) : '');
   const [hasOperator, setHasOperator] = useState(false);
+  // key + seq — seq bumps on every press so the effect re-fires even when pressing the same button twice.
+  // Using state (not just a ref) ensures the new Animated.View mounts before the animation starts.
+  const [pressInfo, setPressInfo] = useState<{ key: string | null; seq: number }>({ key: null, seq: 0 });
+  const activeBtn = pressInfo.key;
+  const pawAnim = useRef(new Animated.Value(0)).current;
 
   // Notify parent of expression changes
   useEffect(() => {
     onExpressionChange?.(expression, hasOperator);
   }, [expression, hasOperator]);
+
+  // Play paw animation AFTER React commits pressInfo so the paw on the previous
+  // button is already unmounted and the new button is mounted at opacity 0.
+  useEffect(() => {
+    if (pressInfo.key === null) return;
+    pawAnim.setValue(0);
+    const anim = Animated.sequence([
+      Animated.timing(pawAnim, { toValue: 1, duration: 90, useNativeDriver: true }),
+      Animated.timing(pawAnim, { toValue: 0, duration: 320, delay: 50, useNativeDriver: true }),
+    ]);
+    anim.start();
+    return () => anim.stop();
+  }, [pressInfo, pawAnim]);
+
+  const triggerPaw = useCallback((key: string) => {
+    setPressInfo(prev => ({ key, seq: prev.seq + 1 }));
+  }, []);
 
   const evaluate = useCallback((expr: string): number => {
     try {
@@ -150,6 +173,7 @@ export function CalculatorPad({
   }, [hasOperator, handleEquals, saveDisabled, onSave]);
 
   const handlePress = useCallback((btn: string) => {
+    triggerPaw(btn);
     if (btn === 'C') return handleClear();
     if (btn === '⌫') return handleBackspace();
     if (btn === '✓') return handleSavePress();
@@ -166,7 +190,7 @@ export function CalculatorPad({
 
     // Digit(s) or decimal
     appendDigits(btn);
-  }, [expression, hasOperator, evaluate, onChange, handleClear, handleBackspace, appendDigits, handleSavePress]);
+  }, [expression, hasOperator, evaluate, onChange, handleClear, handleBackspace, appendDigits, handleSavePress, triggerPaw]);
 
   const isEqualsMode = hasOperator;
   const saveColor = !isEqualsMode && value > 0 && !saveDisabled
@@ -186,7 +210,7 @@ export function CalculatorPad({
                 onPress={() => handlePress(btn.label)}
                 android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
                 className={`flex-1 items-center justify-center ${isNumber ? 'bg-card' : 'bg-secondary'}`}
-                style={{ marginHorizontal: 4, paddingVertical: 16, borderRadius: 12 }}
+                style={{ marginHorizontal: 4, paddingVertical: 16, borderRadius: 12, overflow: 'hidden' }}
               >
                 {btn.icon ? (
                   <Ionicons name="backspace-outline" size={20} color="#6B5F52" />
@@ -194,6 +218,25 @@ export function CalculatorPad({
                   <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 20, color: isNumber ? '#2B2118' : '#A39685' }}>
                     {btn.label}
                   </Text>
+                )}
+                {activeBtn === btn.label && (
+                  <Animated.View
+                    pointerEvents="none"
+                    style={{
+                      position: 'absolute',
+                      top: 0, left: 0, right: 0, bottom: 0,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: pawAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 0.7] }),
+                      transform: [{
+                        scale: pawAnim.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1.15] }),
+                      }, {
+                        rotate: '-12deg',
+                      }],
+                    }}
+                  >
+                    <PawPrint size={32} color="#E87A3D" />
+                  </Animated.View>
                 )}
               </Pressable>
             );
@@ -207,17 +250,51 @@ export function CalculatorPad({
           onPress={() => handlePress('00')}
           android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
           className="flex-1 items-center justify-center bg-card"
-          style={{ marginHorizontal: 4, paddingVertical: 10, borderRadius: 12 }}
+          style={{ marginHorizontal: 4, paddingVertical: 10, borderRadius: 12, overflow: 'hidden' }}
         >
           <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 20, color: '#2B2118' }}>00</Text>
+          {activeBtn === '00' && (
+            <Animated.View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                top: 0, left: 0, right: 0, bottom: 0,
+                alignItems: 'center', justifyContent: 'center',
+                opacity: pawAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 0.7] }),
+                transform: [
+                  { scale: pawAnim.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1.15] }) },
+                  { rotate: '-12deg' },
+                ],
+              }}
+            >
+              <PawPrint size={28} color="#E87A3D" />
+            </Animated.View>
+          )}
         </Pressable>
         <Pressable
           onPress={() => handlePress('0')}
           android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
           className="flex-1 items-center justify-center bg-card"
-          style={{ marginHorizontal: 4, paddingVertical: 10, borderRadius: 12 }}
+          style={{ marginHorizontal: 4, paddingVertical: 10, borderRadius: 12, overflow: 'hidden' }}
         >
           <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 20, color: '#2B2118' }}>0</Text>
+          {activeBtn === '0' && (
+            <Animated.View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                top: 0, left: 0, right: 0, bottom: 0,
+                alignItems: 'center', justifyContent: 'center',
+                opacity: pawAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 0.7] }),
+                transform: [
+                  { scale: pawAnim.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1.15] }) },
+                  { rotate: '-12deg' },
+                ],
+              }}
+            >
+              <PawPrint size={28} color="#E87A3D" />
+            </Animated.View>
+          )}
         </Pressable>
         <Pressable
           onPress={handleSavePress}
