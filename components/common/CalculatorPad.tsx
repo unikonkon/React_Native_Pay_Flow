@@ -1,7 +1,7 @@
 import type { TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 interface CalculatorPadProps {
@@ -11,6 +11,7 @@ interface CalculatorPadProps {
   onSave: () => void;
   saveLabel?: string;
   saveDisabled?: boolean;
+  onExpressionChange?: (expression: string, hasOperator: boolean) => void;
 }
 
 type BtnKind = 'num' | 'op' | 'fn';
@@ -21,12 +22,6 @@ interface BtnConfig {
   icon?: boolean;
 }
 
-// Layout: 4 columns × 4 rows of regular buttons
-// Row 1: C, ÷, ×, ⌫    (fn/op buttons — secondary gray)
-// Row 2: 7, 8, 9, -    (numbers white, op gray)
-// Row 3: 4, 5, 6, +
-// Row 4: 1, 2, 3, =
-// Row 5 (special):  00, 0, [SAVE spanning 2 cols]
 const BUTTONS: BtnConfig[][] = [
   [
     { label: 'C', kind: 'fn' },
@@ -50,7 +45,7 @@ const BUTTONS: BtnConfig[][] = [
     { label: '1', kind: 'num' },
     { label: '2', kind: 'num' },
     { label: '3', kind: 'num' },
-    { label: '=', kind: 'op' },
+    { label: '✓', kind: 'fn' },
   ],
 ];
 
@@ -61,9 +56,15 @@ export function CalculatorPad({
   onSave,
   saveLabel = 'บันทึก',
   saveDisabled,
+  onExpressionChange,
 }: CalculatorPadProps) {
   const [expression, setExpression] = useState(value > 0 ? String(value) : '');
   const [hasOperator, setHasOperator] = useState(false);
+
+  // Notify parent of expression changes
+  useEffect(() => {
+    onExpressionChange?.(expression, hasOperator);
+  }, [expression, hasOperator]);
 
   const evaluate = useCallback((expr: string): number => {
     try {
@@ -87,8 +88,12 @@ export function CalculatorPad({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const newExpr = expression.slice(0, -1);
     setExpression(newExpr);
-    if (!newExpr.match(/[+\-×÷]/)) setHasOperator(false);
-    onChange(evaluate(newExpr) || 0);
+    const stillHasOp = !!newExpr.match(/[+\-×÷]/);
+    setHasOperator(stillHasOp);
+    if (!stillHasOp) {
+      // No operator left — safe to show the number directly
+      onChange(evaluate(newExpr) || 0);
+    }
   }, [expression, evaluate, onChange]);
 
   const handleEquals = useCallback(() => {
@@ -100,6 +105,19 @@ export function CalculatorPad({
   }, [expression, evaluate, onChange]);
 
   const appendDigits = useCallback((digits: string) => {
+    // Handle decimal point
+    if (digits === '.') {
+      const parts = expression.split(/[+\-×÷]/);
+      const lastPart = parts[parts.length - 1];
+      if (lastPart.includes('.')) return; // already has decimal
+      if (lastPart === '') {
+        setExpression(expression + '0.');
+        return;
+      }
+      setExpression(expression + '.');
+      return;
+    }
+
     // Check decimal limit (max 2 places after dot)
     const parts = expression.split(/[+\-×÷]/);
     const lastPart = parts[parts.length - 1];
@@ -117,45 +135,44 @@ export function CalculatorPad({
     if (!hasOperator) {
       onChange(evaluate(newExpr));
     }
+    // When has operator, don't update amount — wait for =
   }, [expression, hasOperator, evaluate, onChange]);
+
+  const handleSavePress = useCallback(() => {
+    if (hasOperator) {
+      // When has operator, act as "=" first
+      handleEquals();
+      return;
+    }
+    if (saveDisabled) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    onSave();
+  }, [hasOperator, handleEquals, saveDisabled, onSave]);
 
   const handlePress = useCallback((btn: string) => {
     if (btn === 'C') return handleClear();
     if (btn === '⌫') return handleBackspace();
-    if (btn === '=') return handleEquals();
+    if (btn === '✓') return handleSavePress();
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    // Operator
+    // Operator — just append, don't evaluate yet
     if (['+', '-', '×', '÷'].includes(btn)) {
       if (expression === '' || /[+\-×÷]$/.test(expression)) return;
-      if (hasOperator) {
-        const result = evaluate(expression);
-        const newExpr = String(result) + btn;
-        setExpression(newExpr);
-        onChange(result);
-      } else {
-        setExpression(expression + btn);
-      }
+      setExpression(expression + btn);
       setHasOperator(true);
       return;
     }
 
-    // Digit(s) — supports "0", "00", "1"-"9"
+    // Digit(s) or decimal
     appendDigits(btn);
-  }, [expression, hasOperator, evaluate, onChange, handleClear, handleBackspace, handleEquals, appendDigits]);
+  }, [expression, hasOperator, evaluate, onChange, handleClear, handleBackspace, appendDigits, handleSavePress]);
 
-  const handleSavePress = useCallback(() => {
-    if (saveDisabled) return;
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    onSave();
-  }, [saveDisabled, onSave]);
-
-  const saveBgClass = type === 'income' ? 'bg-income' : 'bg-expense';
-
-  const saveColor = value > 0 && !saveDisabled
+  const isEqualsMode = hasOperator;
+  const saveColor = !isEqualsMode && value > 0 && !saveDisabled
     ? (type === 'expense' ? '#E87A3D' : '#3E8B68')
     : undefined;
+  const equalsColor = '#3D7EF0';
 
   return (
     <View style={{ paddingVertical: 1 }}>
@@ -184,7 +201,7 @@ export function CalculatorPad({
         </View>
       ))}
 
-      {/* Last row: 00 | 0 | Save (spans 2 columns) */}
+      {/* Last row: 00 | 0 | Save/= (spans 2 columns) */}
       <View className="flex-row" style={{ marginBottom: 2 }}>
         <Pressable
           onPress={() => handlePress('00')}
@@ -204,19 +221,21 @@ export function CalculatorPad({
         </Pressable>
         <Pressable
           onPress={handleSavePress}
-          disabled={saveDisabled}
+          disabled={!isEqualsMode && saveDisabled}
           android_ripple={{ color: 'rgba(255,255,255,0.2)' }}
           style={{
             flex: 2, marginHorizontal: 4, paddingVertical: 12, borderRadius: 14,
             alignItems: 'center', justifyContent: 'center',
-            backgroundColor: saveColor ?? '#F8F2E7',
-            opacity: saveDisabled ? 0.5 : 1,
+            backgroundColor: isEqualsMode ? equalsColor : (saveColor ?? '#F8F2E7'),
+            opacity: !isEqualsMode && saveDisabled ? 0.5 : 1,
           }}
         >
           <Text style={{
             fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16,
-            color: saveColor ? '#fff' : '#A39685',
-          }}>{saveLabel}</Text>
+            color: isEqualsMode ? '#fff' : (saveColor ? '#fff' : '#A39685'),
+          }}>
+            {isEqualsMode ? '=' : saveLabel}
+          </Text>
         </Pressable>
       </View>
     </View>

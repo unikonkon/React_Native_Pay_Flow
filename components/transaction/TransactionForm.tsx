@@ -82,6 +82,14 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
     setNote(editTransaction.note ?? '');
   }, [editTransaction, wallets, categories]);
 
+  // Auto-select first category when adding new
+  useEffect(() => {
+    if (isEditMode) return;
+    if (!selectedCategory && filteredCategories.length > 0) {
+      setSelectedCategory(filteredCategories[0]);
+    }
+  }, [isEditMode, filteredCategories, selectedCategory]);
+
   // Load past notes
   useEffect(() => {
     if (!selectedCategory) { setPastNotes([]); return; }
@@ -179,6 +187,14 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
     if (a.note) setNote(a.note);
   };
 
+  const [calcExpression, setCalcExpression] = useState('');
+  const [calcHasOperator, setCalcHasOperator] = useState(false);
+
+  const handleExpressionChange = useCallback((expr: string, hasOp: boolean) => {
+    setCalcExpression(expr);
+    setCalcHasOperator(hasOp);
+  }, []);
+
   const amountColor = type === 'expense' ? '#C65A4E' : '#3E8B68';
 
   return (
@@ -226,7 +242,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, paddingHorizontal: 14 }}>
           {/* Amount display + selected category — fixed */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 16, paddingBottom: 4, justifyContent: 'center', position: 'relative' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 16, paddingBottom: 8, justifyContent: 'center', position: 'relative' }}>
             {/* Selected category at far left */}
             <View style={{ position: 'absolute', left: 0, justifyContent: 'center', height: '100%', minWidth: 60, alignItems: 'flex-start' }}>
               {selectedCategory && (
@@ -242,6 +258,15 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             </View>
             {/* Amount display centered */}
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              {calcHasOperator && calcExpression ? (
+                <Text style={{
+                  fontFamily: 'Inter_700Bold', fontSize: 16,
+                  fontVariant: ['tabular-nums'], color: '#9A8D80',
+                  marginBottom: 8,
+                }}>
+                  {calcExpression}
+                </Text>
+              ) : null}
               <Text style={{
                 fontFamily: 'Inter_900Black', fontSize: 48,
                 fontVariant: ['tabular-nums'], letterSpacing: -0.8,
@@ -602,6 +627,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             onSave={handleSave}
             saveLabel={isEditMode ? 'อัพเดท' : 'บันทึก'}
             saveDisabled={!amount || !selectedCategory}
+            onExpressionChange={handleExpressionChange}
           />
           </View>
       </KeyboardAvoidingView>
