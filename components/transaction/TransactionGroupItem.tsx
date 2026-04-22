@@ -1,8 +1,9 @@
+import { PawPrintTapEffect, type PawPrintTapEffectHandle } from '@/components/ui/PawPrintTapEffect';
 import { formatCurrency } from '@/lib/utils/format';
 import type { Transaction } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { SwipeableRow } from './SwipeableRow';
 
@@ -33,6 +34,7 @@ export function TransactionGroupItem({
   onCopyItem,
 }: TransactionGroupItemProps) {
   const [expanded, setExpanded] = useState(false);
+  const headPawRef = useRef<PawPrintTapEffectHandle>(null);
 
   if (items.length === 0) return null;
   const head = items[0];
@@ -45,6 +47,7 @@ export function TransactionGroupItem({
 
   const handleHeadPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    headPawRef.current?.play();
     if (isGroup) {
       setExpanded(e => !e);
     } else {
@@ -112,6 +115,8 @@ export function TransactionGroupItem({
           )}
         </View>
       </View>
+
+      <PawPrintTapEffect ref={headPawRef} size={32} color="#E87A3D" />
     </Pressable>
   );
 

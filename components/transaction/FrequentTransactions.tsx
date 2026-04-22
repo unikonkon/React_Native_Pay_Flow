@@ -1,10 +1,11 @@
+import { PawPrintTapEffect, type PawPrintTapEffectHandle } from '@/components/ui/PawPrintTapEffect';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { getDb, getFrequentAmountsByWallet } from '@/lib/stores/db';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { formatCurrency } from '@/lib/utils/format';
-import type { Analysis } from '@/types';
+import type { Analysis, Category } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 interface FrequentTransactionsProps {
@@ -41,33 +42,55 @@ export function FrequentTransactions({ onSelect }: FrequentTransactionsProps) {
           {analyses.map((analysis) => {
             const cat = categories.find(c => c.id === analysis.categoryId);
             return (
-              <Pressable
+              <FrequentItem
                 key={analysis.id}
-                onPress={() => onSelect(analysis)}
-                className="items-center"
-                style={{ width: 56 }}
-              >
-                <View
-                  className="w-14 h-14 rounded-full items-center justify-center"
-                  style={{ backgroundColor: cat?.color ?? '#999' }}
-                >
-                  <Ionicons
-                    name={(cat?.icon ?? 'help-circle') as keyof typeof Ionicons.glyphMap}
-                    size={24}
-                    color="white"
-                  />
-                </View>
-                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-foreground text-center mt-1.5" numberOfLines={1}>
-                  {analysis.note || cat?.name || 'อื่นๆ'}
-                </Text>
-                <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 12, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">
-                  {formatCurrency(analysis.amount)}
-                </Text>
-              </Pressable>
+                analysis={analysis}
+                category={cat}
+                onSelect={onSelect}
+              />
             );
           })}
         </View>
       </ScrollView>
     </View>
+  );
+}
+
+interface FrequentItemProps {
+  analysis: Analysis;
+  category: Category | undefined;
+  onSelect: (analysis: Analysis) => void;
+}
+
+function FrequentItem({ analysis, category, onSelect }: FrequentItemProps) {
+  const pawRef = useRef<PawPrintTapEffectHandle>(null);
+
+  return (
+    <Pressable
+      onPress={() => {
+        pawRef.current?.play();
+        onSelect(analysis);
+      }}
+      className="items-center"
+      style={{ width: 56 }}
+    >
+      <View
+        className="w-14 h-14 rounded-full items-center justify-center"
+        style={{ backgroundColor: category?.color ?? '#999' }}
+      >
+        <Ionicons
+          name={(category?.icon ?? 'help-circle') as keyof typeof Ionicons.glyphMap}
+          size={24}
+          color="white"
+        />
+      </View>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-foreground text-center mt-1.5" numberOfLines={1}>
+        {analysis.note || category?.name || 'อื่นๆ'}
+      </Text>
+      <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 12, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">
+        {formatCurrency(analysis.amount)}
+      </Text>
+      <PawPrintTapEffect ref={pawRef} size={32} color="#E87A3D" />
+    </Pressable>
   );
 }

@@ -1,7 +1,9 @@
+import { type PawPrintTapEffectHandle } from '@/components/ui/PawPrintTapEffect';
 import { formatCurrency } from '@/lib/utils/format';
 import type { Transaction } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useRef } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 function formatTime(iso?: string): string {
@@ -23,11 +25,13 @@ export function TransactionItem({ item, onPress, onLongPress }: TransactionItemP
   const isIncome = item.type === 'income';
   const icon = item.category?.icon ?? 'help-circle';
   const color = item.category?.color ?? '#999';
+  const pawRef = useRef<PawPrintTapEffectHandle>(null);
 
   return (
     <Pressable
       onPress={() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        pawRef.current?.play();
         onPress?.(item);
       }}
       onLongPress={() => {
