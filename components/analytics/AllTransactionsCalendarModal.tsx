@@ -3,6 +3,7 @@ import { formatCurrency } from '@/lib/utils/format';
 import { getPeriodRange } from '@/lib/utils/period';
 import type { Period } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { CalendarMonth, formatThaiFullDate, type MonthData } from './CategoryCalendarModal';
@@ -173,6 +174,7 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
                       {/* Group header */}
                       <Pressable
                         onPress={() => {
+                          Haptics.selectionAsync();
                           setExpandedKeys(prev => {
                             const next = new Set(prev);
                             if (next.has(group.key)) next.delete(group.key);

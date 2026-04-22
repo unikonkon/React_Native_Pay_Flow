@@ -1,6 +1,7 @@
 import { formatCurrency } from '@/lib/utils/format';
 import type { Category, CategorySummary, Period } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
@@ -209,7 +210,12 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
 
         {/* list all data Transcation */}
         <Pressable
-          onPress={() => { if (period) setShowAllModal(true); }}
+          onPress={() => {
+            if (period) {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowAllModal(true);
+            }
+          }}
           className="mt-7 flex-row items-center justify-center"
           style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
         >
@@ -231,6 +237,7 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
               key={item.categoryId}
               onPress={() => {
                 if (period && item.category) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setSelectedCategory(item.category);
                 }
               }}

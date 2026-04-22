@@ -1,5 +1,6 @@
 import { useWalletStore } from '@/lib/stores/wallet-store';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { AddWalletModal } from './AddWalletModal';
@@ -20,6 +21,7 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
     : 'ทุกกระเป๋า';
 
   const handlePick = (id: string | null) => {
+    Haptics.selectionAsync();
     onChange(id);
     setOpen(false);
   };
@@ -27,7 +29,7 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
   return (
     <View className={className}>
       <Pressable
-        onPress={() => setOpen(true)}
+        onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setOpen(true); }}
         className="flex-row items-center px-3.5 py-1.5 bg-white rounded-2xl self-start border border-border"
       >
         <Ionicons name="wallet-outline" size={15} color="#E87A3D" />
@@ -95,7 +97,7 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
               })}
 
               <Pressable
-                onPress={() => { setOpen(false); setAddVisible(true); }}
+                onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setOpen(false); setAddVisible(true); }}
                 className="px-4 py-3 rounded-2xl border border-dashed border-primary/50 flex-row items-center"
               >
                 <View className="w-7 h-7 rounded-full items-center justify-center mr-2 bg-primary/10">

@@ -91,7 +91,7 @@ export function AddWalletModal({ visible, onClose, onCreated }: Props) {
                 return (
                   <Pressable
                     key={wt.value}
-                    onPress={() => setSelectedType(wt.value)}
+                    onPress={() => { Haptics.selectionAsync(); setSelectedType(wt.value); }}
                     className={`flex-row items-center px-3 py-2 rounded-full border ${active ? 'border-primary bg-primary/10' : 'border-border bg-background'}`}
                   >
                     <Ionicons
@@ -112,7 +112,7 @@ export function AddWalletModal({ visible, onClose, onCreated }: Props) {
               {WALLET_COLORS.map((color) => (
                 <Pressable
                   key={color}
-                  onPress={() => setSelectedColor(color)}
+                  onPress={() => { Haptics.selectionAsync(); setSelectedColor(color); }}
                   className={`w-9 h-9 rounded-full items-center justify-center ${selectedColor === color ? 'border-2 border-foreground' : ''}`}
                   style={{ backgroundColor: color }}
                 >

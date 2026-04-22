@@ -3,6 +3,7 @@ import { formatCurrency } from '@/lib/utils/format';
 import { getPeriodRange } from '@/lib/utils/period';
 import type { Category, Period, Transaction, TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 
@@ -257,7 +258,11 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
             return (
               <Pressable
                 key={ci}
-                onPress={() => hasAmount ? onSelectDay(dateStr) : undefined}
+                onPress={() => {
+                  if (!hasAmount) return;
+                  Haptics.selectionAsync();
+                  onSelectDay(dateStr);
+                }}
                 style={{
                   flex: 1, aspectRatio: 1,
                   alignItems: 'center', justifyContent: 'center',
