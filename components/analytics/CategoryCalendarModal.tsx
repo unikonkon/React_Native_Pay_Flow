@@ -197,6 +197,7 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
 }) {
   const firstDayOfWeek = new Date(data.year, data.month, 1).getDay(); // 0=Sun
   const buddhistYear = data.year + 543;
+  const totalAmount = data.days.reduce((s, d) => s + d.amount, 0);
 
   // Build grid: empty cells + day cells
   const cells: (null | MonthData['days'][number])[] = [];
@@ -221,9 +222,15 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
   return (
     <View className="mx-4 mt-4">
       {/* Month title */}
-      <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, marginBottom: 8 }} className="text-foreground">
-        {THAI_MONTHS[data.month]} {buddhistYear}
-      </Text>
+      <View className="flex-row items-center justify-between">
+        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, marginBottom: 8 }} className="text-foreground">
+          {THAI_MONTHS[data.month]} {buddhistYear}
+        </Text>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: '#2B2118' }} className="text-muted-foreground">
+          รวม: {formatCurrency(totalAmount)}
+        </Text>
+      </View>
+
 
       {/* Day of week headers */}
       <View className="flex-row mb-1">
@@ -270,7 +277,7 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
                       fontFamily: 'Inter_700Bold', // หนาขึ้น
                       fontSize: 10,
                       paddingTop: 4,
-                      color: isSelected 
+                      color: isSelected
                         ? '#fff' // เมื่อเลือกให้ขาวสนิทเพื่อความชัด
                         : color, // ใช้สีหลักของหมวดหมู่
                       marginTop: -1,
@@ -283,7 +290,7 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
                     {formatCompact(cell.amount)}
                   </Text>
                 )}
-           
+
               </Pressable>
             );
           })}
