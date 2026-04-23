@@ -16,7 +16,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { Alert, Image, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const mascotRun = require('@/assets/mascot-run.png');
+const mascotRun = require('@/assets/bg/bg.png');
 
 export default function TransactionsScreen() {
   const transactions = useTransactionStore(s => s.transactions);

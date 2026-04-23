@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const mascotRun = require('@/assets/mascot-run.png');
+const mascotRun = require('@/assets/bg/bg.png');
 
 function SettingsRow({
   icon,

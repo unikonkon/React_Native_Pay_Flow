@@ -1,7 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { Image, Pressable } from 'react-native';
 
-const mascotPlus = require('@/assets/mascot-plus10.png');
+const mascotPlus = require('@/assets/add/add.png');
 
 interface FABProps {
   onPress: () => void;
@@ -36,9 +36,11 @@ export function FAB({ onPress }: FABProps) {
           shadowOpacity: 0.36,
           shadowRadius: 12,
           shadowOffset: { width: 0, height: 3 },
+          opacity: 0.80, // ลดความชัดลง
         }}
         resizeMode="contain"
       />
+
     </Pressable>
   );
 }
