@@ -1,6 +1,6 @@
 import { getDb } from '@/lib/stores/db';
 import { generateId } from '@/lib/utils/id';
-import type { Transaction } from '@/types';
+import type { Transaction, TransactionType, WalletType } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system/next';
@@ -478,4 +478,318 @@ export async function exportToCSV(transactions: Transaction[]) {
   await Sharing.shareAsync(csvFile.uri, {
     mimeType: 'text/csv', UTI: 'public.comma-separated-values-text',
   });
+}
+
+// ─── Special Import (Pay Flow human-readable .txt) ───
+//
+// Parses files in the format:
+//   [ กระเป๋าเงิน ]   → wallets (TSV: name, type, init, current)
+//   [ หมวดหมู่ ]      → categories (emoji + name, grouped by รายรับ/รายจ่าย)
+//   [ รายการธุรกรรม ] → transactions (TSV: date, type, category, amount, note),
+//                       grouped by wallet via "── walletName (N รายการ) ──"
+//
+// Categories are matched by name+type to existing ones; unmatched become
+// custom categories with the source emoji stored as the icon.
+
+const THAI_MONTH_ABBR_MAP: Record<string, number> = {
+  'ม.ค.': 1, 'ก.พ.': 2, 'มี.ค.': 3, 'เม.ย.': 4, 'พ.ค.': 5, 'มิ.ย.': 6,
+  'ก.ค.': 7, 'ส.ค.': 8, 'ก.ย.': 9, 'ต.ค.': 10, 'พ.ย.': 11, 'ธ.ค.': 12,
+};
+
+const WALLET_TYPE_MAP: Record<string, WalletType> = {
+  'เงินสด': 'cash',
+  'ธนาคาร': 'bank',
+  'บัญชีธนาคาร': 'bank',
+  'บัตรเครดิต': 'credit_card',
+  'อีวอลเล็ท': 'e_wallet',
+  'อี-วอลเล็ท': 'e_wallet',
+  'E-Wallet': 'e_wallet',
+  'ออมทรัพย์': 'savings',
+  'เงินออม': 'savings',
+  'ใช้จ่ายประจำวัน': 'daily_expense',
+};
+
+interface ParsedSpecialWallet {
+  name: string;
+  type: WalletType;
+  initialBalance: number;
+  currentBalance: number;
+}
+interface ParsedSpecialCategory {
+  name: string;
+  icon: string;
+  type: TransactionType;
+}
+interface ParsedSpecialTransaction {
+  walletName: string;
+  date: string;
+  createdAt: string;
+  type: TransactionType;
+  categoryName: string;
+  amount: number;
+  note?: string;
+}
+interface ParsedSpecialData {
+  wallets: ParsedSpecialWallet[];
+  categories: ParsedSpecialCategory[];
+  transactions: ParsedSpecialTransaction[];
+}
+
+function parseThaiDateTime(s: string): { date: string; createdAt: string } | null {
+  // "22 มี.ค. 2569 17:43" → date "2026-03-22", ISO "2026-03-22T17:43:00.000Z"
+  const m = s.match(/^(\d{1,2})\s+(\S+)\s+(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/);
+  if (!m) return null;
+  const day = parseInt(m[1], 10);
+  const month = THAI_MONTH_ABBR_MAP[m[2]];
+  if (!month) return null;
+  const year = parseInt(m[3], 10) - 543;
+  const hour = parseInt(m[4] ?? '0', 10);
+  const minute = parseInt(m[5] ?? '0', 10);
+  const date = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const createdAt = `${date}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00.000Z`;
+  return { date, createdAt };
+}
+
+function parsePayFlowText(content: string): ParsedSpecialData | null {
+  const lines = content.split(/\r?\n/);
+
+  const wallets: ParsedSpecialWallet[] = [];
+  const categories: ParsedSpecialCategory[] = [];
+  const transactions: ParsedSpecialTransaction[] = [];
+
+  type Section = 'none' | 'wallet' | 'category' | 'transaction';
+  let section: Section = 'none';
+  let walletHeaderSeen = false;
+  let categoryType: TransactionType | null = null;
+  let currentWalletName: string | null = null;
+  let txHeaderSeen = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Section headers
+    if (trimmed.startsWith('[ กระเป๋าเงิน ]')) {
+      section = 'wallet';
+      walletHeaderSeen = false;
+      continue;
+    }
+    if (trimmed.startsWith('[ หมวดหมู่ ]')) {
+      section = 'category';
+      categoryType = null;
+      continue;
+    }
+    if (trimmed.startsWith('[ รายการธุรกรรม')) {
+      section = 'transaction';
+      currentWalletName = null;
+      txHeaderSeen = false;
+      continue;
+    }
+    if (trimmed.startsWith('[')) {
+      section = 'none';
+      continue;
+    }
+
+    if (!trimmed) continue;
+    // Pure divider lines
+    if (/^[─═]+$/.test(trimmed)) continue;
+
+    if (section === 'wallet') {
+      if (trimmed.includes('ชื่อกระเป๋า')) { walletHeaderSeen = true; continue; }
+      if (/^[─\t\s]+$/.test(line)) continue;
+      if (!walletHeaderSeen) continue;
+      const parts = line.split('\t').map(p => p.trim());
+      if (parts.length < 2 || !parts[0]) continue;
+      const [name, typeStr, initStr, currStr] = parts;
+      const type = WALLET_TYPE_MAP[typeStr ?? ''] ?? 'cash';
+      const initialBalance = parseFloat((initStr ?? '0').replace(/,/g, '')) || 0;
+      const currentBalance = parseFloat((currStr ?? '0').replace(/,/g, '')) || 0;
+      wallets.push({ name, type, initialBalance, currentBalance });
+      continue;
+    }
+
+    if (section === 'category') {
+      if (trimmed === 'รายรับ:') { categoryType = 'income'; continue; }
+      if (trimmed === 'รายจ่าย:') { categoryType = 'expense'; continue; }
+      if (!categoryType) continue;
+      // "💰 เงินเดือน" — first whitespace-separated token is the emoji
+      const m = trimmed.match(/^(\S+)\s+(.+)$/);
+      if (!m) continue;
+      const icon = m[1];
+      const name = m[2].trim();
+      if (!name) continue;
+      categories.push({ name, icon, type: categoryType });
+      continue;
+    }
+
+    if (section === 'transaction') {
+      // Wallet sub-header: "── เงินใช้ (257 รายการ) ──"
+      const walletMatch = trimmed.match(/^──\s*(.+?)\s*\(\s*\d+\s*รายการ\s*\)\s*──$/);
+      if (walletMatch) {
+        currentWalletName = walletMatch[1].trim();
+        txHeaderSeen = false;
+        continue;
+      }
+      if (trimmed.startsWith('รายรับ:') || trimmed.startsWith('รายจ่าย:')) continue;
+      if (trimmed.startsWith('วันที่')) { txHeaderSeen = true; continue; }
+      if (!txHeaderSeen || !currentWalletName) continue;
+
+      const parts = line.split('\t').map(p => p.trim());
+      if (parts.length < 4) continue;
+      const [dateStr, typeStr, categoryName, amountStr, noteStr] = parts;
+      const dt = parseThaiDateTime(dateStr);
+      if (!dt) continue;
+      const type: TransactionType = typeStr === 'รายรับ' ? 'income' : 'expense';
+      const amount = Math.abs(parseFloat((amountStr ?? '0').replace(/[+,\s]/g, ''))) || 0;
+      if (!amount) continue;
+      const note = noteStr && noteStr !== '-' ? noteStr : undefined;
+      transactions.push({
+        walletName: currentWalletName,
+        date: dt.date,
+        createdAt: dt.createdAt,
+        type,
+        categoryName,
+        amount,
+        note,
+      });
+    }
+  }
+
+  if (wallets.length === 0 && categories.length === 0 && transactions.length === 0) return null;
+  return { wallets, categories, transactions };
+}
+
+const DEFAULT_CUSTOM_COLORS: Record<TransactionType, string> = {
+  income: '#3E8B68',
+  expense: '#F5A185',
+};
+
+async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<ImportResult> {
+  const db = getDb();
+  let walletsImported = 0;
+  let walletsRenamed = 0;
+  let categoriesImported = 0;
+  let transactionsImported = 0;
+
+  try {
+    await db.withTransactionAsync(async () => {
+      // 1. Wallets — match by name, otherwise create (rename on collision)
+      const existingWallets = await db.getAllAsync<{ id: string; name: string }>('SELECT id, name FROM wallets');
+      const walletNameToId = new Map<string, string>();
+      const existingNames = new Set<string>();
+      for (const w of existingWallets) {
+        walletNameToId.set(w.name, w.id);
+        existingNames.add(w.name);
+      }
+
+      for (const w of parsed.wallets) {
+        if (walletNameToId.has(w.name)) continue;
+        let name = w.name;
+        if (existingNames.has(name)) {
+          let suffix = 2;
+          while (existingNames.has(`${w.name} (${suffix})`)) suffix++;
+          name = `${w.name} (${suffix})`;
+          walletsRenamed++;
+        }
+        const newId = generateId();
+        existingNames.add(name);
+        walletNameToId.set(w.name, newId);
+        await db.runAsync(
+          `INSERT INTO wallets (id, name, type, icon, color, currency, initial_balance, current_balance, is_asset, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [newId, name, w.type, 'cash-outline', '#22C55E', 'THB', w.initialBalance, w.currentBalance, 1, new Date().toISOString()],
+        );
+        walletsImported++;
+      }
+
+      // 2. Categories — match existing by (type|name), otherwise create custom
+      const existingCats = await db.getAllAsync<{ id: string; name: string; type: string }>('SELECT id, name, type FROM categories');
+      const catKeyToId = new Map<string, string>();
+      for (const c of existingCats) catKeyToId.set(`${c.type}|${c.name}`, c.id);
+
+      const maxIncSort = (await db.getFirstAsync<{ m: number | null }>(
+        "SELECT MAX(sort_order) as m FROM categories WHERE type = 'income'",
+      ))?.m ?? -1;
+      const maxExpSort = (await db.getFirstAsync<{ m: number | null }>(
+        "SELECT MAX(sort_order) as m FROM categories WHERE type = 'expense'",
+      ))?.m ?? -1;
+      let incSort = maxIncSort + 1;
+      let expSort = maxExpSort + 1;
+
+      const ensureCategory = async (
+        name: string,
+        type: TransactionType,
+        icon: string | null,
+      ): Promise<string> => {
+        const key = `${type}|${name}`;
+        const existing = catKeyToId.get(key);
+        if (existing) return existing;
+        const id = generateId();
+        catKeyToId.set(key, id);
+        const sortOrder = type === 'income' ? incSort++ : expSort++;
+        await db.runAsync(
+          `INSERT INTO categories (id, name, icon, color, type, is_custom, sort_order)
+           VALUES (?, ?, ?, ?, ?, 1, ?)`,
+          [id, name, icon || 'ellipsis-horizontal', DEFAULT_CUSTOM_COLORS[type], type, sortOrder],
+        );
+        categoriesImported++;
+        return id;
+      };
+
+      for (const c of parsed.categories) {
+        await ensureCategory(c.name, c.type, c.icon);
+      }
+
+      // 3. Transactions — fall back to first known wallet if name unknown
+      const fallbackWalletId =
+        walletNameToId.values().next().value ??
+        existingWallets[0]?.id ??
+        'wallet-cash';
+
+      for (const t of parsed.transactions) {
+        const walletId = walletNameToId.get(t.walletName) ?? fallbackWalletId;
+        const categoryId = await ensureCategory(t.categoryName, t.type, null);
+        const txId = generateId();
+        await db.runAsync(
+          `INSERT INTO transactions (id, type, amount, category_id, note, date, created_at, wallet_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [txId, t.type, t.amount, categoryId, t.note ?? null, t.date, t.createdAt, walletId],
+        );
+        transactionsImported++;
+      }
+    });
+
+    return {
+      success: true,
+      wallets: walletsImported,
+      walletsRenamed,
+      categories: categoriesImported,
+      transactions: transactionsImported,
+      analysis: 0,
+      aiHistory: 0,
+      settingsRestored: false,
+    };
+  } catch (e: unknown) {
+    return emptyResult(e instanceof Error ? e.message : 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
+  }
+}
+
+export async function pickAndImportSpecialData(): Promise<ImportResult> {
+  const result = await DocumentPicker.getDocumentAsync({
+    type: ['text/plain', '*/*'],
+    copyToCacheDirectory: true,
+  });
+  if (result.canceled || !result.assets?.length) return emptyResult('ยกเลิกการเลือกไฟล์');
+
+  const file = new File(result.assets[0].uri);
+  let content: string;
+  try {
+    content = await file.text();
+  } catch {
+    return emptyResult('ไม่สามารถอ่านไฟล์นี้ได้');
+  }
+
+  const parsed = parsePayFlowText(content);
+  if (!parsed) return emptyResult('ไฟล์นี้ไม่ใช่รูปแบบ Pay Flow ที่รองรับ');
+
+  return importParsedSpecialData(parsed);
 }

@@ -81,15 +81,17 @@ export function CategoryCalendarModal({ visible, onClose, category, period, wall
     while (curYear < endDate.getFullYear() || (curYear === endDate.getFullYear() && curMonth <= endDate.getMonth())) {
       const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
       const days: MonthData['days'] = [];
+      let hasAmount = false;
 
       for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = `${curYear}-${String(curMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const dayTxs = txByDate.get(dateStr) ?? [];
         const amount = dayTxs.reduce((sum, tx) => sum + tx.amount, 0);
+        if (amount > 0) hasAmount = true;
         days.push({ day: d, amount, txs: dayTxs });
       }
 
-      result.push({ year: curYear, month: curMonth, days });
+      if (hasAmount) result.push({ year: curYear, month: curMonth, days });
       curMonth++;
       if (curMonth > 11) { curMonth = 0; curYear++; }
     }
@@ -142,6 +144,12 @@ export function CategoryCalendarModal({ visible, onClose, category, period, wall
                 onSelectDay={(dateStr) => setSelectedDay(selectedDay === dateStr ? null : dateStr)}
               />
             ))}
+
+            {months.length === 0 && (
+              <View className="items-center py-20">
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-muted-foreground">ไม่มีข้อมูล</Text>
+              </View>
+            )}
 
             {/* Selected day transactions */}
             {selectedDay && selectedTxs.length > 0 && (

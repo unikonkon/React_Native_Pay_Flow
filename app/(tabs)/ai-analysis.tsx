@@ -16,6 +16,7 @@ import {
   getExportCounts,
   pickAndImportData,
   pickAndImportDataExcel,
+  pickAndImportSpecialData,
   type ExportCounts,
   type ImportResult,
 } from '@/lib/utils/data-transfer';
@@ -347,103 +348,103 @@ function HistoryModal({
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable onPress={onClose} className="flex-1 bg-black/40" />
       <View className="absolute bottom-0 left-0 right-0 bg-background rounded-t-2xl" style={{ height: '90%' }}>
-          <View className="flex-row items-center justify-between px-4 pt-4 pb-2">
-            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, color: '#2A2320' }}>ประวัติการวิเคราะห์</Text>
-            <Pressable onPress={onClose} className="p-1">
-              <Ionicons name="close" size={22} color="#666" />
-            </Pressable>
-          </View>
+        <View className="flex-row items-center justify-between px-4 pt-4 pb-2">
+          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, color: '#2A2320' }}>ประวัติการวิเคราะห์</Text>
+          <Pressable onPress={onClose} className="p-1">
+            <Ionicons name="close" size={22} color="#666" />
+          </Pressable>
+        </View>
 
-          {/* Filters */}
+        {/* Filters */}
+        <View className="px-4 pb-2 flex-row flex-wrap gap-2">
+          <Pressable
+            onPress={() => { setFilterYear(null); setFilterMonth(null); }}
+            className={`px-3 py-1.5 rounded-full border ${filterYear === null ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+          >
+            <Text style={{ fontFamily: filterYear === null ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterYear === null ? '#E87A3D' : '#2A2320' }}>ทุกปี</Text>
+          </Pressable>
+          {years.map(y => (
+            <Pressable
+              key={y}
+              onPress={() => { setFilterYear(y); setFilterMonth(null); }}
+              className={`px-3 py-1.5 rounded-full border ${filterYear === y ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+            >
+              <Text style={{ fontFamily: filterYear === y ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterYear === y ? '#E87A3D' : '#2A2320' }}>{y + 543}</Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {filterYear !== null && (
           <View className="px-4 pb-2 flex-row flex-wrap gap-2">
             <Pressable
-              onPress={() => { setFilterYear(null); setFilterMonth(null); }}
-              className={`px-3 py-1.5 rounded-full border ${filterYear === null ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+              onPress={() => setFilterMonth(null)}
+              className={`px-3 py-1.5 rounded-full border ${filterMonth === null ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
             >
-              <Text style={{ fontFamily: filterYear === null ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterYear === null ? '#E87A3D' : '#2A2320' }}>ทุกปี</Text>
+              <Text style={{ fontFamily: filterMonth === null ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterMonth === null ? '#E87A3D' : '#2A2320' }}>ทุกเดือน</Text>
             </Pressable>
-            {years.map(y => (
+            {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
               <Pressable
-                key={y}
-                onPress={() => { setFilterYear(y); setFilterMonth(null); }}
-                className={`px-3 py-1.5 rounded-full border ${filterYear === y ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+                key={m}
+                onPress={() => setFilterMonth(m)}
+                className={`px-3 py-1.5 rounded-full border ${filterMonth === m ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
               >
-                <Text style={{ fontFamily: filterYear === y ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterYear === y ? '#E87A3D' : '#2A2320' }}>{y + 543}</Text>
+                <Text style={{ fontFamily: filterMonth === m ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, color: filterMonth === m ? '#E87A3D' : '#2A2320' }}>{THAI_MONTHS_SHORT[m]}</Text>
               </Pressable>
             ))}
           </View>
+        )}
 
-          {filterYear !== null && (
-            <View className="px-4 pb-2 flex-row flex-wrap gap-2">
-              <Pressable
-                onPress={() => setFilterMonth(null)}
-                className={`px-3 py-1.5 rounded-full border ${filterMonth === null ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
-              >
-                <Text style={{ fontFamily: filterMonth === null ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterMonth === null ? '#E87A3D' : '#2A2320' }}>ทุกเดือน</Text>
-              </Pressable>
-              {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-                <Pressable
-                  key={m}
-                  onPress={() => setFilterMonth(m)}
-                  className={`px-3 py-1.5 rounded-full border ${filterMonth === m ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
-                >
-                  <Text style={{ fontFamily: filterMonth === m ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, color: filterMonth === m ? '#E87A3D' : '#2A2320' }}>{THAI_MONTHS_SHORT[m]}</Text>
-                </Pressable>
-              ))}
-            </View>
-          )}
-
-          <View className="px-4 pb-3 flex-row flex-wrap gap-2">
+        <View className="px-4 pb-3 flex-row flex-wrap gap-2">
+          <Pressable
+            onPress={() => setFilterWalletId('all')}
+            className={`px-3 py-1.5 rounded-full border ${filterWalletId === 'all' ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+          >
+            <Text style={{ fontFamily: filterWalletId === 'all' ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterWalletId === 'all' ? '#E87A3D' : '#2A2320' }}>ทุกกระเป๋า</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setFilterWalletId('none')}
+            className={`px-3 py-1.5 rounded-full border ${filterWalletId === 'none' ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+          >
+            <Text style={{ fontFamily: filterWalletId === 'none' ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, color: filterWalletId === 'none' ? '#E87A3D' : '#2A2320' }}>ไม่ระบุ</Text>
+          </Pressable>
+          {wallets.map(w => (
             <Pressable
-              onPress={() => setFilterWalletId('all')}
-              className={`px-3 py-1.5 rounded-full border ${filterWalletId === 'all' ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
+              key={w.id}
+              onPress={() => setFilterWalletId(w.id)}
+              className={`px-3 py-1.5 rounded-full border ${filterWalletId === w.id ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
             >
-              <Text style={{ fontFamily: filterWalletId === 'all' ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterWalletId === 'all' ? '#E87A3D' : '#2A2320' }}>ทุกกระเป๋า</Text>
+              <Text style={{ fontFamily: filterWalletId === w.id ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, color: filterWalletId === w.id ? '#E87A3D' : '#2A2320' }}>{w.name}</Text>
             </Pressable>
-            <Pressable
-              onPress={() => setFilterWalletId('none')}
-              className={`px-3 py-1.5 rounded-full border ${filterWalletId === 'none' ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
-            >
-              <Text style={{ fontFamily: filterWalletId === 'none' ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, color: filterWalletId === 'none' ? '#E87A3D' : '#2A2320' }}>ไม่ระบุ</Text>
-            </Pressable>
-            {wallets.map(w => (
-              <Pressable
-                key={w.id}
-                onPress={() => setFilterWalletId(w.id)}
-                className={`px-3 py-1.5 rounded-full border ${filterWalletId === w.id ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
-              >
-                <Text style={{ fontFamily: filterWalletId === w.id ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, color: filterWalletId === w.id ? '#E87A3D' : '#2A2320' }}>{w.name}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          {/* List */}
-          <ScrollView className="px-4 pb-6">
-            {filtered.length === 0 ? (
-              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80', textAlign: 'center', paddingVertical: 32 }}>ไม่พบประวัติ</Text>
-            ) : (
-              filtered.map(h => (
-                <Pressable
-                  key={h.id}
-                  onPress={() => { onView(h); onClose(); }}
-                  onLongPress={() => onDelete(h)}
-                  className="flex-row items-center px-4 py-3 bg-card border-b border-border rounded-xl mb-2"
-                >
-                  <Ionicons name="document-text-outline" size={20} color="#E87A3D" />
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: '#2A2320' }}>
-                      {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
-                    </Text>
-                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#9A8D80', marginTop: 2 }}>
-                      {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={16} color="#ccc" />
-                </Pressable>
-              ))
-            )}
-          </ScrollView>
+          ))}
         </View>
+
+        {/* List */}
+        <ScrollView className="px-4 pb-6">
+          {filtered.length === 0 ? (
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80', textAlign: 'center', paddingVertical: 32 }}>ไม่พบประวัติ</Text>
+          ) : (
+            filtered.map(h => (
+              <Pressable
+                key={h.id}
+                onPress={() => { onView(h); onClose(); }}
+                onLongPress={() => onDelete(h)}
+                className="flex-row items-center px-4 py-3 bg-card border-b border-border rounded-xl mb-2"
+              >
+                <Ionicons name="document-text-outline" size={20} color="#E87A3D" />
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: '#2A2320' }}>
+                    {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
+                  </Text>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#9A8D80', marginTop: 2 }}>
+                    {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="#ccc" />
+              </Pressable>
+            ))
+          )}
+        </ScrollView>
+      </View>
     </Modal>
   );
 }
@@ -738,6 +739,118 @@ function ResultRow({ label, count, extra }: { label: string; count: number; extr
   );
 }
 
+// ===== Special Import (Pay Flow .txt) =====
+
+function SpecialImportSection({ onSuccess }: { onSuccess: () => void | Promise<void> }) {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<ImportResult | null>(null);
+
+  const handleImport = useCallback(async () => {
+    setLoading(true);
+    setResult(null);
+    try {
+      const r = await pickAndImportSpecialData();
+      setResult(r);
+      if (r.success) await onSuccess();
+    } catch {
+      setResult({
+        success: false, wallets: 0, walletsRenamed: 0, categories: 0,
+        transactions: 0, analysis: 0, aiHistory: 0, settingsRestored: false,
+        error: 'เกิดข้อผิดพลาดที่ไม่คาดคิด',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [onSuccess]);
+
+  return (
+    <View style={{ marginTop: 22 }}>
+      {/* Section header */}
+      <View className="flex-row items-center" style={{ marginBottom: 10, gap: 8 }}>
+        <View style={{
+          width: 28, height: 28, borderRadius: 8,
+          backgroundColor: '#FCE8D4',
+          alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Ionicons name="sparkles-outline" size={14} color="#C85F28" />
+        </View>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#2A2320' }}>
+          นำเข้าข้อมูลแบบพิเศษ
+        </Text>
+      </View>
+
+      {/* Description card */}
+      <View className="bg-card rounded-2xl p-4 mb-3 border border-border">
+        <View className="flex-row items-center mb-2">
+          <Ionicons name="document-text-outline" size={18} color="#E87A3D" />
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: '#2A2320', marginLeft: 8 }}>
+            รองรับไฟล์รายงาน Pay Flow (.txt)
+          </Text>
+        </View>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12.5, color: '#9A8D80', lineHeight: 18 }}>
+          เลือกไฟล์รายงานข้อมูลของแอป Pay Flow เพื่อสร้างกระเป๋าเงิน หมวดหมู่ และนำเข้ารายการทั้งหมดอัตโนมัติ ใช้สำหรับนำเข้าเท่านั้น (ไม่ส่งออก)
+        </Text>
+      </View>
+
+      {/* Notes */}
+      <View className="bg-amber-50 rounded-xl p-3 mb-3 border border-amber-200">
+        <View className="flex-row items-start">
+          <Ionicons name="information-circle" size={18} color="#f59e0b" style={{ marginTop: 1 }} />
+          <View className="ml-2 flex-1">
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#b45309' }}>• กระเป๋า/หมวดหมู่ที่ชื่อตรงกัน จะใช้ของเดิม ไม่สร้างซ้ำ</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#b45309' }}>• หมวดหมู่ใหม่จะถูกสร้างเป็นแบบกำหนดเอง พร้อมไอคอน emoji ตามไฟล์</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#b45309' }}>• ข้อมูลเดิมในแอปจะไม่ถูกลบ</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Result */}
+      {result && result.success && (
+        <View className="bg-green-50 rounded-2xl p-4 mb-3 border border-green-200">
+          <View className="flex-row items-center mb-2">
+            <Ionicons name="checkmark-circle" size={20} color="#22c55e" />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, color: '#15803d', marginLeft: 8 }}>นำเข้าสำเร็จ!</Text>
+          </View>
+          <View className="gap-1.5">
+            <ResultRow label="กระเป๋าเงิน" count={result.wallets} extra={result.walletsRenamed > 0 ? `เปลี่ยนชื่อ ${result.walletsRenamed}` : undefined} />
+            <ResultRow label="หมวดหมู่ใหม่" count={result.categories} />
+            <ResultRow label="ธุรกรรม" count={result.transactions} />
+          </View>
+        </View>
+      )}
+      {result && !result.success && (
+        <View className="bg-red-50 rounded-xl p-3 mb-3 border border-red-200">
+          <View className="flex-row items-center">
+            <Ionicons name="close-circle" size={18} color="#ef4444" />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#ef4444', marginLeft: 8, flex: 1 }}>{result.error}</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Import button */}
+      <Pressable
+        onPress={handleImport}
+        disabled={loading}
+        className={`rounded-xl py-4 items-center ${loading ? 'bg-primary/50' : 'bg-primary'}`}
+      >
+        {loading ? (
+          <View className="flex-row items-center">
+            <ActivityIndicator color="white" />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14.5, color: '#fff', marginLeft: 8 }}>กำลังนำเข้า...</Text>
+          </View>
+        ) : (
+          <View className="flex-row items-center">
+            <Ionicons name="cloud-download-outline" size={20} color="white" />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14.5, color: '#fff', marginLeft: 8 }}>
+              เลือกไฟล์ Pay Flow (.txt) แล้วนำเข้า
+            </Text>
+          </View>
+        )}
+      </Pressable>
+    </View>
+  );
+}
+
 // ===== Main Screen =====
 
 export default function PremiumScreen() {
@@ -745,7 +858,14 @@ export default function PremiumScreen() {
   const [innerTab, setInnerTab] = useState<InnerTab>('ai');
 
   const wallets = useWalletStore(s => s.wallets);
+  const reloadWallets = useWalletStore(s => s.loadWallets);
+  const reloadCategories = useCategoryStore(s => s.loadCategories);
+  const reloadTransactions = useTransactionStore(s => s.loadTransactions);
   const { histories, addHistory, deleteHistory } = useAiHistoryStore();
+
+  const reloadAfterSpecialImport = useCallback(async () => {
+    await Promise.all([reloadWallets(), reloadCategories(), reloadTransactions()]);
+  }, [reloadWallets, reloadCategories, reloadTransactions]);
 
   const currentYear = new Date().getFullYear() + 543;
 
@@ -1163,6 +1283,7 @@ export default function PremiumScreen() {
         ) : (
           <View style={{ paddingHorizontal: 16 }}>
             <DataTransferTab />
+            <SpecialImportSection onSuccess={reloadAfterSpecialImport} />
           </View>
         )}
       </ScrollView>
