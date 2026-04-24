@@ -165,12 +165,12 @@ export function CompareExpensesModal({ visible, onClose, walletId }: Props) {
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-background">
         {/* Header */}
-        <View style={{ paddingTop: 56, paddingBottom: 12, paddingHorizontal: 16, backgroundColor: '#FFF6EA' }}>
+        <View className="bg-accent" style={{ paddingTop: 56, paddingBottom: 12, paddingHorizontal: 16 }}>
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center flex-1">
               <View
                 className="rounded-full items-center justify-center"
-                style={{ width: 40, height: 40, backgroundColor: '#FCE8D4' }}
+                style={{ width: 40, height: 40, backgroundColor: '#E87A3D22' }}
               >
                 <Ionicons name="swap-horizontal" size={20} color="#E87A3D" />
               </View>
@@ -179,8 +179,8 @@ export function CompareExpensesModal({ visible, onClose, walletId }: Props) {
                 <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">เปรียบเทียบเดือนต่อเดือน</Text>
               </View>
             </View>
-            <Pressable onPress={onClose} className="p-2 rounded-full bg-white/80">
-              <Ionicons name="close" size={22} color="#6B5F52" />
+            <Pressable onPress={onClose} className="p-2 rounded-full bg-card/80">
+              <Ionicons name="close" size={22} className="text-muted-foreground" color="#A39685" />
             </Pressable>
           </View>
         </View>
@@ -272,9 +272,9 @@ function MonthPill({ label, sublabel, color, onPress }: {
   return (
     <Pressable
       onPress={onPress}
+      className="bg-card"
       style={({ pressed }) => ({
         flex: 1,
-        backgroundColor: '#fff',
         borderRadius: 16,
         paddingVertical: 10,
         paddingHorizontal: 12,
@@ -385,7 +385,7 @@ function CompareBar({ label, amount, maxAmount, color }: { label: string; amount
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
       <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 10, color, width: 28 }}>{label}</Text>
-      <View style={{ flex: 1, height: 12, backgroundColor: '#F5EEE0', borderRadius: 6, overflow: 'hidden' }}>
+      <View className="bg-secondary" style={{ flex: 1, height: 12, borderRadius: 6, overflow: 'hidden' }}>
         <View style={{ width: `${pct}%`, height: '100%', backgroundColor: color, borderRadius: 6 }} />
       </View>
       <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 11, fontVariant: ['tabular-nums'], minWidth: 64, textAlign: 'right' }} className="text-foreground">
@@ -426,7 +426,10 @@ function MonthPickerModal({ visible, title, options, selected, onSelect, onClose
                   onPress={() => onSelect(m)}
                   className={`px-4 py-3 rounded-xl mb-1.5 flex-row items-center justify-between ${isSelected ? 'bg-primary' : 'bg-background border border-border'}`}
                 >
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: isSelected ? '#fff' : '#2B2118' }}>
+                  <Text
+                    className={isSelected ? 'text-primary-foreground' : 'text-foreground'}
+                    style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }}
+                  >
                     {monthLabel(m, true)}
                   </Text>
                   {isSelected && <Ionicons name="checkmark" size={18} color="white" />}

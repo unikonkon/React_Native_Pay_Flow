@@ -93,15 +93,19 @@ export default function RootLayout() {
 
   if (isLocked) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FBF7F0' }}>
+      <View
+        className={`flex-1 bg-background ${currentTheme !== 'warm' ? currentTheme : ''}`}
+        style={{ justifyContent: 'center', alignItems: 'center' }}
+      >
         <Ionicons name="lock-closed" size={64} color="#E87A3D" />
-        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 20, marginTop: 16, color: '#2B2118' }}>MiawMoney</Text>
-        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14, color: '#6B5F52', marginTop: 4 }}>กรุณาปลดล็อกเพื่อใช้งาน</Text>
+        <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 20, marginTop: 16 }}>MiawMoney</Text>
+        <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14, marginTop: 4 }}>กรุณาปลดล็อกเพื่อใช้งาน</Text>
         <Pressable
           onPress={handleUnlock}
-          style={{ marginTop: 24, paddingHorizontal: 32, paddingVertical: 12, backgroundColor: '#E87A3D', borderRadius: 999 }}
+          className="bg-primary"
+          style={{ marginTop: 24, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 999 }}
         >
-          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', color: 'white', fontSize: 16 }}>ปลดล็อก</Text>
+          <Text className="text-primary-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16 }}>ปลดล็อก</Text>
         </Pressable>
       </View>
     );

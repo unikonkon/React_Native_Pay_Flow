@@ -213,9 +213,12 @@ export function CalculatorPad({
                 style={{ marginHorizontal: 4, paddingVertical: 16, borderRadius: 12, overflow: 'hidden' }}
               >
                 {btn.icon ? (
-                  <Ionicons name="backspace-outline" size={20} color="#6B5F52" />
+                  <Ionicons name="backspace-outline" size={20} color="#A39685" />
                 ) : (
-                  <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 20, color: isNumber ? '#2B2118' : '#A39685' }}>
+                  <Text
+                    className={isNumber ? 'text-foreground' : 'text-muted-foreground'}
+                    style={{ fontFamily: 'Inter_400Regular', fontSize: 20 }}
+                  >
                     {btn.label}
                   </Text>
                 )}
@@ -252,7 +255,7 @@ export function CalculatorPad({
           className="flex-1 items-center justify-center bg-card"
           style={{ marginHorizontal: 4, paddingVertical: 10, borderRadius: 12, overflow: 'hidden' }}
         >
-          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 20, color: '#2B2118' }}>00</Text>
+          <Text className="text-foreground" style={{ fontFamily: 'Inter_400Regular', fontSize: 20 }}>00</Text>
           {activeBtn === '00' && (
             <Animated.View
               pointerEvents="none"
@@ -277,7 +280,7 @@ export function CalculatorPad({
           className="flex-1 items-center justify-center bg-card"
           style={{ marginHorizontal: 4, paddingVertical: 10, borderRadius: 12, overflow: 'hidden' }}
         >
-          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 20, color: '#2B2118' }}>0</Text>
+          <Text className="text-foreground" style={{ fontFamily: 'Inter_400Regular', fontSize: 20 }}>0</Text>
           {activeBtn === '0' && (
             <Animated.View
               pointerEvents="none"

@@ -1,5 +1,7 @@
 import { TransactionForm } from '@/components/transaction/TransactionForm';
+import { getThemeSwatch } from '@/lib/constants/themes';
 import { useSettingsStore } from '@/lib/stores/settings-store';
+import { useThemeStore } from '@/lib/stores/theme-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -15,6 +17,12 @@ export default function AddTransactionScreen() {
   const sheetRef = useRef<BottomSheet>(null);
   const addTxSheetHeight = useSettingsStore(s => s.addTxSheetHeight);
   const snapPoints = useMemo(() => [`${addTxSheetHeight}%`], [addTxSheetHeight]);
+
+  // Theme-aware sheet surface colors (match --background + --border from global.css)
+  const currentTheme = useThemeStore(s => s.currentTheme);
+  const swatch = getThemeSwatch(currentTheme);
+  const sheetBg = swatch?.bg ?? '#FBF7F0';
+  const indicatorColor = swatch?.border ?? '#EDE4D3';
 
   // 50% faster than default (250ms → 125ms)
   const animationConfigs = useBottomSheetTimingConfigs({
@@ -68,8 +76,8 @@ export default function AddTransactionScreen() {
         animationConfigs={animationConfigs}
         onClose={handleSheetClose}
         backdropComponent={renderBackdrop}
-        handleIndicatorStyle={{ backgroundColor: '#EDE4D3', width: 36, height: 4 }}
-        backgroundStyle={{ backgroundColor: '#FBF7F0', borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+        handleIndicatorStyle={{ backgroundColor: indicatorColor, width: 36, height: 4 }}
+        backgroundStyle={{ backgroundColor: sheetBg, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
       >
         <TransactionForm editTransaction={editingTransaction} onClose={handleRequestClose} />
       </BottomSheet>

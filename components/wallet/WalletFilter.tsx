@@ -1,4 +1,5 @@
 import { useWalletStore } from '@/lib/stores/wallet-store';
+import { useIsDarkTheme } from '@/lib/utils/theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
+  const isDark = useIsDarkTheme();
   const wallets = useWalletStore(s => s.wallets);
   const [open, setOpen] = useState(false);
   const [addVisible, setAddVisible] = useState(false);
@@ -30,7 +32,7 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
     <View className={className}>
       <Pressable
         onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setOpen(true); }}
-        className="flex-row items-center px-3.5 py-1.5 bg-white rounded-2xl self-start border border-border"
+        className="flex-row items-center px-3.5 py-1.5 bg-card rounded-2xl self-start border border-border"
       >
         <Ionicons name="wallet-outline" size={15} color="#E87A3D" />
         <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground ml-1.5">{selectedWalletName}</Text>
@@ -49,7 +51,7 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
             <View className="flex-row items-center justify-between mb-3">
               <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }} className="text-foreground">เลือกกระเป๋า</Text>
               <Pressable onPress={() => setOpen(false)} className="p-1">
-                <Ionicons name="close" size={22} color="#6B5F52" />
+                <Ionicons name="close" size={22} color="#A39685" />
               </Pressable>
             </View>
 
@@ -60,9 +62,12 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
               >
                 <View className="flex-row items-center">
                   <View className="w-7 h-7 rounded-full items-center justify-center mr-2 bg-secondary">
-                    <Ionicons name="albums-outline" size={14} color="#6B5F52" />
+                    <Ionicons name="albums-outline" size={14} color="#A39685" />
                   </View>
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: !selectedWalletId ? '#fff' : '#2B2118' }}>
+                  <Text
+                    className={!selectedWalletId ? '' : 'text-foreground'}
+                    style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: !selectedWalletId ? '#fff' : isDark ? "#E87A3D" : "#2B2118" }}
+                  >
                     ทุกกระเป๋า
                   </Text>
                 </View>
@@ -85,7 +90,8 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
                         <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={14} color="white" />
                       </View>
                       <Text
-                        style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: selected ? '#fff' : '#2B2118' }}
+                        className={selected ? '' : 'text-foreground'}
+                        style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: selected ? '#fff' : "#E87A3D" }}
                         numberOfLines={1}
                       >
                         {w.name}

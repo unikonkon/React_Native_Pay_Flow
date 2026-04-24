@@ -7,6 +7,7 @@ import {
   periodsEqual,
   shiftPeriod,
 } from '@/lib/utils/period';
+import { useIsDarkTheme } from '@/lib/utils/theme';
 import type { Period, PeriodType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -46,6 +47,9 @@ function tabFromType(type: PeriodType): TabKey {
 export function PeriodSelector({ period, onChange, className }: Props) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<TabKey>(tabFromType(period.type));
+  const isDark = useIsDarkTheme();
+  const chevronActive = isDark ? '#A39685' : '#6B5F52';
+  const chevronDisabled = isDark ? '#4A3D30' : '#D3CBC3';
 
   // Custom date range state
   const [customStart, setCustomStart] = useState(() => {
@@ -106,19 +110,19 @@ export function PeriodSelector({ period, onChange, className }: Props) {
 
   return (
     <View className={className}>
-      <View className="flex-row items-center justify-between rounded-full bg-white border border-border">
+      <View className="flex-row items-center justify-between rounded-full bg-card border border-border">
         <Pressable
           onPress={() => { if (canShift) { Haptics.selectionAsync(); onChange(shiftPeriod(period, -1)); } }}
           disabled={!canShift}
           className="p-2"
         >
-          <Ionicons name="chevron-back" size={24} color={canShift ? '#6B5F52' : '#A39685'} />
+          <Ionicons name="chevron-back" size={24} color={canShift ? chevronActive : chevronDisabled} />
         </Pressable>
         <Pressable
           onPress={handleOpen}
           className="w-full flex-row items-center justify-center px-3.5 py-1.5 gap-2  flex-shrink"
         >
-          <Ionicons name="calendar-outline" size={16} color="#6B5F52" style={{ marginRight: 6 }} />
+          <Ionicons name="calendar-outline" size={16} color="#A39685" style={{ marginRight: 6 }} />
           <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 16 }} className="text-foreground" numberOfLines={1}>
             {formatPeriodLabel(period)}
           </Text>
@@ -129,7 +133,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
           disabled={!canShift}
           className="p-2"
         >
-          <Ionicons name="chevron-forward" size={24} color={canShift ? '#6B5F52' : '#A39685'} />
+          <Ionicons name="chevron-forward" size={24} color={canShift ? chevronActive : chevronDisabled} />
         </Pressable>
       </View>
 
@@ -145,7 +149,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
             <View className="flex-row items-center justify-between mb-3">
               <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }} className="text-foreground">เลือกช่วงเวลา</Text>
               <Pressable onPress={() => setOpen(false)} className="p-1">
-                <Ionicons name="close" size={22} color="#6B5F52" />
+                <Ionicons name="close" size={22} color="#A39685" />
               </Pressable>
             </View>
 
@@ -158,7 +162,8 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                   style={{ backgroundColor: tab === t ? '#E87A3D' : 'transparent' }}
                 >
                   <Text
-                    style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, color: tab === t ? '#fff' : '#2B2118' }}
+                    className={tab === t ? '' : 'text-foreground'}
+                    style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, color: tab === t ? '#fff' : isDark ? "#E87A3D" : "#2B2118" }}
                   >
                     {TAB_LABEL[t]}
                   </Text>
@@ -179,14 +184,16 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                           className={`px-2 py-3 rounded-2xl border items-center ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
                         >
                           <Text
-                            style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: selected ? '#fff' : '#2B2118' }}
+                            className={selected ? '' : 'text-foreground'}
+                            style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: selected ? '#fff' : isDark ? "#E87A3D" : "#2B2118" }}
                             numberOfLines={1}
                           >
                             {formatPeriodLabel(p)}
                           </Text>
                           {isLatest && (
                             <Text
-                              style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 10, color: selected ? 'rgba(255,255,255,0.8)' : '#A39685', marginTop: 2 }}
+                              className={selected ? '' : 'text-muted-foreground'}
+                              style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 10, color: selected ? 'rgba(255,255,255,0.8)' : isDark ? "#E87A3D" : "#2B2118", marginTop: 2 }}
                             >
                               เดือนล่าสุด
                             </Text>
@@ -210,7 +217,8 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                       className={`px-3 py-3 rounded-2xl mb-2 border ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
                     >
                       <Text
-                        style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: selected ? '#fff' : '#2B2118' }}
+                        className={selected ? '' : 'text-foreground'}
+                        style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: selected ? '#fff' : isDark ? "#E87A3D" : "#2B2118" }}
                       >
                         {formatPeriodLabel(p)}
                         {i === 0 ? '  (สัปดาห์นี้)' : ''}
@@ -232,7 +240,8 @@ export function PeriodSelector({ period, onChange, className }: Props) {
                       className={`px-4 py-3 rounded-2xl mb-2 border flex-row items-center justify-between ${selected ? 'bg-primary border-primary' : 'border-border bg-background'}`}
                     >
                       <Text
-                        style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: selected ? '#fff' : '#2B2118' }}
+                        className={selected ? '' : 'text-foreground'}
+                        style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: selected ? '#fff' : isDark ? "#E87A3D" : "#2B2118" }}
                       >
                         {opt.label}
                       </Text>
@@ -249,7 +258,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
               <View>
                 {/* Start Date */}
                 {showStartPicker ? (
-                  <View className="bg-white rounded-2xl mb-2 overflow-hidden">
+                  <View className="bg-card rounded-2xl mb-2 overflow-hidden">
                     <View className="px-4 pt-2">
                       <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-muted-foreground">วันเริ่มต้น</Text>
                     </View>
@@ -283,7 +292,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
 
                 {/* End Date */}
                 {showEndPicker ? (
-                  <View className="bg-white rounded-2xl mb-2 overflow-hidden">
+                  <View className="bg-card rounded-2xl mb-2 overflow-hidden">
                     <View className="px-4 pt-2">
                       <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-muted-foreground">วันสิ้นสุด</Text>
                     </View>

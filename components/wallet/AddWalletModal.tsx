@@ -69,7 +69,7 @@ export function AddWalletModal({ visible, onClose, onCreated }: Props) {
           <View className="flex-row items-center justify-between mb-3">
             <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }} className="text-foreground">เพิ่มกระเป๋าเงิน</Text>
             <Pressable onPress={onClose} className="p-1">
-              <Ionicons name="close" size={22} color="#6B5F52" />
+              <Ionicons name="close" size={22} color="#A39685" />
             </Pressable>
           </View>
 
@@ -79,9 +79,9 @@ export function AddWalletModal({ visible, onClose, onCreated }: Props) {
               value={name}
               onChangeText={setName}
               placeholder="ชื่อกระเป๋าเงิน"
-              placeholderTextColor="#999"
+              placeholderTextColor="#A39685"
               style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}
-              className="border border-border rounded-xl px-3 py-3 mb-4 text-foreground"
+              className="border border-border rounded-xl px-3 py-3 mb-4 text-foreground bg-background"
             />
 
             <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground mb-2">ประเภท</Text>
@@ -97,7 +97,7 @@ export function AddWalletModal({ visible, onClose, onCreated }: Props) {
                     <Ionicons
                       name={wt.icon as keyof typeof Ionicons.glyphMap}
                       size={16}
-                      color={active ? '#E87A3D' : '#666'}
+                      color={active ? '#E87A3D' : '#A39685'}
                     />
                     <Text style={{ fontFamily: active ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 14 }} className={`ml-1 ${active ? 'text-primary' : 'text-foreground'}`}>
                       {wt.label}

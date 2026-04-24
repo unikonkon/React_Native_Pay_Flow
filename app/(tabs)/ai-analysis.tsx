@@ -105,15 +105,15 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
             <Ionicons name="sparkles" size={10} color="#6B4A9E" />
             <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#6B4A9E' }}>มิว Premium</Text>
           </View>
-          <Text style={{
+          <Text className="text-muted-foreground" style={{
             fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 24,
-            color: '#2A2320', marginTop: 10, letterSpacing: -0.4, lineHeight: 30,
+            marginTop: 10, letterSpacing: -0.4, lineHeight: 30,
           }}>
-            {'ปลดล็อกพลังทั้งหมด\nของมิวกันเถอะ'}
+            {'ปลดล็อกพลังทั้งหมด\nของแมวกันเถอะ'}
           </Text>
-          <Text style={{
+          <Text className="text-muted-foreground" style={{
             fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13,
-            color: '#6B5F55', marginTop: 6, maxWidth: 210,
+            marginTop: 6, maxWidth: 210,
           }}>
             บันทึกไม่จำกัด พร้อมฟีเจอร์สุดคุ้มอีก 3 อย่าง
           </Text>
@@ -135,9 +135,9 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
       {/* Feature list */}
       <View style={{ marginHorizontal: 16, marginBottom: 14, gap: 10 }}>
         {PREMIUM_FEATURES.map((f, i) => (
-          <View key={i} style={{
+          <View key={i} className="bg-card" style={{
             flexDirection: 'row', alignItems: 'center', gap: 12,
-            backgroundColor: '#fff', borderRadius: 20, padding: 14, paddingHorizontal: 16,
+            borderRadius: 20, padding: 14, paddingHorizontal: 16,
             shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 16,
             shadowOffset: { width: 0, height: 4 }, elevation: 2,
           }}>
@@ -149,8 +149,8 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
               <Ionicons name={f.icon} size={16} color={i % 2 === 0 ? '#C85F28' : '#6B4A9E'} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14.5, color: '#2A2320' }}>{f.title}</Text>
-              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginTop: 2 }}>{f.desc}</Text>
+              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14.5 }}>{f.title}</Text>
+              <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }}>{f.desc}</Text>
             </View>
           </View>
         ))}
@@ -161,22 +161,21 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
         {/* Monthly */}
         <Pressable
           onPress={() => setPlan('month')}
-          className="flex-1"
+          className={`flex-1 ${plan === 'month' ? 'bg-card' : ''}`}
           style={{
             padding: 14, paddingBottom: 16, borderRadius: 20,
             borderWidth: 2,
             borderColor: plan === 'month' ? '#E87A3D' : 'rgba(42,35,32,0.08)',
-            backgroundColor: plan === 'month' ? '#fff' : 'transparent',
             shadowColor: plan === 'month' ? '#2A2320' : 'transparent',
             shadowOpacity: plan === 'month' ? 0.05 : 0,
             shadowRadius: 16, shadowOffset: { width: 0, height: 4 },
             elevation: plan === 'month' ? 2 : 0,
           }}
         >
-          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80' }}>รายเดือน</Text>
-          <Text style={{ fontFamily: 'Inter_900Black', fontSize: 26, color: '#2A2320', marginTop: 4 }}>฿99</Text>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginTop: 2 }}>/ เดือน</Text>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#9A8D80', marginTop: 6 }}>ยกเลิกได้ทุกเมื่อ</Text>
+          <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }}>รายเดือน</Text>
+          <Text className="text-foreground" style={{ fontFamily: 'Inter_900Black', fontSize: 26, marginTop: 4 }}>฿99</Text>
+          <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }}>/ เดือน</Text>
+          <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 6 }}>ยกเลิกได้ทุกเมื่อ</Text>
         </Pressable>
 
         {/* Yearly */}
@@ -190,20 +189,20 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
           </View>
           <Pressable
             onPress={() => setPlan('year')}
+            className={plan === 'year' ? 'bg-card' : ''}
             style={{
               padding: 14, paddingBottom: 16, borderRadius: 20,
               borderWidth: 2,
               borderColor: plan === 'year' ? '#E87A3D' : 'rgba(42,35,32,0.08)',
-              backgroundColor: plan === 'year' ? '#fff' : 'transparent',
               shadowColor: plan === 'year' ? '#2A2320' : 'transparent',
               shadowOpacity: plan === 'year' ? 0.05 : 0,
               shadowRadius: 16, shadowOffset: { width: 0, height: 4 },
               elevation: plan === 'year' ? 2 : 0,
             }}
           >
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80' }}>รายปี</Text>
-            <Text style={{ fontFamily: 'Inter_900Black', fontSize: 26, color: '#2A2320', marginTop: 4 }}>฿899</Text>
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginTop: 2 }}>/ ปี</Text>
+            <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }}>รายปี</Text>
+            <Text className="text-foreground" style={{ fontFamily: 'Inter_900Black', fontSize: 26, marginTop: 4 }}>฿899</Text>
+            <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }}>/ ปี</Text>
             <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, color: '#C85F28', marginTop: 6 }}>ประหยัด 25%</Text>
           </Pressable>
         </View>
@@ -288,10 +287,10 @@ function AiLoadingView() {
       <View className="mb-4">
         <MiawThinking size={100} />
       </View>
-      <Animated.Text key={stepIndex} entering={FadeIn.duration(400)} style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 16, color: '#2A2320', marginBottom: 4 }}>
+      <Animated.Text key={stepIndex} entering={FadeIn.duration(400)} className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 16, marginBottom: 4 }}>
         {step.text}
       </Animated.Text>
-      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginBottom: 16 }}>โปรดรอสักครู่</Text>
+      <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginBottom: 16 }}>โปรดรอสักครู่</Text>
       <View className="w-full gap-3">
         {[0, 1, 2].map(i => <ShimmerBar key={i} index={i} />)}
       </View>
@@ -349,7 +348,7 @@ function HistoryModal({
       <Pressable onPress={onClose} className="flex-1 bg-black/40" />
       <View className="absolute bottom-0 left-0 right-0 bg-background rounded-t-2xl" style={{ height: '90%' }}>
         <View className="flex-row items-center justify-between px-4 pt-4 pb-2">
-          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, color: '#2A2320' }}>ประวัติการวิเคราะห์</Text>
+          <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }}>ประวัติการวิเคราะห์</Text>
           <Pressable onPress={onClose} className="p-1">
             <Ionicons name="close" size={22} color="#666" />
           </Pressable>
@@ -432,7 +431,7 @@ function HistoryModal({
               >
                 <Ionicons name="document-text-outline" size={20} color="#E87A3D" />
                 <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: '#2A2320' }}>
+                  <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }}>
                     {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
                   </Text>
                   <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#9A8D80', marginTop: 2 }}>
@@ -562,7 +561,7 @@ function DataTransferTab() {
           <View className="bg-card rounded-2xl p-4 mb-4 border border-border">
             <View className="flex-row items-center mb-3">
               <Ionicons name={format === 'txt' ? 'document-text-outline' : 'grid-outline'} size={20} color="#E87A3D" />
-              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, color: '#2A2320', marginLeft: 8 }}>ข้อมูลที่จะส่งออก</Text>
+              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, marginLeft: 8 }}>ข้อมูลที่จะส่งออก</Text>
             </View>
             {counts ? (
               <View className="gap-2">
@@ -628,7 +627,7 @@ function DataTransferTab() {
           <View className="bg-card rounded-2xl p-4 mb-4 border border-border">
             <View className="flex-row items-center mb-3">
               <Ionicons name="folder-open-outline" size={20} color="#E87A3D" />
-              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, color: '#2A2320', marginLeft: 8 }}>นำเข้าจากไฟล์สำรอง</Text>
+              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, marginLeft: 8 }}>นำเข้าจากไฟล์สำรอง</Text>
             </View>
             <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80' }}>
               {format === 'txt'
@@ -703,7 +702,7 @@ function DataTransferTab() {
         <View pointerEvents="auto" className="absolute inset-0 items-center justify-center bg-black/40" style={{ zIndex: 50 }}>
           <View className="bg-card rounded-2xl px-6 py-5 items-center border border-border min-w-[220px]">
             <ActivityIndicator size="large" color="#E87A3D" />
-            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, color: '#2A2320', marginTop: 12 }}>
+            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, marginTop: 12 }}>
               {dataTab === 'export' ? 'กำลังส่งออกข้อมูล...' : 'กำลังนำเข้าข้อมูล...'}
             </Text>
             <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginTop: 4 }}>กรุณารอสักครู่</Text>
@@ -720,7 +719,7 @@ function CountRow({ icon, label, count, suffix }: {
   return (
     <View className="flex-row items-center">
       <Ionicons name={icon} size={16} color="#666" />
-      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#2A2320', marginLeft: 8, flex: 1 }}>{label}</Text>
+      <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, marginLeft: 8, flex: 1 }}>{label}</Text>
       <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#9A8D80' }}>
         {suffix && count > 0 ? suffix : `${count} รายการ`}
       </Text>
@@ -774,7 +773,7 @@ function SpecialImportSection({ onSuccess }: { onSuccess: () => void | Promise<v
         }}>
           <Ionicons name="sparkles-outline" size={14} color="#C85F28" />
         </View>
-        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#2A2320' }}>
+        <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15 }}>
           นำเข้าข้อมูลแบบพิเศษ
         </Text>
       </View>
@@ -783,7 +782,7 @@ function SpecialImportSection({ onSuccess }: { onSuccess: () => void | Promise<v
       <View className="bg-card rounded-2xl p-4 mb-3 border border-border">
         <View className="flex-row items-center mb-2">
           <Ionicons name="document-text-outline" size={18} color="#E87A3D" />
-          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: '#2A2320', marginLeft: 8 }}>
+          <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, marginLeft: 8 }}>
             รองรับไฟล์รายงาน Pay Flow (.txt)
           </Text>
         </View>
@@ -1014,7 +1013,7 @@ export default function PremiumScreen() {
       {/* Header */}
       <View style={{ paddingHorizontal: 18, paddingTop: 8, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Ionicons name="diamond" size={22} color="#C85F28" />
-        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 26, letterSpacing: -0.4, color: '#2A2320' }}>Premium</Text>
+        <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 26, letterSpacing: -0.4 }}>Premium</Text>
       </View>
 
       {/* Segmented tab */}
@@ -1047,7 +1046,7 @@ export default function PremiumScreen() {
             {!hasApiKey && (
               <View style={{ marginHorizontal: 16, marginBottom: 14, padding: 12, borderRadius: 12, backgroundColor: 'rgba(239,68,68,0.08)', flexDirection: 'row', alignItems: 'center' }}>
                 <Ionicons name="warning-outline" size={18} color="#EF4444" />
-                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#2A2320', marginLeft: 8, flex: 1 }}>
+                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, marginLeft: 8, flex: 1 }}>
                   กรุณาตั้งค่า Gemini API Key ในหน้าตั้งค่าก่อนใช้งาน
                 </Text>
               </View>
@@ -1055,7 +1054,7 @@ export default function PremiumScreen() {
 
             {/* ปี */}
             <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
-              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, color: '#2A2320', marginBottom: 8 }}>ปี</Text>
+              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>ปี</Text>
               {availableYears.length === 0 ? (
                 <View style={{ padding: 12, borderRadius: 12, backgroundColor: '#F5EEE0' }}>
                   <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80', textAlign: 'center' }}>
@@ -1089,7 +1088,7 @@ export default function PremiumScreen() {
             {/* เดือน */}
             {availableMonths.length > 0 && (
               <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
-                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, color: '#2A2320', marginBottom: 8 }}>เดือน</Text>
+                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>เดือน</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     <Pressable
@@ -1132,7 +1131,7 @@ export default function PremiumScreen() {
 
             {/* กระเป๋าเงิน */}
             <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
-              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, color: '#2A2320', marginBottom: 8 }}>กระเป๋าเงิน</Text>
+              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>กระเป๋าเงิน</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View style={{ flexDirection: 'row', gap: 8 }}>
                   <Pressable
@@ -1177,7 +1176,7 @@ export default function PremiumScreen() {
 
             {/* รูปแบบ */}
             <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
-              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, color: '#2A2320', marginBottom: 8 }}>รูปแบบ</Text>
+              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>รูปแบบ</Text>
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 {([['structured', 'วิเคราะห์แบบสรุป'], ['full', 'วิเคราะห์แบบละเอียด']] as const).map(([k, l]) => (
                   <Pressable
@@ -1225,7 +1224,7 @@ export default function PremiumScreen() {
             {histories.length > 0 && !isLoading && (
               <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#2A2320', flex: 1 }}>ประวัติการวิเคราะห์</Text>
+                  <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, flex: 1 }}>ประวัติการวิเคราะห์</Text>
                   {histories.length > 5 && (
                     <Pressable onPress={() => setHistoryModalVisible(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                       <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#E87A3D' }}>ดูทั้งหมด ({histories.length})</Text>
@@ -1239,8 +1238,9 @@ export default function PremiumScreen() {
                       key={h.id}
                       onPress={() => handleViewHistory(h)}
                       onLongPress={() => handleDeleteHistory(h)}
+                      className="bg-card"
                       style={{
-                        backgroundColor: '#fff', borderRadius: 16, padding: 14,
+                        borderRadius: 16, padding: 14,
                         flexDirection: 'row', alignItems: 'center', gap: 10,
                         shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 16,
                         shadowOffset: { width: 0, height: 4 }, elevation: 2,
@@ -1254,7 +1254,7 @@ export default function PremiumScreen() {
                         <Ionicons name="document-text-outline" size={14} color="#C85F28" />
                       </View>
                       <View style={{ flex: 1, minWidth: 0 }}>
-                        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: '#2A2320' }} numberOfLines={1}>
+                        <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} numberOfLines={1}>
                           {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
                         </Text>
                         <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#9A8D80', marginTop: 2 }}>
@@ -1271,7 +1271,7 @@ export default function PremiumScreen() {
             {/* Current Result */}
             {currentResult && !isLoading && (
               <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
-                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#2A2320', marginBottom: 10 }}>ผลวิเคราะห์</Text>
+                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, marginBottom: 10 }}>ผลวิเคราะห์</Text>
                 <AiResultView
                   responseType={currentResult.type as any}
                   responseData={currentResult.data}

@@ -49,7 +49,6 @@ export interface Settings {
   currency: string;
   dateFormat: string;
   defaultTab: number;
-  theme: 'light' | 'dark' | 'system';
   defaultWalletId: string;
   categoryColumns: number;
   categoryRows: number;

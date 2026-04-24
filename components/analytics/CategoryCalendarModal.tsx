@@ -1,6 +1,7 @@
 import { getDb, getTransactionsByCategoryAndRange } from '@/lib/stores/db';
 import { formatCurrency } from '@/lib/utils/format';
 import { getPeriodRange } from '@/lib/utils/period';
+import { useIsDarkTheme } from '@/lib/utils/theme';
 import type { Category, Period, Transaction, TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -122,8 +123,8 @@ export function CategoryCalendarModal({ visible, onClose, category, period, wall
                 </Text>
               </View>
             </View>
-            <Pressable onPress={onClose} className="p-2 rounded-full bg-white/80">
-              <Ionicons name="close" size={22} color="#6B5F52" />
+            <Pressable onPress={onClose} className="p-2 rounded-full bg-card/80">
+              <Ionicons name="close" size={22} color="#A39685" />
             </Pressable>
           </View>
         </View>
@@ -179,10 +180,13 @@ export function CategoryCalendarModal({ visible, onClose, category, period, wall
                         </Text>
                       )}
                     </View>
-                    <Text style={{
-                      fontFamily: 'Inter_700Bold', fontSize: 14, fontVariant: ['tabular-nums'],
-                      color: tx.type === 'income' ? '#3E8B68' : '#2B2118',
-                    }}>
+                    <Text
+                      className={tx.type === 'income' ? '' : 'text-foreground'}
+                      style={{
+                        fontFamily: 'Inter_700Bold', fontSize: 14, fontVariant: ['tabular-nums'],
+                        color: tx.type === 'income' ? '#3E8B68' : undefined,
+                      }}
+                    >
                       {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
                     </Text>
                   </View>
@@ -204,6 +208,7 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
   selectedDay: string | null;
   onSelectDay: (dateStr: string) => void;
 }) {
+  const isDark = useIsDarkTheme();
   const firstDayOfWeek = new Date(data.year, data.month, 1).getDay(); // 0=Sun
   const buddhistYear = data.year + 543;
   const totalAmount = data.days.reduce((s, d) => s + d.amount, 0);
@@ -235,7 +240,7 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
         <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, marginBottom: 8 }} className="text-foreground">
           {THAI_MONTHS[data.month]} {buddhistYear}
         </Text>
-        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, color: '#2B2118' }} className="text-muted-foreground">
+        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground">
           รวม: {formatCurrency(totalAmount)}
         </Text>
       </View>
@@ -275,24 +280,29 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
                   flex: 1, aspectRatio: 1,
                   alignItems: 'center', justifyContent: 'center',
                   margin: 1.5, borderRadius: 12,
-                  backgroundColor: isSelected ? color : hasAmount ? color + '12' : 'transparent',
+                  // Dark mode: bump tint opacity (~20%) so category color is still visible on dark bg
+                  backgroundColor: isSelected ? color : hasAmount ? color + (isDark ? '33' : '12') : 'transparent',
                 }}
               >
-                <Text style={{
-                  fontFamily: 'Inter_600SemiBold', fontSize: 13,
-                  color: isSelected ? '#fff' : hasAmount ? '#2B2118' : '#C5B9AB',
-                }}>
+                <Text
+                  className={isSelected ? '' : hasAmount ? 'text-foreground' : 'text-muted-foreground'}
+                  style={{
+                    fontFamily: 'Inter_600SemiBold', fontSize: 13,
+                    color: isSelected ? '#fff' : isDark ? '#F5EDE0' : undefined,
+                    opacity: !isSelected && !hasAmount ? 0.5 : 1,
+                  }}
+                >
                   {cell.day}
                 </Text>
                 {hasAmount && (
                   <Text
                     style={{
-                      fontFamily: 'Inter_700Bold', // หนาขึ้น
+                      fontFamily: 'Inter_700Bold',
                       fontSize: 10,
                       paddingTop: 4,
-                      color: isSelected
-                        ? '#fff' // เมื่อเลือกให้ขาวสนิทเพื่อความชัด
-                        : color, // ใช้สีหลักของหมวดหมู่
+                      // Selected → white; Dark mode unselected → cream foreground (readable on dark);
+                      // Light mode unselected → category color (traditional brand look)
+                      color: isSelected ? '#fff' : color,
                       marginTop: -1,
                       textShadowColor: isSelected ? 'rgba(0,0,0,0.15)' : undefined,
                       textShadowOffset: isSelected ? { width: 0, height: 1 } : undefined,

@@ -251,7 +251,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                 <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: selectedCategory.color, alignItems: 'center', justifyContent: 'center' }}>
                   <Ionicons name={selectedCategory.icon as keyof typeof Ionicons.glyphMap} size={10} color="white" />
                 </View>
-                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#2A2320' }}>
+                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }}>
                   {selectedCategory.name}
                 </Text>
               </View>
@@ -324,11 +324,12 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                         )}
                       </View>
                       <Text
+                        className={sel ? 'text-foreground' : 'text-muted-foreground'}
                         style={{
                           width: CATEGORY_QUICK_ITEM_WIDTH,
                           textAlign: 'center',
                           fontFamily: sel ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
-                          fontSize: 11, color: sel ? '#2A2320' : '#9A8D80',
+                          fontSize: 11,
                         }}
                         numberOfLines={1}
                         ellipsizeMode="tail"
@@ -406,11 +407,12 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                         )}
                       </View>
                       <Text
+                        className={sel ? 'text-foreground' : 'text-muted-foreground'}
                         style={{
                           width: CATEGORY_QUICK_ITEM_WIDTH,
                           textAlign: 'center',
                           fontFamily: sel ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
-                          fontSize: 11, color: sel ? '#2A2320' : '#9A8D80',
+                          fontSize: 11,
                         }}
                         numberOfLines={1}
                         ellipsizeMode="tail"
@@ -503,7 +505,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               onPress={() => setShowDatePicker(true)}
               style={{ flexDirection: 'row', alignItems: 'center', gap: 5, padding: 4, flexShrink: 0 }}
             >
-              <Ionicons name="calendar-outline" size={16} color="#2A2320" />
+              <Ionicons name="calendar-outline" size={16} color="#A39685" />
               <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14, fontVariant: ['tabular-nums'] }} className="text-foreground">
                 {date.toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}
               </Text>
@@ -527,10 +529,13 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                       <View className="rounded-full items-center justify-center" style={{ width: 16, height: 16, backgroundColor: w.color }}>
                         <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={8} color="white" />
                       </View>
-                      <Text style={{
-                        fontFamily: isSelected ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
-                        fontSize: 13, color: isSelected ? '#E87A3D' : '#2A2320',
-                      }}>{w.name}</Text>
+                      <Text
+                        className={isSelected ? '' : 'text-foreground'}
+                        style={{
+                          fontFamily: isSelected ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
+                          fontSize: 13, color: isSelected ? '#E87A3D' : undefined,
+                        }}
+                      >{w.name}</Text>
                     </Pressable>
                   );
                 })}

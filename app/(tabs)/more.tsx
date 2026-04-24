@@ -1,6 +1,6 @@
 import { AddWalletModal } from '@/components/wallet/AddWalletModal';
 import { deleteApiKey, getApiKey, setApiKey } from '@/lib/api/ai';
-import { useSettingsStore } from '@/lib/stores/settings-store';
+import { useThemeStore } from '@/lib/stores/theme-store';
 import { getBiometricEnabled, isBiometricAvailable, setBiometricEnabled } from '@/lib/utils/auth';
 import { getNotificationsEnabled, setNotificationsEnabled } from '@/lib/utils/notifications';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +9,18 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+const THEME_LABELS: Record<string, string> = {
+  'warm': 'อบอุ่น',
+  'warm-dark': 'อบอุ่น (มืด)',
+  'sakura': 'ซากุระ',
+  'sakura-dark': 'ซากุระ (มืด)',
+  'ocean': 'มหาสมุทร',
+  'ocean-dark': 'มหาสมุทร (มืด)',
+  'forest': 'ป่าไม้',
+  'forest-dark': 'ป่าไม้ (มืด)',
+  'midnight': 'เที่ยงคืน',
+};
 
 const mascotRun = require('@/assets/bg/bg.png');
 
@@ -28,28 +40,27 @@ function SettingsRow({
   return (
     <Pressable
       onPress={onPress}
+      className={last ? '' : 'border-b border-border'}
       style={{
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
         paddingVertical: 12,
         paddingHorizontal: 14,
-        borderBottomWidth: last ? 0 : 0.5,
-        borderBottomColor: 'rgba(42,35,32,0.08)',
       }}
     >
       <View style={{
         width: 30, height: 30, borderRadius: 9,
-        backgroundColor: '#FCE8D4',
+        backgroundColor: '#E87A3D22',
         alignItems: 'center', justifyContent: 'center',
       }}>
-        <Ionicons name={icon} size={16} color="#C85F28" />
+        <Ionicons name={icon} size={16} color="#E87A3D" />
       </View>
-      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14.5, color: '#2A2320', flex: 1 }}>{label}</Text>
+      <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14.5, flex: 1 }}>{label}</Text>
       {value !== undefined && (
-        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80' }}>{value}</Text>
+        <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }}>{value}</Text>
       )}
-      <Ionicons name="chevron-forward" size={12} color="#9A8D80" />
+      <Ionicons name="chevron-forward" size={12} color="#A39685" />
     </Pressable>
   );
 }
@@ -57,12 +68,12 @@ function SettingsRow({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
-      <Text style={{
-        fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#9A8D80',
+      <Text className="text-muted-foreground" style={{
+        fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12,
         paddingHorizontal: 6, paddingBottom: 6, letterSpacing: 0.3,
       }}>{title}</Text>
-      <View style={{
-        backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden',
+      <View className="bg-card" style={{
+        borderRadius: 20, overflow: 'hidden',
         shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 16,
         shadowOffset: { width: 0, height: 4 }, elevation: 2,
       }}>
@@ -73,7 +84,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function SettingsScreen() {
-  const { theme, currency, updateSettings } = useSettingsStore();
+  const currentTheme = useThemeStore(s => s.currentTheme);
 
   const [apiKeyStatus, setApiKeyStatus] = useState('ตรวจสอบ...');
 
@@ -126,12 +137,7 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleThemeToggle = () => {
-    const next = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
-    updateSettings({ theme: next });
-  };
-
-  const themeLabel = theme === 'light' ? 'สว่าง' : theme === 'dark' ? 'มืด' : 'ตามระบบ';
+  const themeLabel = THEME_LABELS[currentTheme] ?? 'อบอุ่น';
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
 
@@ -140,12 +146,12 @@ export default function SettingsScreen() {
       {/* Header */}
       <View style={{ paddingHorizontal: 18, paddingTop: 8, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <Image source={mascotRun} style={{ width: 40, height: 40 }} resizeMode="contain" />
-        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 26, letterSpacing: -0.4, color: '#2A2320' }}>ตั้งค่า</Text>
+        <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 26, letterSpacing: -0.4 }}>ตั้งค่า</Text>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <Section title="ทั่วไป">
-          <SettingsRow icon="color-palette-outline" label="ธีม" value={themeLabel} onPress={handleThemeToggle} />
+          <SettingsRow icon="color-palette-outline" label="ธีม" value={themeLabel} onPress={() => router.push('/settings/theme')} />
           <SettingsRow icon="key-outline" label="Gemini API Key" value={apiKeyStatus} onPress={handleApiKey} />
           <SettingsRow icon="sparkles-outline" label="AI วิเคราะห์" value={apiKeyStatus.startsWith('ตั้งค่าแล้ว') ? 'พร้อมใช้งาน' : 'ยังไม่ได้ตั้งค่า'} />
           {biometricAvailable && (
@@ -185,9 +191,9 @@ export default function SettingsScreen() {
         </Section>
 
         {/* Footer */}
-        <Text style={{
+        <Text className="text-muted-foreground" style={{
           fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11,
-          color: '#9A8D80', textAlign: 'center', marginTop: 20,
+          textAlign: 'center', marginTop: 20,
         }}>
           แมวมันนี่ v{appVersion} · ทำด้วย <Text style={{ color: '#E87A3D' }}>♥</Text> โดย Faraday
         </Text>

@@ -101,8 +101,8 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
                 </Text>
               </View>
             </View>
-            <Pressable onPress={onClose} className="p-2 rounded-full bg-white/80">
-              <Ionicons name="close" size={22} color="#6B5F52" />
+            <Pressable onPress={onClose} className="p-2 rounded-full bg-card/80">
+              <Ionicons name="close" size={22} color="#A39685" />
             </Pressable>
           </View>
         </View>
@@ -161,7 +161,7 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
                   const catName = group.category?.name ?? 'อื่น ๆ';
                   const isExpanded = expandedKeys.has(group.key);
                   const sign = group.type === 'income' ? '+' : '-';
-                  const amountColor = group.type === 'income' ? '#3E8B68' : '#2B2118';
+                  const isIncome = group.type === 'income';
 
                   return (
                     <View
@@ -203,11 +203,14 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
                               {group.txs.length} รายการ
                             </Text>
                           </View>
-                          <Text style={{
-                            fontFamily: 'Inter_700Bold', fontSize: 14, fontVariant: ['tabular-nums'],
-                            color: amountColor,
-                            marginRight: 8,
-                          }}>
+                          <Text
+                            className={isIncome ? '' : 'text-foreground'}
+                            style={{
+                              fontFamily: 'Inter_700Bold', fontSize: 14, fontVariant: ['tabular-nums'],
+                              color: isIncome ? '#3E8B68' : undefined,
+                              marginRight: 8,
+                            }}
+                          >
                             {sign}{formatCurrency(group.total)}
                           </Text>
                           <Ionicons
@@ -244,10 +247,13 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
                                 </Text>
                               )}
                             </View>
-                            <Text style={{
-                              fontFamily: 'Inter_600SemiBold', fontSize: 13, fontVariant: ['tabular-nums'],
-                              color: amountColor,
-                            }}>
+                            <Text
+                              className={isIncome ? '' : 'text-foreground'}
+                              style={{
+                                fontFamily: 'Inter_600SemiBold', fontSize: 13, fontVariant: ['tabular-nums'],
+                                color: isIncome ? '#3E8B68' : undefined,
+                              }}
+                            >
                               {sign}{formatCurrency(tx.amount)}
                             </Text>
                           </View>

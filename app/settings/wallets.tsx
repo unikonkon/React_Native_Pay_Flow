@@ -163,9 +163,10 @@ export default function WalletsScreen() {
         <Pressable
           onLongPress={drag}
           disabled={isActive}
+          className="bg-card"
           style={{
             marginBottom: 10,
-            backgroundColor: '#fff', borderRadius: 16, padding: 12, paddingHorizontal: 14,
+            borderRadius: 16, padding: 12, paddingHorizontal: 14,
             flexDirection: 'row', alignItems: 'center', gap: 12,
             shadowColor: '#2A2320', shadowOpacity: isActive ? 0.12 : 0.05,
             shadowRadius: isActive ? 20 : 16, shadowOffset: { width: 0, height: 4 }, elevation: isActive ? 8 : 2,
@@ -186,7 +187,7 @@ export default function WalletsScreen() {
           {/* Name + type */}
           <View style={{ flex: 1, minWidth: 0 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14.5, color: '#2A2320' }} numberOfLines={1}>
+              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14.5 }} numberOfLines={1}>
                 {item.name}
               </Text>
               {isDefault && (
@@ -195,7 +196,7 @@ export default function WalletsScreen() {
                 </View>
               )}
             </View>
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#9A8D80', marginTop: 1 }}>
+            <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, marginTop: 1 }}>
               {typeLabel} · ใช้ {count} ครั้ง
             </Text>
           </View>
@@ -237,15 +238,15 @@ export default function WalletsScreen() {
         <View style={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Pressable
             onPress={() => router.back()}
+            className="bg-secondary"
             style={{
               width: 36, height: 36, borderRadius: 18,
-              backgroundColor: '#F5EEE0',
               alignItems: 'center', justifyContent: 'center',
             }}
           >
-            <Ionicons name="chevron-back" size={18} color="#2A2320" />
+            <Ionicons name="chevron-back" size={18} color="#A39685" />
           </Pressable>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 20, color: '#2A2320', flex: 1, letterSpacing: -0.3 }}>
+          <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 20, flex: 1, letterSpacing: -0.3 }}>
             จัดการกระเป๋าเงิน
           </Text>
         </View>
@@ -332,11 +333,11 @@ export default function WalletsScreen() {
           handleIndicatorStyle={{ backgroundColor: '#ccc' }}
         >
           <BottomSheetScrollView contentContainerStyle={{ padding: 20 }}>
-            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, color: '#2A2320', textAlign: 'center', marginBottom: 16 }}>
+            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, textAlign: 'center', marginBottom: 16 }}>
               {isEditing ? 'แก้ไขกระเป๋าเงิน' : 'เพิ่มกระเป๋าเงิน'}
             </Text>
 
-            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#2A2320', marginBottom: 6 }}>ชื่อ</Text>
+            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 6 }}>ชื่อ</Text>
             <BottomSheetTextInput
               value={name}
               onChangeText={setName}
@@ -350,7 +351,7 @@ export default function WalletsScreen() {
               }}
             />
 
-            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#2A2320', marginBottom: 6 }}>ประเภท</Text>
+            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 6 }}>ประเภท</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
               {WALLET_TYPES.map((wt) => {
                 const on = selectedType === wt.value;
@@ -375,7 +376,7 @@ export default function WalletsScreen() {
               })}
             </View>
 
-            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#2A2320', marginBottom: 8 }}>สี</Text>
+            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 8 }}>สี</Text>
             <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap', marginBottom: 18 }}>
               {WALLET_COLORS.map((c) => {
                 const on = selectedColor === c;
@@ -420,7 +421,7 @@ export default function WalletsScreen() {
         {/* Action Modal */}
         <Modal visible={!!actionWallet} transparent animationType="fade" onRequestClose={() => setActionWallet(null)}>
           <Pressable onPress={() => setActionWallet(null)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' }}>
-            <Pressable onPress={(e) => e.stopPropagation()} style={{ width: '88%', maxWidth: 360, backgroundColor: '#fff', borderRadius: 20, padding: 18 }}>
+            <Pressable onPress={(e) => e.stopPropagation()} className="bg-card" style={{ width: '88%', maxWidth: 360, borderRadius: 20, padding: 18 }}>
               {actionWallet && (
                 <>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
@@ -431,7 +432,7 @@ export default function WalletsScreen() {
                     }}>
                       <Ionicons name={actionWallet.icon as keyof typeof Ionicons.glyphMap} size={18} color={actionWallet.color} />
                     </View>
-                    <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, color: '#2A2320', flex: 1 }} numberOfLines={1}>
+                    <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, flex: 1 }} numberOfLines={1}>
                       {actionWallet.name}
                     </Text>
                     <Pressable onPress={() => setActionWallet(null)}>

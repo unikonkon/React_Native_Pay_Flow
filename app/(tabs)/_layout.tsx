@@ -1,5 +1,8 @@
 import { PawPrint } from '@/assets/svg';
 import { HapticTab } from '@/components/layout/HapticTab';
+import { getTabBarBackgroundColor } from '@/lib/constants/themes';
+import { useThemeStore } from '@/lib/stores/theme-store';
+import { useIsDarkTheme } from '@/lib/utils/theme';
 import { Tabs } from 'expo-router';
 import { View } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
@@ -71,20 +74,24 @@ function TabIcon({ icon, color, focused }: {
 }
 
 export default function TabLayout() {
+  const isDark = useIsDarkTheme();
+  const currentTheme = useThemeStore(s => s.currentTheme);
+  const tabBg = getTabBarBackgroundColor(currentTheme);
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarActiveTintColor: '#E87A3D',
-        tabBarInactiveTintColor: '#A39685',
+        tabBarInactiveTintColor: isDark ? '#8A7E72' : '#A39685',
         tabBarLabelStyle: {
           fontFamily: 'IBMPlexSansThai_400Regular',
           fontSize: 11,
         },
         tabBarStyle: {
+          backgroundColor: tabBg,
           borderTopWidth: 0.5,
-          borderTopColor: '#EDE4D3',
+          borderTopColor: isDark ? '#4A3D30' : '#EDE4D3',
         },
       }}
     >

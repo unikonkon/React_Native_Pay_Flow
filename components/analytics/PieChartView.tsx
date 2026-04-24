@@ -137,6 +137,7 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
               <View
                 key={arc.categoryId}
                 pointerEvents="none"
+                className="bg-card"
                 style={{
                   position: 'absolute',
                   left: arc.labelX - 13,
@@ -144,7 +145,6 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
                   width: 26,
                   height: 26,
                   borderRadius: 13,
-                  backgroundColor: '#fff',
                   alignItems: 'center',
                   justifyContent: 'center',
                   shadowColor: '#2A2320',
@@ -182,10 +182,10 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
                   <Text
                     numberOfLines={1}
                     ellipsizeMode="tail"
+                    className="text-foreground"
                     style={{
                       fontFamily: 'IBMPlexSansThai_600SemiBold',
                       fontSize: 10,
-                      color: '#2B2118',
                       textAlign,
                       width: LABEL_W,
                     }}
@@ -219,25 +219,25 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
                 setShowAllModal(true);
               }
             }}
+            className="bg-primary rounded-full border border-border px-2 py-1"
             style={({ pressed }) => ({
-              opacity: pressed ? 0.6 : 1,
+              opacity: pressed ? 0.85 : 1,
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: '#FFF6EA',
               paddingHorizontal: 14,
               paddingVertical: 8,
               borderRadius: 16,
               gap: 6,
-              shadowColor: '#E8A24D',
-              shadowOpacity: 0.08,
-              shadowRadius: 6,
-              shadowOffset: { width: 0, height: 2 },
-              elevation: 1,
+              shadowColor: '#E87A3D',
+              shadowOpacity: 0.25,
+              shadowRadius: 8,
+              shadowOffset: { width: 0, height: 3 },
+              elevation: 3,
             })}
           >
             <View className="flex-row items-center gap-1">
-              <Ionicons name="list-circle-outline" size={18} color="#E87A3D" />
-              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#C85F28' }}>
+              <Ionicons name="list-circle-outline" size={18} color="#fff" />
+              <Text className="text-primary-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }}>
                 รายการทั้งหมด
               </Text>
             </View>
@@ -248,25 +248,25 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               setShowCompareModal(true);
             }}
+            className="bg-primary rounded-full border border-border px-2 py-1"
             style={({ pressed }) => ({
-              opacity: pressed ? 0.6 : 1,
+              opacity: pressed ? 0.85 : 1,
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: '#EAF5F5',
               paddingHorizontal: 14,
               paddingVertical: 8,
               borderRadius: 16,
               gap: 6,
-              shadowColor: '#5BA8A8',
-              shadowOpacity: 0.08,
-              shadowRadius: 6,
-              shadowOffset: { width: 0, height: 2 },
-              elevation: 1,
+              shadowColor: '#E87A3D',
+              shadowOpacity: 0.25,
+              shadowRadius: 8,
+              shadowOffset: { width: 0, height: 3 },
+              elevation: 3,
             })}
           >
             <View className="flex-row items-center gap-1">
-              <Ionicons name="swap-horizontal" size={18} color="#3D8A8A" />
-              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#2B6B6B' }}>
+              <Ionicons name="swap-horizontal" size={18} color="#fff" />
+              <Text className="text-primary-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }}>
                 เทียบรายจ่าย
               </Text>
             </View>
@@ -292,11 +292,10 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
                   setSelectedCategory(item.category);
                 }
               }}
+              className={i < filtered.length - 1 ? 'border-b border-border' : ''}
               style={{
                 flexDirection: 'row', alignItems: 'center', gap: 12,
                 paddingVertical: 14, paddingHorizontal: 16,
-                borderBottomWidth: i < filtered.length - 1 ? 0.5 : 0,
-                borderBottomColor: 'rgba(42,35,32,0.08)',
               }}
             >
               <View
@@ -312,7 +311,7 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
               <View style={{ flex: 1 }}>
                 <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, marginBottom: 6 }} className="text-foreground">{item.category?.name ?? 'อื่น ๆ'}</Text>
                 {/* Progress bar */}
-                <View style={{ height: 4, backgroundColor: '#F5EEE0', borderRadius: 999, overflow: 'hidden' }}>
+                <View className="bg-secondary" style={{ height: 4, borderRadius: 999, overflow: 'hidden' }}>
                   <View style={{ width: `${Math.min(item.percentage, 100)}%`, height: '100%', backgroundColor: color, borderRadius: 999 }} />
                 </View>
               </View>
