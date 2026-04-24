@@ -339,6 +339,47 @@ const CAT_ICON_GLYPHS = (stroke) => {
       </g>
     ),
 
+    // Amway — product package box w/ paw stamp
+    package: (
+      <g {...p}>
+        <path d="M6 16l16-8 16 8v16l-16 8-16-8z"/>
+        <path d="M6 16l16 8 16-8M22 24v16"/>
+        <path d="M14 12l16 8"/>
+        {pawStamp(30, 27, 0.45)}
+      </g>
+    ),
+
+    // ออมเงิน — piggy bank w/ cat ears
+    'piggy-bank': (
+      <g {...p}>
+        <ellipse cx="22" cy="26" rx="14" ry="9"/>
+        {catEars(18, 17)}
+        <path d="M20 18h6"/>
+        <circle cx="29" cy="24" r="0.8" fill={stroke}/>
+        <circle cx="36" cy="27" r="0.6" fill={stroke}/>
+        <path d="M14 35v3M18 36v2M26 36v2M30 35v3"/>
+      </g>
+    ),
+
+    // ทำบุญ/บริจาค — heart above cupped hand
+    'heart-hand': (
+      <g {...p}>
+        <path d="M22 22s-7-4-7-10a3.5 3.5 0 0 1 7-3 3.5 3.5 0 0 1 7 3c0 6-7 10-7 10z"/>
+        <path d="M8 28c2 0 4 1 5 3l3 4h12l3-4c1-2 3-3 5-3"/>
+        <path d="M16 35v3h12v-3"/>
+      </g>
+    ),
+
+    // ออมทอง — stacked gold bars w/ sparkle
+    'gold-bars': (
+      <g {...p}>
+        <path d="M18 20h8l2 4h-12z"/>
+        <path d="M14 24h16l2 4h-20z"/>
+        <path d="M8 28h28l4 4h-36z"/>
+        <path d="M22 8l1 3 3 1-3 1-1 3-1-3-3-1 3-1z" fill={stroke}/>
+      </g>
+    ),
+
     // ───────── INCOME (14) ─────────
 
     // เงินเดือน — briefcase w/ paw latch
@@ -512,6 +553,10 @@ const EXPENSE_CATS = [
   { id: 'exp-installment',      name: 'ผ่อนชำระ',             icon: 'card',                  color: '#6B4A9E' },
   { id: 'exp-tax',              name: 'ภาษี',                 icon: 'business',              color: '#A39685' },
   { id: 'exp-pets',             name: 'สัตว์เลี้ยง',             icon: 'paw',                   color: '#F5A185' },
+  { id: 'exp-amway',            name: 'Amway',              icon: 'package',               color: '#B5A8DB' },
+  { id: 'exp-savings',          name: 'ออมเงิน',              icon: 'piggy-bank',            color: '#FFB3C7' },
+  { id: 'exp-donation',         name: 'ทำบุญ/บริจาค',         icon: 'heart-hand',            color: '#F5A185' },
+  { id: 'exp-gold-savings',     name: 'ออมทอง',              icon: 'gold-bars',             color: '#E8B547' },
   { id: 'exp-other',            name: 'อื่นๆ',                 icon: 'ellipsis-horizontal',   color: '#A39685' },
 ];
 

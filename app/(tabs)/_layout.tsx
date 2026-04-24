@@ -2,7 +2,7 @@ import { PawPrint } from '@/assets/svg';
 import { HapticTab } from '@/components/layout/HapticTab';
 import { Tabs } from 'expo-router';
 import { View } from 'react-native';
-import Svg, { Line, Circle, Path } from 'react-native-svg';
+import Svg, { Circle, Line, Path } from 'react-native-svg';
 
 // Custom SVG tab icons matching prototype
 function ListIcon({ size = 22, color }: { size?: number; color: string }) {

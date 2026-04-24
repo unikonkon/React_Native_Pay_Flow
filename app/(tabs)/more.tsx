@@ -162,7 +162,7 @@ export default function SettingsScreen() {
             value={notificationsEnabled ? 'เปิด' : 'ปิด'}
             onPress={handleNotificationsToggle}
           />
-          <SettingsRow icon="cash-outline" label="สกุลเงิน" value={`${currency} ฿`} last />
+          {/* <SettingsRow icon="cash-outline" label="สกุลเงิน" value={`${currency} ฿`} last /> */}
         </Section>
 
         <Section title="กระเป๋าเงิน">

@@ -7,6 +7,7 @@ import { Pressable, Text, View } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
 import { AllTransactionsCalendarModal } from './AllTransactionsCalendarModal';
 import { CategoryCalendarModal } from './CategoryCalendarModal';
+import { CompareExpensesModal } from './CompareExpensesModal';
 
 interface PieChartViewProps {
   data: CategorySummary[];
@@ -32,6 +33,7 @@ const FALLBACK_PALETTE = [
 export function PieChartView({ data, title, minPercentage = 0, period, walletId, viewType }: PieChartViewProps) {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [showAllModal, setShowAllModal] = useState(false);
+  const [showCompareModal, setShowCompareModal] = useState(false);
 
   if (data.length === 0) {
     return (
@@ -96,7 +98,7 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
     <View className="mb-2">
       {/* Donut card */}
       <View className="bg-card mx-4 mb-4" style={{
-        padding: 20, paddingHorizontal: 16, paddingBottom: 20, borderRadius: 24,
+        padding: 20, paddingHorizontal: 16, paddingBottom: 16, borderRadius: 24,
         shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 16, shadowOffset: { width: 0, height: 4 },
         elevation: 2,
       }}>
@@ -208,20 +210,69 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
           </View>
         </View>
 
-        {/* list all data Transcation */}
-        <Pressable
-          onPress={() => {
-            if (period) {
+        {/* Action buttons — รายการทั้งหมด + เทียบรายจ่าย */}
+        <View style={{ flexDirection: 'row', gap: 24, marginTop: 28, justifyContent: 'center' }}>
+          <Pressable
+            onPress={() => {
+              if (period) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setShowAllModal(true);
+              }
+            }}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.6 : 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#FFF6EA',
+              paddingHorizontal: 14,
+              paddingVertical: 8,
+              borderRadius: 16,
+              gap: 6,
+              shadowColor: '#E8A24D',
+              shadowOpacity: 0.08,
+              shadowRadius: 6,
+              shadowOffset: { width: 0, height: 2 },
+              elevation: 1,
+            })}
+          >
+            <View className="flex-row items-center gap-1">
+              <Ionicons name="list-circle-outline" size={18} color="#E87A3D" />
+              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#C85F28' }}>
+                รายการทั้งหมด
+              </Text>
+            </View>
+          </Pressable>
+
+          <Pressable
+            onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              setShowAllModal(true);
-            }
-          }}
-          className="mt-7 flex-row items-center justify-center"
-          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-        >
-          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">รายการทั้งหมด</Text>
-          <Ionicons name="chevron-forward" size={14} color="#A39685" style={{ marginLeft: 4 }} />
-        </Pressable>
+              setShowCompareModal(true);
+            }}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.6 : 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#EAF5F5',
+              paddingHorizontal: 14,
+              paddingVertical: 8,
+              borderRadius: 16,
+              gap: 6,
+              shadowColor: '#5BA8A8',
+              shadowOpacity: 0.08,
+              shadowRadius: 6,
+              shadowOffset: { width: 0, height: 2 },
+              elevation: 1,
+            })}
+          >
+            <View className="flex-row items-center gap-1">
+              <Ionicons name="swap-horizontal" size={18} color="#3D8A8A" />
+              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#2B6B6B' }}>
+                เทียบรายจ่าย
+              </Text>
+            </View>
+
+          </Pressable>
+        </View>
       </View>
 
       {/* Breakdown list card */}
@@ -297,6 +348,13 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
           viewType={viewType}
         />
       )}
+
+      {/* Compare Expenses Modal */}
+      <CompareExpensesModal
+        visible={showCompareModal}
+        onClose={() => setShowCompareModal(false)}
+        walletId={walletId}
+      />
     </View>
   );
 }
