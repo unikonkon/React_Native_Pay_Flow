@@ -29,13 +29,28 @@ const CAT_ICON_GLYPHS = (stroke) => {
   return {
     // ───────── EXPENSE (30) ─────────
 
-    // อาหาร — bowl of noodles w/ cat paw print on side
+    // อาหาร — cat eating from food bowl
     'fast-food': (
       <g {...p}>
-        <path d="M8 18h28"/>
-        <path d="M10 18c1 7 5 12 12 12s11-5 12-12"/>
-        <path d="M14 13c2-2 4-1 4 1M22 11c2-2 4-1 4 1M30 13c2-2 4-1 4 1"/>
-        {pawStamp(37, 34, 0.7)}
+        {/* Cat head */}
+        <circle cx="22" cy="17" r="8"/>
+        {/* Cat ears */}
+        <path d="M15 13l-2-5 4 1z" fill={stroke}/>
+        <path d="M29 13l2-5-4 1z" fill={stroke}/>
+        {/* Eyes */}
+        <circle cx="19" cy="16" r="0.9" fill={stroke}/>
+        <circle cx="25" cy="16" r="0.9" fill={stroke}/>
+        {/* Smiling mouth */}
+        <path d="M20 20c1 1 3 1 4 0"/>
+        {/* Whiskers */}
+        <path d="M12 19h3M29 19h3"/>
+        {/* Food bowl */}
+        <path d="M8 30h28l-2 6a3 3 0 0 1-3 2H13a3 3 0 0 1-3-2z"/>
+        <path d="M6 30h32"/>
+        {/* Kibble inside */}
+        <circle cx="16" cy="34" r="0.7" fill={stroke}/>
+        <circle cx="22" cy="35" r="0.7" fill={stroke}/>
+        <circle cx="28" cy="34" r="0.7" fill={stroke}/>
       </g>
     ),
 
@@ -499,6 +514,46 @@ const CAT_ICON_GLYPHS = (stroke) => {
         <path d="M22 24v6"/>
         <path d="M16 30h12v6H16z"/>
         <path d="M18 8l-2-3M26 8l2-3"/>
+      </g>
+    ),
+
+    // ───────── MISC (for custom categories) ─────────
+
+    // cart — shopping cart w/ cat-ear peek
+    cart: (
+      <g {...p}>
+        {/* Handle */}
+        <path d="M4 10h4l3 4"/>
+        {/* Basket (trapezoid) */}
+        <path d="M11 14h27l-4 14H15z"/>
+        {/* Inner dividers */}
+        <path d="M19 14v14M27 14v14"/>
+        {/* Wheels */}
+        <circle cx="17" cy="34" r="2.5"/>
+        <circle cx="31" cy="34" r="2.5"/>
+        {/* Cat-ears peeking from basket */}
+        <path d="M20 14l-1-3 2 0.5z" fill={stroke}/>
+        <path d="M24 14l1-3-2 0.5z" fill={stroke}/>
+      </g>
+    ),
+
+    // pricetag — price tag w/ paw stamp
+    pricetag: (
+      <g {...p}>
+        {/* Tag shape — rect + triangle point on right */}
+        <path d="M6 10h20l12 12-12 12H6z"/>
+        {/* Hole near point */}
+        <circle cx="28" cy="22" r="1.8"/>
+        {/* Paw stamp inside tag body */}
+        {pawStamp(15, 24, 0.55)}
+      </g>
+    ),
+
+    // star — 5-point star w/ inner sparkle
+    star: (
+      <g {...p}>
+        <path d="M22 4l5.3 11 12.1 1.8-8.7 8.5 2 12L22 32l-10.7 5.3 2-12-8.7-8.5 12.1-1.8z"/>
+        <circle cx="22" cy="22" r="1.2" fill={stroke}/>
       </g>
     ),
   };
