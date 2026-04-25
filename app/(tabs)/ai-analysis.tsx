@@ -317,6 +317,7 @@ function HistoryModal({
   wallets,
   onView,
   onDelete,
+  selectedHistoryId,
 }: {
   visible: boolean;
   onClose: () => void;
@@ -324,6 +325,7 @@ function HistoryModal({
   wallets: { id: string; name: string }[];
   onView: (h: AiHistory) => void;
   onDelete: (h: AiHistory) => void;
+  selectedHistoryId: string | null;
 }) {
   const [filterYear, setFilterYear] = useState<number | null>(null);
   const [filterMonth, setFilterMonth] = useState<number | null>(null);
@@ -360,7 +362,7 @@ function HistoryModal({
             onPress={() => { setFilterYear(null); setFilterMonth(null); }}
             className={`px-3 py-1.5 rounded-full border ${filterYear === null ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
           >
-            <Text style={{ fontFamily: filterYear === null ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterYear === null ? '#E87A3D' : '#2A2320' }}>ทุกปี</Text>
+            <Text className="text-foreground" style={{ fontFamily: filterYear === null ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13 }}>ทุกปี</Text>
           </Pressable>
           {years.map(y => (
             <Pressable
@@ -368,7 +370,7 @@ function HistoryModal({
               onPress={() => { setFilterYear(y); setFilterMonth(null); }}
               className={`px-3 py-1.5 rounded-full border ${filterYear === y ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
             >
-              <Text style={{ fontFamily: filterYear === y ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterYear === y ? '#E87A3D' : '#2A2320' }}>{y + 543}</Text>
+              <Text className="text-foreground" style={{ fontFamily: filterYear === y ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13 }}>{y + 543}</Text>
             </Pressable>
           ))}
         </View>
@@ -379,7 +381,7 @@ function HistoryModal({
               onPress={() => setFilterMonth(null)}
               className={`px-3 py-1.5 rounded-full border ${filterMonth === null ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
             >
-              <Text style={{ fontFamily: filterMonth === null ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterMonth === null ? '#E87A3D' : '#2A2320' }}>ทุกเดือน</Text>
+              <Text className="text-foreground" style={{ fontFamily: filterMonth === null ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13 }}>ทุกเดือน</Text>
             </Pressable>
             {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
               <Pressable
@@ -387,7 +389,7 @@ function HistoryModal({
                 onPress={() => setFilterMonth(m)}
                 className={`px-3 py-1.5 rounded-full border ${filterMonth === m ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
               >
-                <Text style={{ fontFamily: filterMonth === m ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, color: filterMonth === m ? '#E87A3D' : '#2A2320' }}>{THAI_MONTHS_SHORT[m]}</Text>
+                <Text className="text-foreground" style={{ fontFamily: filterMonth === m ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12 }}>{THAI_MONTHS_SHORT[m]}</Text>
               </Pressable>
             ))}
           </View>
@@ -398,13 +400,13 @@ function HistoryModal({
             onPress={() => setFilterWalletId('all')}
             className={`px-3 py-1.5 rounded-full border ${filterWalletId === 'all' ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
           >
-            <Text style={{ fontFamily: filterWalletId === 'all' ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13, color: filterWalletId === 'all' ? '#E87A3D' : '#2A2320' }}>ทุกกระเป๋า</Text>
+            <Text className="text-foreground" style={{ fontFamily: filterWalletId === 'all' ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 13 }}>ทุกกระเป๋า</Text>
           </Pressable>
           <Pressable
             onPress={() => setFilterWalletId('none')}
             className={`px-3 py-1.5 rounded-full border ${filterWalletId === 'none' ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
           >
-            <Text style={{ fontFamily: filterWalletId === 'none' ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, color: filterWalletId === 'none' ? '#E87A3D' : '#2A2320' }}>ไม่ระบุ</Text>
+            <Text className="text-foreground" style={{ fontFamily: filterWalletId === 'none' ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12 }}>ไม่ระบุ</Text>
           </Pressable>
           {wallets.map(w => (
             <Pressable
@@ -412,35 +414,66 @@ function HistoryModal({
               onPress={() => setFilterWalletId(w.id)}
               className={`px-3 py-1.5 rounded-full border ${filterWalletId === w.id ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
             >
-              <Text style={{ fontFamily: filterWalletId === w.id ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, color: filterWalletId === w.id ? '#E87A3D' : '#2A2320' }}>{w.name}</Text>
+              <Text className="text-foreground" style={{ fontFamily: filterWalletId === w.id ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12 }}>{w.name}</Text>
             </Pressable>
           ))}
         </View>
 
         {/* List */}
-        <ScrollView className="px-4 pb-6">
+        <ScrollView className="px-4 pb-6 bg-card">
           {filtered.length === 0 ? (
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80', textAlign: 'center', paddingVertical: 32 }}>ไม่พบประวัติ</Text>
+            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, textAlign: 'center', paddingVertical: 32 }}>ไม่พบประวัติ</Text>
           ) : (
-            filtered.map(h => (
-              <Pressable
-                key={h.id}
-                onPress={() => { onView(h); onClose(); }}
-                onLongPress={() => onDelete(h)}
-                className="flex-row items-center px-4 py-3 bg-card border-b border-border rounded-xl mb-2"
-              >
-                <Ionicons name="document-text-outline" size={20} color="#E87A3D" />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }}>
-                    {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
-                  </Text>
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#9A8D80', marginTop: 2 }}>
-                    {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={16} color="#ccc" />
-              </Pressable>
-            ))
+            filtered.map(h => {
+              const isSelected = selectedHistoryId === h.id;
+              return (
+                <Pressable
+                  key={h.id}
+                  onPress={() => { onView(h); onClose(); }}
+                  onLongPress={() => onDelete(h)}
+                  className={isSelected ? '' : 'bg-card'}
+                  style={({ pressed }) => ({
+                    flexDirection: 'row', alignItems: 'center',
+                    paddingHorizontal: 16, paddingVertical: 12,
+                    borderRadius: 12, marginBottom: 8,
+                    backgroundColor: isSelected ? '#FFF6EE' : undefined,
+                    borderWidth: 1.5,
+                    borderColor: isSelected ? '#E87A3D' : 'transparent',
+                    opacity: pressed ? 0.6 : 1,
+                    transform: [{ scale: pressed ? 0.97 : 1 }],
+                  })}
+                >
+                  <View className="flex-row items-center gap-4 px-2 py-1 rounded-lg border border-border mb-4">
+                    <Ionicons name="document-text-outline" size={20} color="#E87A3D" />
+                    <View style={{ flex: 1, marginLeft: 12 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} >
+                        <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, flexShrink: 1 }} numberOfLines={1}>
+                          {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
+                        </Text>
+                        {isSelected && (
+                          <View style={{
+                            paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6,
+                            backgroundColor: '#E87A3D',
+                            flexDirection: 'row', alignItems: 'center', gap: 3,
+                          }}>
+                            <Ionicons name="eye" size={9} color="#fff" />
+                            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 9.5, color: '#fff' }}>กำลังดู</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: isSelected ? '#C85F28' : '#9A8D80', marginTop: 2 }}>
+                        {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
+                      </Text>
+                    </View>
+                    <Ionicons
+                      name={isSelected ? 'checkmark-circle' : 'chevron-forward'}
+                      size={isSelected ? 18 : 16}
+                      color={isSelected ? '#E87A3D' : '#ccc'}
+                    />
+                  </View>
+                </Pressable>
+              );
+            })
           )}
         </ScrollView>
       </View>
@@ -878,6 +911,7 @@ export default function PremiumScreen() {
   const [currentResult, setCurrentResult] = useState<{ type: string; data: string; periodLabel: string } | null>(null);
   const [hasApiKey, setHasApiKey] = useState(false);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
+  const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
 
   const gregorianYear = selectedYear - 543;
 
@@ -968,6 +1002,7 @@ export default function PremiumScreen() {
 
       const periodLabel = getPeriodLabel(gregorianYear, selectedMonth);
       setCurrentResult({ type: result.responseType, data: result.result, periodLabel });
+      setSelectedHistoryId(null);
 
       await addHistory({
         walletId: selectedWalletId,
@@ -987,12 +1022,20 @@ export default function PremiumScreen() {
   const handleViewHistory = useCallback((history: AiHistory) => {
     const periodLabel = getPeriodLabel(history.year, history.month);
     setCurrentResult({ type: history.responseType, data: history.responseData, periodLabel });
+    setSelectedHistoryId(history.id);
   }, []);
 
   const handleDeleteHistory = useCallback((history: AiHistory) => {
     Alert.alert('ลบประวัติ', 'ต้องการลบประวัติการวิเคราะห์นี้?', [
       { text: 'ยกเลิก', style: 'cancel' },
-      { text: 'ลบ', style: 'destructive', onPress: () => deleteHistory(history.id) },
+      {
+        text: 'ลบ',
+        style: 'destructive',
+        onPress: () => {
+          deleteHistory(history.id);
+          setSelectedHistoryId(prev => (prev === history.id ? null : prev));
+        },
+      },
     ]);
   }, [deleteHistory]);
 
@@ -1053,8 +1096,8 @@ export default function PremiumScreen() {
             )}
 
             {/* ปี */}
-            <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
-              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>ปี</Text>
+            <View style={{ marginHorizontal: 16, marginBottom: 6 }}>
+              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14 }}>ปี</Text>
               {availableYears.length === 0 ? (
                 <View style={{ padding: 12, borderRadius: 12, backgroundColor: '#F5EEE0' }}>
                   <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80', textAlign: 'center' }}>
@@ -1087,8 +1130,8 @@ export default function PremiumScreen() {
 
             {/* เดือน */}
             {availableMonths.length > 0 && (
-              <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
-                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>เดือน</Text>
+              <View style={{ marginHorizontal: 16, marginBottom: 6 }}>
+                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14 }}>เดือน</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     <Pressable
@@ -1130,7 +1173,7 @@ export default function PremiumScreen() {
             )}
 
             {/* กระเป๋าเงิน */}
-            <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+            <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
               <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>กระเป๋าเงิน</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -1233,37 +1276,66 @@ export default function PremiumScreen() {
                   )}
                 </View>
                 <View style={{ gap: 10 }}>
-                  {recentHistories.map(h => (
-                    <Pressable
-                      key={h.id}
-                      onPress={() => handleViewHistory(h)}
-                      onLongPress={() => handleDeleteHistory(h)}
-                      className="bg-card"
-                      style={{
-                        borderRadius: 16, padding: 14,
-                        flexDirection: 'row', alignItems: 'center', gap: 10,
-                        shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 16,
-                        shadowOffset: { width: 0, height: 4 }, elevation: 2,
-                      }}
-                    >
-                      <View style={{
-                        width: 30, height: 30, borderRadius: 8,
-                        backgroundColor: '#FCE8D4',
-                        alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <Ionicons name="document-text-outline" size={14} color="#C85F28" />
-                      </View>
-                      <View style={{ flex: 1, minWidth: 0 }}>
-                        <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} numberOfLines={1}>
-                          {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
-                        </Text>
-                        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#9A8D80', marginTop: 2 }}>
-                          {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
-                        </Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={14} color="#9A8D80" />
-                    </Pressable>
-                  ))}
+                  {recentHistories.map(h => {
+                    const isSelected = selectedHistoryId === h.id;
+                    return (
+                      <Pressable
+                        key={h.id}
+                        onPress={() => handleViewHistory(h)}
+                        onLongPress={() => handleDeleteHistory(h)}
+                        className={isSelected ? '' : 'bg-card'}
+                        style={({ pressed }) => ({
+                          borderRadius: 16, padding: 14,
+                          flexDirection: 'row', alignItems: 'center', gap: 10,
+                          backgroundColor: isSelected ? '#FFF6EE' : undefined,
+                          borderWidth: 1.5,
+                          borderColor: isSelected ? '#E87A3D' : 'transparent',
+                          shadowColor: isSelected ? '#E87A3D' : '#2A2320',
+                          shadowOpacity: isSelected ? 0.18 : 0.05,
+                          shadowRadius: 16,
+                          shadowOffset: { width: 0, height: 4 },
+                          elevation: isSelected ? 4 : 2,
+                          opacity: pressed ? 0.6 : 1,
+                          transform: [{ scale: pressed ? 0.97 : 1 }],
+                        })}
+                      >
+                        <View className="flex-row items-center gap-4 px-2 py-1 rounded-lg border border-border">
+                          <View style={{
+                            width: 30, height: 30, borderRadius: 8,
+                            backgroundColor: isSelected ? '#E87A3D' : '#FCE8D4',
+                            alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            <Ionicons name="document-text-outline" size={14} color={isSelected ? '#fff' : '#C85F28'} />
+                          </View>
+                          <View style={{ flex: 1, minWidth: 0 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, flexShrink: 1 }} numberOfLines={1}>
+                                {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
+                              </Text>
+                              {isSelected && (
+                                <View style={{
+                                  paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6,
+                                  backgroundColor: '#E87A3D',
+                                  flexDirection: 'row', alignItems: 'center', gap: 3,
+                                }}>
+                                  <Ionicons name="eye" size={9} color="#fff" />
+                                  <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 9.5, color: '#fff' }}>กำลังดู</Text>
+                                </View>
+                              )}
+                            </View>
+                            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: isSelected ? '#C85F28' : '#9A8D80', marginTop: 2 }}>
+                              {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
+                            </Text>
+                          </View>
+                          <Ionicons
+                            name={isSelected ? 'checkmark-circle' : 'chevron-forward'}
+                            size={isSelected ? 18 : 14}
+                            color={isSelected ? '#E87A3D' : '#9A8D80'}
+                          />
+                        </View>
+                      </Pressable>
+                    );
+                  })}
                 </View>
               </View>
             )}
@@ -1295,6 +1367,7 @@ export default function PremiumScreen() {
         wallets={wallets}
         onView={handleViewHistory}
         onDelete={handleDeleteHistory}
+        selectedHistoryId={selectedHistoryId}
       />
     </SafeAreaView>
   );
