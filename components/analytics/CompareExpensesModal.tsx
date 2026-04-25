@@ -64,6 +64,7 @@ export function CompareExpensesModal({ visible, onClose, walletId }: Props) {
   const [txsB, setTxsB] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [pickerOpen, setPickerOpen] = useState<'A' | 'B' | null>(null);
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
   useEffect(() => {
     if (!visible) return;
@@ -133,7 +134,10 @@ export function CompareExpensesModal({ visible, onClose, walletId }: Props) {
         delta,
         deltaPct,
       };
-    }).sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta));
+    }).sort((x, y) => sortOrder === 'desc'
+      ? Math.abs(y.delta) - Math.abs(x.delta)
+      : Math.abs(x.delta) - Math.abs(y.delta)
+    );
 
     return {
       totalA,
@@ -142,7 +146,7 @@ export function CompareExpensesModal({ visible, onClose, walletId }: Props) {
       totalDeltaPct: totalA > 0 ? ((totalB - totalA) / totalA) * 100 : 0,
       rows,
     };
-  }, [txsA, txsB, categories]);
+  }, [txsA, txsB, categories, sortOrder]);
 
   const monthOptions: MonthKey[] = useMemo(() => {
     const options: MonthKey[] = [];
@@ -219,9 +223,26 @@ export function CompareExpensesModal({ visible, onClose, walletId }: Props) {
 
             {comparison.rows.length > 0 ? (
               <View className="mx-4 mt-3 bg-card" style={{ borderRadius: 20, shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2, overflow: 'hidden' }}>
-                <View style={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 8 }}>
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground">แบ่งตามหมวดหมู่</Text>
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 1 }} className="text-muted-foreground">เรียงตามการเปลี่ยนแปลงมากที่สุด</Text>
+                <View style={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground">แบ่งตามหมวดหมู่</Text>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 1 }} className="text-muted-foreground">
+                      {sortOrder === 'desc' ? 'เปลี่ยนแปลงมากสุด → น้อยสุด' : 'เปลี่ยนแปลงน้อยสุด → มากสุด'}
+                    </Text>
+                  </View>
+                  <Pressable
+                    onPress={() => { Haptics.selectionAsync(); setSortOrder(o => o === 'desc' ? 'asc' : 'desc'); }}
+                    style={{
+                      flexDirection: 'row', alignItems: 'center', gap: 4,
+                      paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999,
+                      backgroundColor: '#E87A3D18',
+                    }}
+                  >
+                    <Ionicons name={sortOrder === 'desc' ? 'arrow-down' : 'arrow-up'} size={12} color="#E87A3D" />
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, color: '#E87A3D' }}>
+                      {sortOrder === 'desc' ? 'มากสุด' : 'น้อยสุด'}
+                    </Text>
+                  </Pressable>
                 </View>
                 {comparison.rows.map((row, i) => (
                   <CategoryCompareRow key={row.categoryId} row={row} isFirst={i === 0} />
@@ -314,14 +335,12 @@ function TotalsCard({ totalA, totalB, labelA, labelB, delta, deltaPct }: {
           <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 22, fontVariant: ['tabular-nums'], letterSpacing: -0.5, marginTop: 2 }} className="text-foreground">
             {formatCurrency(totalA)}
           </Text>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 10 }} className="text-muted-foreground">บาท</Text>
         </View>
         <View style={{ flex: 1, alignItems: 'flex-end' }}>
           <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#E87A3D' }}>{labelB}</Text>
           <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 22, fontVariant: ['tabular-nums'], letterSpacing: -0.5, marginTop: 2 }} className="text-foreground">
             {formatCurrency(totalB)}
           </Text>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 10 }} className="text-muted-foreground">บาท</Text>
         </View>
       </View>
 
@@ -363,10 +382,13 @@ function CategoryCompareRow({ row, isFirst }: { row: CompareRow; isFirst: boolea
           </Text>
         </View>
         {row.delta !== 0 && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, backgroundColor: deltaColor + '15' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, backgroundColor: deltaColor + '15' }}>
             <Ionicons name={isIncrease ? 'arrow-up' : 'arrow-down'} size={11} color={deltaColor} />
             <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 11, fontVariant: ['tabular-nums'], color: deltaColor }}>
-              {Math.abs(row.deltaPct).toFixed(0)}%
+              {formatCurrency(Math.abs(row.delta))}
+            </Text>
+            <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 10, fontVariant: ['tabular-nums'], color: deltaColor, opacity: 0.75 }}>
+              ({Math.abs(row.deltaPct).toFixed(0)}%)
             </Text>
           </View>
         )}
