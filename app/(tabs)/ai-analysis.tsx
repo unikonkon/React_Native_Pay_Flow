@@ -470,6 +470,23 @@ function HistoryModal({
                       size={isSelected ? 18 : 16}
                       color={isSelected ? '#E87A3D' : '#ccc'}
                     />
+                    <Pressable
+                      onPress={() => onDelete(h)}
+                      hitSlop={8}
+                      style={({ pressed }) => ({
+                        marginLeft: 10,
+                        width: 34, height: 34, borderRadius: 10,
+                        alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: pressed ? '#FEE2E2' : '#FFF1F1',
+                        borderWidth: 1, borderColor: '#FECACA',
+                        opacity: pressed ? 0.7 : 1,
+                        transform: [{ scale: pressed ? 0.92 : 1 }],
+                      })}
+                      accessibilityRole="button"
+                      accessibilityLabel="ลบประวัติ"
+                    >
+                      <Ionicons name="trash-outline" size={16} color="#DC2626" />
+                    </Pressable>
                   </View>
                 </Pressable>
               );
@@ -1332,6 +1349,22 @@ export default function PremiumScreen() {
                             size={isSelected ? 18 : 14}
                             color={isSelected ? '#E87A3D' : '#9A8D80'}
                           />
+                          <Pressable
+                            onPress={() => handleDeleteHistory(h)}
+                            hitSlop={8}
+                            style={({ pressed }) => ({
+                              width: 32, height: 32, borderRadius: 10,
+                              alignItems: 'center', justifyContent: 'center',
+                              backgroundColor: pressed ? '#FEE2E2' : '#FFF1F1',
+                              borderWidth: 1, borderColor: '#FECACA',
+                              opacity: pressed ? 0.7 : 1,
+                              transform: [{ scale: pressed ? 0.92 : 1 }],
+                            })}
+                            accessibilityRole="button"
+                            accessibilityLabel="ลบประวัติ"
+                          >
+                            <Ionicons name="trash-outline" size={15} color="#DC2626" />
+                          </Pressable>
                         </View>
                       </Pressable>
                     );
