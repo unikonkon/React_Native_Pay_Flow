@@ -1,5 +1,7 @@
-import { getDb, getWalletTransactionCount } from '@/lib/stores/db';
+import { getThemeSwatch } from '@/lib/constants/themes';
+import { getDb, getSummaryByRange, getWalletTransactionCount } from '@/lib/stores/db';
 import { useSettingsStore } from '@/lib/stores/settings-store';
+import { useThemeStore } from '@/lib/stores/theme-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { useWalletStore } from '@/lib/stores/wallet-store';
 import type { Wallet, WalletType } from '@/types';
@@ -29,6 +31,15 @@ export default function WalletsScreen() {
   const defaultWalletId = useSettingsStore(s => s.defaultWalletId);
   const updateSettings = useSettingsStore(s => s.updateSettings);
   const reloadTransactions = useTransactionStore(s => s.loadTransactions);
+  const currentTheme = useThemeStore(s => s.currentTheme);
+  const swatch = getThemeSwatch(currentTheme);
+  const sheetBg = swatch?.bg ?? '#FBF7F0';
+  const sheetCard = swatch?.card ?? '#FFFFFF';
+  const sheetBorder = swatch?.border ?? '#EDE4D3';
+  const sheetInk = swatch?.ink ?? '#2A2320';
+  const sheetInkMuted = swatch?.inkMuted ?? '#A39685';
+  const sheetAccent = swatch?.accent ?? '#F5D9B8';
+  const sheetPrimary = swatch?.primary ?? '#E87A3D';
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['60%'], []);
 
@@ -38,10 +49,11 @@ export default function WalletsScreen() {
   const [selectedColor, setSelectedColor] = useState(WALLET_COLORS[0]);
   const [actionWallet, setActionWallet] = useState<Wallet | null>(null);
   const [txCounts, setTxCounts] = useState<Record<string, number>>({});
+  const [totals, setTotals] = useState<{ income: number; expense: number }>({ income: 0, expense: 0 });
 
   const isEditing = !!editingWallet;
 
-  // Load transaction counts per wallet
+  // Load transaction counts per wallet + lifetime totals across all wallets
   useEffect(() => {
     (async () => {
       const db = getDb();
@@ -50,11 +62,13 @@ export default function WalletsScreen() {
         counts[w.id] = await getWalletTransactionCount(db, w.id);
       }
       setTxCounts(counts);
+
+      const summary = await getSummaryByRange(db, '1900-01-01', '9999-12-31');
+      setTotals({ income: summary.totalIncome, expense: summary.totalExpense });
     })();
   }, [wallets]);
 
-  const totalBalance = wallets.reduce((s, w) => s + w.currentBalance, 0);
-  const totalTxCount = Object.values(txCounts).reduce((s, c) => s + c, 0);
+  const totalBalance = totals.income - totals.expense;
 
   const resetForm = useCallback(() => {
     setEditingWallet(null);
@@ -259,17 +273,17 @@ export default function WalletsScreen() {
           <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#FCE8D4' }} />
           <View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: '50%', backgroundColor: '#D8CCEC', opacity: 0.5, borderTopLeftRadius: 60 }} />
           <View style={{ zIndex: 1 }}>
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#6B5F55' }}>ยอดรวมทุกกระเป๋า</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#6B5F55' }}>ยอดคงเหลือ</Text>
             <Text style={{ fontFamily: 'Inter_900Black', fontSize: 26, color: '#2A2320', marginTop: 2, letterSpacing: -0.5, fontVariant: ['tabular-nums'] }}>
               ฿{totalBalance.toLocaleString('en-US')}
             </Text>
             <View style={{ flexDirection: 'row', gap: 14, marginTop: 8 }}>
-              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#6B5F55' }}>
-                <Text style={{ fontFamily: 'Inter_600SemiBold', color: '#2A2320' }}>{wallets.length}</Text> กระเป๋า
+              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15, color: '#6B5F55' }}>
+                รายรับ <Text style={{ fontFamily: 'Inter_600SemiBold', color: '#2A8C4D' }}>฿{totals.income.toLocaleString('en-US')}</Text>
               </Text>
               <View style={{ width: 1, backgroundColor: 'rgba(42,35,32,0.15)' }} />
-              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: '#6B5F55' }}>
-                ใช้งาน <Text style={{ fontFamily: 'Inter_600SemiBold', color: '#2A2320' }}>{totalTxCount}</Text> ครั้ง
+              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15, color: '#6B5F55' }}>
+                รายจ่าย <Text style={{ fontFamily: 'Inter_600SemiBold', color: '#C24040' }}>฿{totals.expense.toLocaleString('en-US')}</Text>
               </Text>
             </View>
           </View>
@@ -330,28 +344,30 @@ export default function WalletsScreen() {
           snapPoints={snapPoints}
           enablePanDownToClose
           onClose={resetForm}
-          handleIndicatorStyle={{ backgroundColor: '#ccc' }}
+          backgroundStyle={{ backgroundColor: sheetBg }}
+          handleIndicatorStyle={{ backgroundColor: sheetBorder, width: 36, height: 4 }}
         >
           <BottomSheetScrollView contentContainerStyle={{ padding: 20 }}>
-            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, textAlign: 'center', marginBottom: 16 }}>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, textAlign: 'center', marginBottom: 16, color: sheetInk }}>
               {isEditing ? 'แก้ไขกระเป๋าเงิน' : 'เพิ่มกระเป๋าเงิน'}
             </Text>
 
-            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 6 }}>ชื่อ</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 6, color: sheetInk }}>ชื่อ</Text>
             <BottomSheetTextInput
               value={name}
               onChangeText={setName}
               placeholder="ชื่อกระเป๋าเงิน"
-              placeholderTextColor="#9A8D80"
+              placeholderTextColor={sheetInkMuted}
               style={{
                 height: 42, paddingHorizontal: 14, borderRadius: 10,
-                borderWidth: 1, borderColor: 'rgba(42,35,32,0.08)',
-                fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14, color: '#2A2320',
+                borderWidth: 1, borderColor: sheetBorder,
+                backgroundColor: sheetCard,
+                fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14, color: sheetInk,
                 marginBottom: 14,
               }}
             />
 
-            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 6 }}>ประเภท</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 6, color: sheetInk }}>ประเภท</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
               {WALLET_TYPES.map((wt) => {
                 const on = selectedType === wt.value;
@@ -361,22 +377,22 @@ export default function WalletsScreen() {
                     onPress={() => setSelectedType(wt.value)}
                     style={{
                       height: 36, paddingHorizontal: 12, borderRadius: 999,
-                      backgroundColor: on ? '#FCE8D4' : '#F5EEE0',
-                      borderWidth: on ? 1.5 : 1, borderColor: on ? '#E87A3D' : 'transparent',
+                      backgroundColor: on ? `${sheetPrimary}22` : sheetCard,
+                      borderWidth: on ? 1.5 : 1, borderColor: on ? sheetPrimary : sheetBorder,
                       flexDirection: 'row', alignItems: 'center', gap: 6,
                     }}
                   >
-                    <Ionicons name={wt.icon as keyof typeof Ionicons.glyphMap} size={14} color={on ? '#C85F28' : '#9A8D80'} />
+                    <Ionicons name={wt.icon as keyof typeof Ionicons.glyphMap} size={14} color={on ? sheetPrimary : sheetInkMuted} />
                     <Text style={{
                       fontFamily: on ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
-                      fontSize: 13, color: on ? '#C85F28' : '#2A2320',
+                      fontSize: 13, color: on ? sheetPrimary : sheetInk,
                     }}>{wt.label}</Text>
                   </Pressable>
                 );
               })}
             </View>
 
-            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 8 }}>สี</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 8, color: sheetInk }}>สี</Text>
             <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap', marginBottom: 18 }}>
               {WALLET_COLORS.map((c) => {
                 const on = selectedColor === c;
@@ -388,7 +404,7 @@ export default function WalletsScreen() {
                       width: 34, height: 34, borderRadius: 17,
                       backgroundColor: c,
                       alignItems: 'center', justifyContent: 'center',
-                      borderWidth: on ? 3 : 0, borderColor: '#fff',
+                      borderWidth: on ? 3 : 0, borderColor: sheetBg,
                       shadowColor: on ? c : 'transparent', shadowOpacity: on ? 0.5 : 0, shadowRadius: 6,
                       shadowOffset: { width: 0, height: 0 }, elevation: on ? 4 : 0,
                     }}
@@ -404,9 +420,9 @@ export default function WalletsScreen() {
               disabled={!name.trim()}
               style={{
                 height: 48, borderRadius: 999,
-                backgroundColor: name.trim() ? '#E87A3D' : '#F5D9B8',
+                backgroundColor: name.trim() ? sheetPrimary : sheetAccent,
                 alignItems: 'center', justifyContent: 'center',
-                shadowColor: name.trim() ? '#E87A3D' : 'transparent',
+                shadowColor: name.trim() ? sheetPrimary : 'transparent',
                 shadowOpacity: name.trim() ? 0.35 : 0, shadowRadius: 12,
                 shadowOffset: { width: 0, height: 4 }, elevation: name.trim() ? 6 : 0,
               }}
@@ -421,7 +437,7 @@ export default function WalletsScreen() {
         {/* Action Modal */}
         <Modal visible={!!actionWallet} transparent animationType="fade" onRequestClose={() => setActionWallet(null)}>
           <Pressable onPress={() => setActionWallet(null)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' }}>
-            <Pressable onPress={(e) => e.stopPropagation()} className="bg-card" style={{ width: '88%', maxWidth: 360, borderRadius: 20, padding: 18 }}>
+            <Pressable onPress={(e) => e.stopPropagation()} style={{ width: '88%', maxWidth: 360, borderRadius: 20, padding: 18, backgroundColor: sheetCard }}>
               {actionWallet && (
                 <>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
@@ -432,21 +448,25 @@ export default function WalletsScreen() {
                     }}>
                       <Ionicons name={actionWallet.icon as keyof typeof Ionicons.glyphMap} size={18} color={actionWallet.color} />
                     </View>
-                    <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, flex: 1 }} numberOfLines={1}>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, flex: 1, color: sheetInk }} numberOfLines={1}>
                       {actionWallet.name}
                     </Text>
                     <Pressable onPress={() => setActionWallet(null)}>
-                      <Ionicons name="close" size={22} color="#9A8D80" />
+                      <Ionicons name="close" size={22} color={sheetInkMuted} />
                     </Pressable>
                   </View>
 
-                  <ActionRow icon="star-outline" color="#E87A3D" label={actionWallet.id === defaultWalletId ? 'เป็นค่าเริ่มต้นอยู่แล้ว' : 'ตั้งเป็นค่าเริ่มต้น'}
+                  <ActionRow icon="star-outline" color={sheetPrimary} label={actionWallet.id === defaultWalletId ? 'เป็นค่าเริ่มต้นอยู่แล้ว' : 'ตั้งเป็นค่าเริ่มต้น'}
+                    inkColor={sheetInk} dividerColor={sheetBorder}
                     disabled={actionWallet.id === defaultWalletId} onPress={() => handleSetDefault(actionWallet)} />
-                  <ActionRow icon="create-outline" color="#6B5F52" label="แก้ไข"
+                  <ActionRow icon="create-outline" color={sheetInkMuted} label="แก้ไข"
+                    inkColor={sheetInk} dividerColor={sheetBorder}
                     onPress={() => { const w = actionWallet; setActionWallet(null); openEditForm(w); }} />
                   <ActionRow icon="document-text-outline" color="#F59E0B" label="ล้างรายการในกระเป๋า"
+                    inkColor={sheetInk} dividerColor={sheetBorder}
                     onPress={() => handleClearWalletData(actionWallet)} />
                   <ActionRow icon="trash-outline" color="#D04040" label="ลบกระเป๋า" last
+                    inkColor={sheetInk} dividerColor={sheetBorder}
                     disabled={actionWallet.id === defaultWalletId} onPress={() => handleDelete(actionWallet)} />
                 </>
               )}
@@ -458,9 +478,9 @@ export default function WalletsScreen() {
   );
 }
 
-function ActionRow({ icon, color, label, disabled, last, onPress }: {
+function ActionRow({ icon, color, label, disabled, last, inkColor, dividerColor, onPress }: {
   icon: keyof typeof Ionicons.glyphMap; color: string; label: string;
-  disabled?: boolean; last?: boolean; onPress: () => void;
+  disabled?: boolean; last?: boolean; inkColor: string; dividerColor: string; onPress: () => void;
 }) {
   return (
     <Pressable
@@ -469,12 +489,12 @@ function ActionRow({ icon, color, label, disabled, last, onPress }: {
       style={{
         flexDirection: 'row', alignItems: 'center', gap: 12,
         paddingVertical: 12, paddingHorizontal: 4,
-        borderBottomWidth: last ? 0 : 0.5, borderBottomColor: 'rgba(42,35,32,0.08)',
+        borderBottomWidth: last ? 0 : 0.5, borderBottomColor: dividerColor,
         opacity: disabled ? 0.4 : 1,
       }}
     >
       <Ionicons name={icon} size={20} color={color} />
-      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15, color: '#2A2320', flex: 1 }}>{label}</Text>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15, color: inkColor, flex: 1 }}>{label}</Text>
     </Pressable>
   );
 }

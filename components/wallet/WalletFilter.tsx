@@ -2,6 +2,7 @@ import { useWalletStore } from '@/lib/stores/wallet-store';
 import { useIsDarkTheme } from '@/lib/utils/theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { AddWalletModal } from './AddWalletModal';
@@ -104,12 +105,23 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
 
               <Pressable
                 onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setOpen(false); setAddVisible(true); }}
-                className="px-4 py-3 rounded-2xl border border-dashed border-primary/50 flex-row items-center"
+                className="px-4 py-2 rounded-2xl border border-dashed border-primary/50 flex-row items-center mb-2"
               >
                 <View className="w-7 h-7 rounded-full items-center justify-center mr-2 bg-primary/10">
                   <Ionicons name="add" size={16} color="#E87A3D" />
                 </View>
                 <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-primary">เพิ่มกระเป๋า</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setOpen(false); router.push('/settings/wallets'); }}
+                className="px-4 py-3 rounded-2xl border border-border flex-row items-center"
+              >
+                <View className="w-7 h-7 rounded-full items-center justify-center mr-2 bg-secondary">
+                  <Ionicons name="settings-outline" size={14} color="#A39685" />
+                </View>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground flex-1">จัดการกระเป๋า</Text>
+                <Ionicons name="chevron-forward" size={14} color="#A39685" />
               </Pressable>
             </ScrollView>
           </Pressable>

@@ -186,7 +186,7 @@ export function CompareExpensesModal({ visible, onClose, walletId }: Props) {
         </View>
 
         {/* Month selectors */}
-        <View style={{ flexDirection: 'row', gap: 24, padding: 16, alignItems: 'center', justifyContent: 'center' }}>
+        <View className="flex-row gap-6 px-6 py-3 items-center justify-center">
           <MonthPill
             label={monthLabel(monthA)}
             sublabel="ก่อนหน้า"
@@ -272,7 +272,7 @@ function MonthPill({ label, sublabel, color, onPress }: {
   return (
     <Pressable
       onPress={onPress}
-      className="bg-card"
+      className="bg-card py-2 px-3 rounded-2xl"
       style={({ pressed }) => ({
         flex: 1,
         borderRadius: 16,
