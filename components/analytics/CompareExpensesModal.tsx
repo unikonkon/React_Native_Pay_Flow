@@ -1,6 +1,6 @@
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { getDb, getTransactionsByRange } from '@/lib/stores/db';
-import { formatCurrency } from '@/lib/utils/format';
+import { formatCurrency, formatDateThai } from '@/lib/utils/format';
 import type { Category, Transaction } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -98,20 +98,25 @@ export function CompareExpensesModal({ visible, onClose, walletId }: Props) {
   }, [visible, loadData]);
 
   const comparison = useMemo(() => {
-    const byCatA = new Map<string, { amount: number; count: number }>();
-    const byCatB = new Map<string, { amount: number; count: number }>();
+    const byCatA = new Map<string, { amount: number; count: number; txs: Transaction[] }>();
+    const byCatB = new Map<string, { amount: number; count: number; txs: Transaction[] }>();
 
     for (const tx of txsA) {
       const ex = byCatA.get(tx.categoryId);
-      if (ex) { ex.amount += tx.amount; ex.count++; } else byCatA.set(tx.categoryId, { amount: tx.amount, count: 1 });
+      if (ex) { ex.amount += tx.amount; ex.count++; ex.txs.push(tx); }
+      else byCatA.set(tx.categoryId, { amount: tx.amount, count: 1, txs: [tx] });
     }
     for (const tx of txsB) {
       const ex = byCatB.get(tx.categoryId);
-      if (ex) { ex.amount += tx.amount; ex.count++; } else byCatB.set(tx.categoryId, { amount: tx.amount, count: 1 });
+      if (ex) { ex.amount += tx.amount; ex.count++; ex.txs.push(tx); }
+      else byCatB.set(tx.categoryId, { amount: tx.amount, count: 1, txs: [tx] });
     }
 
     const totalA = txsA.reduce((s, t) => s + t.amount, 0);
     const totalB = txsB.reduce((s, t) => s + t.amount, 0);
+
+    const sortByDateDesc = (arr: Transaction[]) =>
+      [...arr].sort((p, q) => (q.date.localeCompare(p.date)) || q.createdAt.localeCompare(p.createdAt));
 
     const allCatIds = new Set([...byCatA.keys(), ...byCatB.keys()]);
     const rows: CompareRow[] = Array.from(allCatIds).map((catId) => {
@@ -133,6 +138,8 @@ export function CompareExpensesModal({ visible, onClose, walletId }: Props) {
         countB: b?.count ?? 0,
         delta,
         deltaPct,
+        transactionsA: a ? sortByDateDesc(a.txs) : [],
+        transactionsB: b ? sortByDateDesc(b.txs) : [],
       };
     }).sort((x, y) => sortOrder === 'desc'
       ? Math.abs(y.delta) - Math.abs(x.delta)
@@ -245,7 +252,13 @@ export function CompareExpensesModal({ visible, onClose, walletId }: Props) {
                   </Pressable>
                 </View>
                 {comparison.rows.map((row, i) => (
-                  <CategoryCompareRow key={row.categoryId} row={row} isFirst={i === 0} />
+                  <CategoryCompareRow
+                    key={row.categoryId}
+                    row={row}
+                    isFirst={i === 0}
+                    labelA={monthLabel(monthA)}
+                    labelB={monthLabel(monthB)}
+                  />
                 ))}
               </View>
             ) : (
@@ -282,6 +295,8 @@ interface CompareRow {
   countB: number;
   delta: number;
   deltaPct: number;
+  transactionsA: Transaction[];
+  transactionsB: Transaction[];
 }
 
 function MonthPill({ label, sublabel, color, onPress }: {
@@ -356,7 +371,7 @@ function TotalsCard({ totalA, totalB, labelA, labelB, delta, deltaPct }: {
   );
 }
 
-function CategoryCompareRow({ row, isFirst }: { row: CompareRow; isFirst: boolean }) {
+function CategoryCompareRow({ row, isFirst, labelA, labelB }: { row: CompareRow; isFirst: boolean; labelA: string; labelB: string }) {
   const cat = row.category;
   const catColor = cat?.color ?? '#D3CBC3';
   const catIcon = (cat?.icon ?? 'help-circle') as keyof typeof Ionicons.glyphMap;
@@ -365,39 +380,85 @@ function CategoryCompareRow({ row, isFirst }: { row: CompareRow; isFirst: boolea
   const isDecrease = row.delta < 0;
   const deltaColor = isIncrease ? '#C65A4E' : isDecrease ? '#3E8B68' : '#A39685';
   const maxAmount = Math.max(row.amountA, row.amountB, 1);
+  const [expanded, setExpanded] = useState(false);
 
   return (
-    <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: isFirst ? 0 : 0.5, borderTopColor: 'rgba(42,35,32,0.06)' }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-        <View
-          className="rounded-full items-center justify-center"
-          style={{ width: 32, height: 32, backgroundColor: catColor + '22', marginRight: 10 }}
-        >
-          <Ionicons name={catIcon} size={14} color={catColor} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground" numberOfLines={1}>{catName}</Text>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 10, marginTop: 1 }} className="text-muted-foreground">
-            {row.countA} → {row.countB} รายการ
-          </Text>
-        </View>
-        {row.delta !== 0 && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, backgroundColor: deltaColor + '15' }}>
-            <Ionicons name={isIncrease ? 'arrow-up' : 'arrow-down'} size={11} color={deltaColor} />
-            <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 11, fontVariant: ['tabular-nums'], color: deltaColor }}>
-              {formatCurrency(Math.abs(row.delta))}
-            </Text>
-            <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 10, fontVariant: ['tabular-nums'], color: deltaColor, opacity: 0.75 }}>
-              ({Math.abs(row.deltaPct).toFixed(0)}%)
+    <View className="border-b border-border py-2 px-4">
+      <Pressable
+        onPress={() => { Haptics.selectionAsync(); setExpanded(e => !e); }}
+        style={({ pressed }) => ({ paddingHorizontal: 16, paddingVertical: 12, opacity: pressed ? 0.7 : 1 })}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+          <View
+            className="rounded-full items-center justify-center"
+            style={{ width: 32, height: 32, backgroundColor: catColor + '22', marginRight: 10 }}
+          >
+            <Ionicons name={catIcon} size={14} color={catColor} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground" numberOfLines={1}>{catName}</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 10, marginTop: 1 }} className="text-muted-foreground">
+              {row.countA} → {row.countB} รายการ
             </Text>
           </View>
-        )}
-      </View>
+          {row.delta !== 0 && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, backgroundColor: deltaColor + '15', marginRight: 6 }}>
+              <Ionicons name={isIncrease ? 'arrow-up' : 'arrow-down'} size={11} color={deltaColor} />
+              <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 11, fontVariant: ['tabular-nums'], color: deltaColor }}>
+                {formatCurrency(Math.abs(row.delta))}
+              </Text>
+              <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 10, fontVariant: ['tabular-nums'], color: deltaColor, opacity: 0.75 }}>
+                ({Math.abs(row.deltaPct).toFixed(0)}%)
+              </Text>
+            </View>
+          )}
+          <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={16} color="#A39685" />
+        </View>
 
-      <View style={{ gap: 6, paddingLeft: 42 }}>
-        <CompareBar label="ก่อน" amount={row.amountA} maxAmount={maxAmount} color="#8AC5C5" />
-        <CompareBar label="หลัง" amount={row.amountB} maxAmount={maxAmount} color="#E87A3D" />
+        <View style={{ gap: 6, paddingLeft: 42 }}>
+          <CompareBar label="ก่อน" amount={row.amountA} maxAmount={maxAmount} color="#8AC5C5" />
+          <CompareBar label="หลัง" amount={row.amountB} maxAmount={maxAmount} color="#E87A3D" />
+        </View>
+      </Pressable>
+
+      {expanded && (
+        <View style={{ paddingHorizontal: 16, paddingBottom: 14, paddingLeft: 42 }}>
+          <TxGroup label={labelA} sublabel="ก่อน" color="#8AC5C5" txs={row.transactionsA} />
+          <TxGroup label={labelB} sublabel="หลัง" color="#E87A3D" txs={row.transactionsB} />
+        </View>
+      )}
+    </View>
+  );
+}
+
+function TxGroup({ label, sublabel, color, txs }: { label: string; sublabel: string; color: string; txs: Transaction[] }) {
+  return (
+    <View style={{ marginTop: 10 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+        <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: color }} />
+        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, color }}>{sublabel}</Text>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-muted-foreground">· {label}</Text>
       </View>
+      {txs.length === 0 ? (
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, paddingLeft: 12 }} className="text-muted-foreground">ไม่มีรายการ</Text>
+      ) : (
+        txs.map(tx => (
+          <View
+            key={tx.id}
+            style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 4, paddingLeft: 12, gap: 8 }}
+          >
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, minWidth: 56 }} className="text-muted-foreground">
+              {formatDateThai(tx.date)}
+            </Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, flex: 1 }} className="text-foreground" numberOfLines={1}>
+              {tx.note?.trim() || '—'}
+            </Text>
+            <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 11, fontVariant: ['tabular-nums'] }} className="text-foreground">
+              {formatCurrency(tx.amount)}
+            </Text>
+          </View>
+        ))
+      )}
     </View>
   );
 }
