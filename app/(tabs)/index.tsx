@@ -5,8 +5,10 @@ import { FAB } from '@/components/ui/FAB';
 
 import { PeriodSelector } from '@/components/ui/PeriodSelector';
 import { WalletFilter } from '@/components/wallet/WalletFilter';
+import { getBgMascotSource } from '@/lib/constants/mascots';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
+import { useThemeStore } from '@/lib/stores/theme-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { formatCurrency, getToday } from '@/lib/utils/format';
 import type { Analysis, Transaction } from '@/types';
@@ -15,8 +17,6 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useRef } from 'react';
 import { Alert, Image, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const mascotRun = require('@/assets/bg/bg.png');
 
 export default function TransactionsScreen() {
   const transactions = useTransactionStore(s => s.transactions);
@@ -34,6 +34,8 @@ export default function TransactionsScreen() {
 
   const loadAnalysis = useAnalysisStore(s => s.loadAnalysis);
   const { isMonthlyTargetEnabled, monthlyExpenseTarget } = useAlertSettingsStore();
+  const bgMascotId = useThemeStore(s => s.currentBgMascot);
+  const mascotRun = getBgMascotSource(bgMascotId);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {

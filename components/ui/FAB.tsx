@@ -1,13 +1,16 @@
+import { getAddMascotSource } from '@/lib/constants/mascots';
+import { useThemeStore } from '@/lib/stores/theme-store';
 import * as Haptics from 'expo-haptics';
 import { Image, Pressable } from 'react-native';
-
-const mascotPlus = require('@/assets/add/add.png');
 
 interface FABProps {
   onPress: () => void;
 }
 
 export function FAB({ onPress }: FABProps) {
+  const addMascotId = useThemeStore(s => s.currentAddMascot);
+  const mascotPlus = getAddMascotSource(addMascotId);
+
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onPress();
@@ -30,13 +33,13 @@ export function FAB({ onPress }: FABProps) {
         source={mascotPlus}
         style={{
           width: 232,
-          height: 162,
+          height: 142,
           transform: [{ rotate: '-8deg' }],
           shadowColor: '#B75513',
           shadowOpacity: 0.36,
           shadowRadius: 12,
           shadowOffset: { width: 0, height: 3 },
-          opacity: 0.80, // ลดความชัดลง
+          opacity: 0.95,
         }}
         resizeMode="contain"
       />

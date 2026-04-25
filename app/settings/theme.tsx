@@ -1,19 +1,36 @@
+import { ADD_MASCOTS, BG_MASCOTS, type MascotOption } from '@/lib/constants/mascots';
 import { FAMILIES, type ThemeFamily, type ThemeSwatch } from '@/lib/constants/themes';
 import { useThemeStore } from '@/lib/stores/theme-store';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ThemeScreen() {
   const currentTheme = useThemeStore(s => s.currentTheme);
   const setTheme = useThemeStore(s => s.setTheme);
+  const currentBgMascot = useThemeStore(s => s.currentBgMascot);
+  const setBgMascot = useThemeStore(s => s.setBgMascot);
+  const currentAddMascot = useThemeStore(s => s.currentAddMascot);
+  const setAddMascot = useThemeStore(s => s.setAddMascot);
 
   const handleSelect = (key: string) => {
     if (key === currentTheme) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setTheme(key);
+  };
+
+  const handleSelectBgMascot = (id: string) => {
+    if (id === currentBgMascot) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setBgMascot(id);
+  };
+
+  const handleSelectAddMascot = (id: string) => {
+    if (id === currentAddMascot) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setAddMascot(id);
   };
 
   return (
@@ -43,7 +60,7 @@ export default function ThemeScreen() {
             className="text-muted-foreground"
             style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, marginTop: 1 }}
           >
-            แต่ละชุดมีโหมดสว่างและมืดให้เลือก
+            แต่ละชุดมีโหมดสว่างและมืดให้เลือก และ เลือกตัวการ์ตูน
           </Text>
         </View>
       </View>
@@ -60,8 +77,160 @@ export default function ThemeScreen() {
             </View>
           ))}
         </View>
+
+        {/* ===== ตัวการ์ตูน ===== */}
+        <View style={{ marginTop: 22 }}>
+          <Text
+            className="text-foreground"
+            style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, marginBottom: 4 }}
+          >
+            ตัวการ์ตูน
+          </Text>
+          <Text
+            className="text-muted-foreground"
+            style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, marginBottom: 12 }}
+          >
+            เลือกรูปที่ใช้แสดงในหน้าหลักและปุ่มเพิ่มรายการ
+          </Text>
+
+          <MascotPickerSection
+            title="รูปบนหัวข้อหน้า"
+            subtitle="แสดงในหน้ารายการ / สรุป / ตั้งค่า"
+            options={BG_MASCOTS}
+            selectedId={currentBgMascot}
+            onSelect={handleSelectBgMascot}
+            previewSize={{ width: 76, height: 56 }}
+          />
+
+          <View style={{ height: 14 }} />
+
+          <MascotPickerSection
+            title="ปุ่มเพิ่มรายการ"
+            subtitle="แสดงเป็นปุ่มลอยในหน้ารายการ"
+            options={ADD_MASCOTS}
+            selectedId={currentAddMascot}
+            onSelect={handleSelectAddMascot}
+            previewSize={{ width: 132, height: 102 }}
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+// ===== Mascot picker section =====
+
+function MascotPickerSection({
+  title,
+  subtitle,
+  options,
+  selectedId,
+  onSelect,
+  previewSize,
+}: {
+  title: string;
+  subtitle: string;
+  options: MascotOption[];
+  selectedId: string;
+  onSelect: (id: string) => void;
+  previewSize: { width: number; height: number };
+}) {
+  return (
+    <View
+      className="bg-card"
+      style={{
+        borderRadius: 18,
+        padding: 14,
+        shadowColor: '#2A2320',
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 3 },
+        elevation: 2,
+      }}
+    >
+      <Text
+        className="text-foreground"
+        style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14 }}
+      >
+        {title}
+      </Text>
+      <Text
+        className="text-muted-foreground"
+        style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 2 }}
+      >
+        {subtitle}
+      </Text>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 10, paddingTop: 12, paddingBottom: 2 }}
+      >
+        {options.map((opt) => {
+          const isSelected = opt.id === selectedId;
+          return (
+            <Pressable
+              key={opt.id}
+              onPress={() => onSelect(opt.id)}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.7 : 1,
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
+              accessibilityRole="button"
+              accessibilityLabel={`เลือก ${opt.name}`}
+            >
+              <View
+                style={{
+                  borderRadius: 12,
+                  borderWidth: 2,
+                  borderColor: isSelected ? '#E87A3D' : 'rgba(42,35,32,0.08)',
+                  backgroundColor: isSelected ? '#FFF6EE' : '#FAF5EC',
+                  padding: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: previewSize.width + 16,
+                  height: previewSize.height + 28,
+                }}
+              >
+                <Image
+                  source={opt.source}
+                  style={{ width: previewSize.width, height: previewSize.height }}
+                  resizeMode="contain"
+                />
+                <Text
+                  style={{
+                    fontFamily: isSelected ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                    fontSize: 10.5,
+                    marginTop: 4,
+                    color: isSelected ? '#C85F28' : '#9A8D80',
+                  }}
+                  numberOfLines={1}
+                >
+                  {opt.name}
+                </Text>
+                {isSelected && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 4,
+                      right: 4,
+                      width: 18,
+                      height: 18,
+                      borderRadius: 9,
+                      backgroundColor: '#E87A3D',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Ionicons name="checkmark" size={12} color="#fff" />
+                  </View>
+                )}
+              </View>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 }
 

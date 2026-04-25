@@ -2,13 +2,13 @@ import { PieChartView } from '@/components/analytics/PieChartView';
 import { PeriodSelector } from '@/components/ui/PeriodSelector';
 import { WalletFilter } from '@/components/wallet/WalletFilter';
 import { useSummary } from '@/hooks/useSummary';
+import { getBgMascotSource } from '@/lib/constants/mascots';
+import { useThemeStore } from '@/lib/stores/theme-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const mascotRun = require('@/assets/bg/bg.png');
 
 type ViewType = 'expense' | 'income' | 'all';
 
@@ -20,6 +20,8 @@ export default function AnalyticsScreen() {
   const selectedWalletId = useTransactionStore(s => s.selectedWalletId);
   const setSelectedWalletId = useTransactionStore(s => s.setSelectedWalletId);
   const [viewType, setViewType] = useState<ViewType>('expense');
+  const bgMascotId = useThemeStore(s => s.currentBgMascot);
+  const mascotRun = getBgMascotSource(bgMascotId);
 
   const { expenseByCategory, incomeByCategory } = useSummary(transactions);
 

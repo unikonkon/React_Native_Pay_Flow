@@ -1,5 +1,6 @@
 import { AddWalletModal } from '@/components/wallet/AddWalletModal';
 import { deleteApiKey, getApiKey, setApiKey } from '@/lib/api/ai';
+import { getBgMascotSource } from '@/lib/constants/mascots';
 import { useThemeStore } from '@/lib/stores/theme-store';
 import { getBiometricEnabled, isBiometricAvailable, setBiometricEnabled } from '@/lib/utils/auth';
 import { getNotificationsEnabled, setNotificationsEnabled } from '@/lib/utils/notifications';
@@ -28,8 +29,6 @@ const THEME_LABELS: Record<string, string> = {
   'emerald': 'มรกต',
   'emerald-dark': 'มรกต (มืด)',
 };
-
-const mascotRun = require('@/assets/bg/bg.png');
 
 function SettingsRow({
   icon,
@@ -92,6 +91,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function SettingsScreen() {
   const currentTheme = useThemeStore(s => s.currentTheme);
+  const bgMascotId = useThemeStore(s => s.currentBgMascot);
+  const mascotRun = getBgMascotSource(bgMascotId);
 
   const [apiKeyStatus, setApiKeyStatus] = useState('ตรวจสอบ...');
 
