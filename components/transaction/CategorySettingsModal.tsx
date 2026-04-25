@@ -1,10 +1,12 @@
 import { useCategoryStore } from '@/lib/stores/category-store';
+import { getDb } from '@/lib/stores/db';
 import { useSettingsStore } from '@/lib/stores/settings-store';
+import { useTransactionStore } from '@/lib/stores/transaction-store';
 import type { Category, TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useCallback, useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, Switch, Text, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, Switch, Text, View } from 'react-native';
 import { AddCategoryModal } from './AddCategoryModal';
 
 interface Props {
@@ -23,7 +25,9 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
   const addTxSheetHeight = useSettingsStore(s => s.addTxSheetHeight);
   const updateSettings = useSettingsStore(s => s.updateSettings);
   const reorderCategories = useCategoryStore(s => s.reorderCategories);
+  const deleteCategory = useCategoryStore(s => s.deleteCategory);
   const allCategories = useCategoryStore(s => s.categories);
+  const reloadTransactions = useTransactionStore(s => s.loadTransactions);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addVisible, setAddVisible] = useState(false);
@@ -64,6 +68,34 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setSelectedId(id);
   }, []);
+
+  const handleDeleteCategory = useCallback(async (cat: Category) => {
+    if (!cat.isCustom) {
+      Alert.alert('ไม่สามารถลบได้', 'หมวดหมู่เริ่มต้นไม่สามารถลบได้');
+      return;
+    }
+    const db = getDb();
+    const row = await db.getFirstAsync<{ count: number }>(
+      'SELECT COUNT(*) as count FROM transactions WHERE category_id = ?',
+      [cat.id],
+    );
+    const txCount = row?.count ?? 0;
+    const message = txCount > 0
+      ? `ต้องการลบ "${cat.name}" ?\nรายการที่ใช้หมวดหมู่นี้ ${txCount} รายการจะถูกลบด้วย`
+      : `ต้องการลบ "${cat.name}" ?`;
+    Alert.alert('ลบหมวดหมู่', message, [
+      { text: 'ยกเลิก', style: 'cancel' },
+      {
+        text: 'ลบ', style: 'destructive',
+        onPress: async () => {
+          await deleteCategory(cat.id);
+          await reloadTransactions();
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          setSelectedId(null);
+        },
+      },
+    ]);
+  }, [deleteCategory, reloadTransactions]);
 
   const handleTapItem = useCallback((targetId: string) => {
     if (!selectedId || selectedId === targetId) {
@@ -287,7 +319,7 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                   {/* Reorder grid — same style as TransactionForm quick row */}
                   <View style={{ borderRadius: 12, padding: 8 }}>
                     <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#E87A3D', marginBottom: 8, paddingHorizontal: 2 }}>
-                      {selectedId ? 'กดอีกตัวเพื่อสลับตำแหน่ง' : 'กดค้างเพื่อเลือกสลับตำแหน่ง'}
+                      {selectedId ? 'กดอีกตัวเพื่อสลับตำแหน่ง' : 'กดค้างเพื่อเลือกสลับตำแหน่ง หรือ ลบหมวดหมู่'}
                     </Text>
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
                       {allCommonCats.map((cat, idx) => {
@@ -368,14 +400,35 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                         </Text>
                       </Pressable>
                     </View>
-                    {selectedId && (
-                      <Pressable
-                        onPress={() => setSelectedId(null)}
-                        style={{ alignItems: 'center', paddingVertical: 8, marginTop: 6 }}
-                      >
-                        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#E87A3D' }}>ยกเลิกการเลือก</Text>
-                      </Pressable>
-                    )}
+                    {selectedId && (() => {
+                      const selectedCat = allCommonCats.find(c => c.id === selectedId);
+                      return (
+                        <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+                          <Pressable
+                            onPress={() => setSelectedId(null)}
+                            style={{
+                              flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10,
+                              backgroundColor: 'rgba(42,35,32,0.05)',
+                            }}
+                          >
+                            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#6B5F52' }}>ยกเลิก</Text>
+                          </Pressable>
+                          <Pressable
+                            onPress={() => selectedCat && handleDeleteCategory(selectedCat)}
+                            disabled={!selectedCat?.isCustom}
+                            style={{
+                              flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                              paddingVertical: 10, borderRadius: 10,
+                              backgroundColor: selectedCat?.isCustom ? 'rgba(208,64,64,0.12)' : 'rgba(208,64,64,0.06)',
+                              opacity: selectedCat?.isCustom ? 1 : 0.5,
+                            }}
+                          >
+                            <Ionicons name="trash-outline" size={14} color="#D04040" />
+                            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#D04040' }}>ลบหมวดหมู่นี้</Text>
+                          </Pressable>
+                        </View>
+                      );
+                    })()}
                   </View>
                 </>
               )}
