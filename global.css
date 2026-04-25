@@ -154,6 +154,25 @@
   --ring: #E87A3D;
 }
 
+/* MiawMoney — เที่ยงคืน (สว่าง / minimal slate) */
+.midnight-light {
+  --background: #F4F5F8;
+  --foreground: #1F1F2A;
+  --card: #FFFFFF;
+  --card-foreground: #1F1F2A;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #ECEDF3;
+  --secondary-foreground: #1F1F2A;
+  --muted: #ECEDF3;
+  --muted-foreground: #9A99A5;
+  --accent: #DEDFEA;
+  --accent-foreground: #1F1F2A;
+  --destructive: #E57373;
+  --border: #E5E6F0;
+  --ring: #E87A3D;
+}
+
 /* MiawMoney — เที่ยงคืน (OLED) */
 .midnight {
   --background: #14141A;
@@ -170,5 +189,119 @@
   --accent-foreground: #F5EDE0;
   --destructive: #E57373;
   --border: #2E2E3A;
+  --ring: #E87A3D;
+}
+
+/* MiawMoney — ลีลัค (Lilac point Siamese) */
+.plum {
+  --background: #F7F1F9;
+  --foreground: #2B1A30;
+  --card: #FFFFFF;
+  --card-foreground: #2B1A30;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F0E5F4;
+  --secondary-foreground: #2B1A30;
+  --muted: #F0E5F4;
+  --muted-foreground: #9A8AA0;
+  --accent: #E5C9EE;
+  --accent-foreground: #2B1A30;
+  --destructive: #E57373;
+  --border: #E8D3F0;
+  --ring: #E87A3D;
+}
+
+/* MiawMoney — ลีลัค (มืด) */
+.plum-dark {
+  --background: #1A1421;
+  --foreground: #F5EDE0;
+  --card: #2A2032;
+  --card-foreground: #F5EDE0;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #332540;
+  --secondary-foreground: #F5EDE0;
+  --muted: #332540;
+  --muted-foreground: #8E7E96;
+  --accent: #5C3D70;
+  --accent-foreground: #F5EDE0;
+  --destructive: #E57373;
+  --border: #4A3855;
+  --ring: #E87A3D;
+}
+
+/* MiawMoney — น้ำผึ้ง (สว่าง / honey cream) */
+.honey-light {
+  --background: #FFF8E8;
+  --foreground: #2A1F0F;
+  --card: #FFFFFF;
+  --card-foreground: #2A1F0F;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FAEFD2;
+  --secondary-foreground: #2A1F0F;
+  --muted: #FAEFD2;
+  --muted-foreground: #A89878;
+  --accent: #F5DC9C;
+  --accent-foreground: #2A1F0F;
+  --destructive: #E57373;
+  --border: #F0E5C7;
+  --ring: #E87A3D;
+}
+
+/* MiawMoney — น้ำผึ้ง (Honey / Persian gold) */
+.honey {
+  --background: #1A1610;
+  --foreground: #F5EDE0;
+  --card: #2A2418;
+  --card-foreground: #F5EDE0;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #33291A;
+  --secondary-foreground: #F5EDE0;
+  --muted: #33291A;
+  --muted-foreground: #A89876;
+  --accent: #5C4A1F;
+  --accent-foreground: #F5EDE0;
+  --destructive: #E57373;
+  --border: #4A3D1F;
+  --ring: #E87A3D;
+}
+
+/* MiawMoney — มรกต (Emerald — cat eye green) */
+.emerald {
+  --background: #E8F4F0;
+  --foreground: #1A2B26;
+  --card: #FFFFFF;
+  --card-foreground: #1A2B26;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #DCEEE7;
+  --secondary-foreground: #1A2B26;
+  --muted: #DCEEE7;
+  --muted-foreground: #7A9A8C;
+  --accent: #A0D9C5;
+  --accent-foreground: #1A2B26;
+  --destructive: #E57373;
+  --border: #C5DDD3;
+  --ring: #E87A3D;
+}
+
+/* MiawMoney — มรกต (มืด) */
+.emerald-dark {
+  --background: #0F1814;
+  --foreground: #F5EDE0;
+  --card: #1B2823;
+  --card-foreground: #F5EDE0;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #24352E;
+  --secondary-foreground: #F5EDE0;
+  --muted: #24352E;
+  --muted-foreground: #7A9A8C;
+  --accent: #3D5C50;
+  --accent-foreground: #F5EDE0;
+  --destructive: #E57373;
+  --border: #3D5C50;
   --ring: #E87A3D;
 }

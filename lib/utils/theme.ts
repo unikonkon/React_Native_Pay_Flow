@@ -6,6 +6,9 @@ export const DARK_THEMES = new Set([
   'ocean-dark',
   'forest-dark',
   'midnight',
+  'plum-dark',
+  'honey',
+  'emerald-dark',
 ]);
 
 export function useIsDarkTheme(): boolean {

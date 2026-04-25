@@ -24,7 +24,7 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
-const DARK_THEMES = ['warm-dark', 'sakura-dark', 'ocean-dark', 'forest-dark', 'midnight'];
+const DARK_THEMES = ['warm-dark', 'sakura-dark', 'ocean-dark', 'forest-dark', 'midnight', 'plum-dark', 'honey', 'emerald-dark'];
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -129,7 +129,7 @@ export default function RootLayout() {
         <Stack.Screen name="settings/categories" options={{ title: 'หมวดหมู่', headerBackTitle: 'กลับ' }} />
         <Stack.Screen name="settings/alerts" options={{ title: 'เป้าใช้จ่าย', headerBackTitle: 'กลับ' }} />
         <Stack.Screen name="settings/export" options={{ title: 'ส่งออก', headerBackTitle: 'กลับ' }} />
-        <Stack.Screen name="settings/theme" options={{ title: 'ธีม', headerBackTitle: 'กลับ' }} />
+        <Stack.Screen name="settings/theme" options={{ headerShown: false }} />
         <Stack.Screen name="settings/data-transfer" options={{ title: 'ส่งออก / นำเข้าข้อมูล', headerBackTitle: 'กลับ' }} />
       </Stack>
       <StatusBar style={statusBarStyle} />

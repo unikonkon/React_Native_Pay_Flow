@@ -19,7 +19,14 @@ const THEME_LABELS: Record<string, string> = {
   'ocean-dark': 'มหาสมุทร (มืด)',
   'forest': 'ป่าไม้',
   'forest-dark': 'ป่าไม้ (มืด)',
-  'midnight': 'เที่ยงคืน',
+  'midnight-light': 'เที่ยงคืน (สว่าง)',
+  'midnight': 'เที่ยงคืน (มืด)',
+  'plum': 'ลีลัค',
+  'plum-dark': 'ลีลัค (มืด)',
+  'honey-light': 'น้ำผึ้ง (สว่าง)',
+  'honey': 'น้ำผึ้ง (มืด)',
+  'emerald': 'มรกต',
+  'emerald-dark': 'มรกต (มืด)',
 };
 
 const mascotRun = require('@/assets/bg/bg.png');

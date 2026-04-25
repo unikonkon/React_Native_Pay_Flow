@@ -2,6 +2,7 @@ import { FAMILIES, type ThemeFamily, type ThemeSwatch } from '@/lib/constants/th
 import { useThemeStore } from '@/lib/stores/theme-store';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -16,23 +17,49 @@ export default function ThemeScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 32 }}>
-        <Text
-          style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }}
-          className="text-muted-foreground mb-4 mt-1"
-        >
-          เลือกสีธีม — แต่ละชุดมีโหมดสว่างและมืดให้เลือก
-        </Text>
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+      {/* Custom header — matches app/settings/wallets.tsx pattern */}
 
-        {FAMILIES.map((family) => (
-          <FamilyCard
-            key={family.id}
-            family={family}
-            currentTheme={currentTheme}
-            onSelect={handleSelect}
-          />
-        ))}
+      {/* Header */}
+      <View style={{ paddingHorizontal: 14, paddingTop: 8, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <Pressable
+          onPress={() => router.back()}
+          className="bg-secondary"
+          style={{
+            width: 36, height: 36, borderRadius: 18,
+            alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <Ionicons name="chevron-back" size={18} color="#A39685" />
+        </Pressable>
+        <View style={{ flex: 1 }}>
+          <Text
+            className="text-foreground"
+            style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 20, letterSpacing: -0.3 }}
+          >
+            ธีม
+          </Text>
+          <Text
+            className="text-muted-foreground"
+            style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, marginTop: 1 }}
+          >
+            แต่ละชุดมีโหมดสว่างและมืดให้เลือก
+          </Text>
+        </View>
+      </View>
+
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 4, paddingBottom: 32 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+          {FAMILIES.map((family) => (
+            <View key={family.id} style={{ width: '48.5%' }}>
+              <FamilyCard
+                family={family}
+                currentTheme={currentTheme}
+                onSelect={handleSelect}
+              />
+            </View>
+          ))}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -59,7 +86,6 @@ function FamilyCard({
       style={{
         borderRadius: 20,
         padding: 14,
-        marginBottom: 14,
         shadowColor: '#2A2320',
         shadowOpacity: 0.05,
         shadowRadius: 12,
@@ -110,24 +136,26 @@ function FamilyCard({
 
       {/* Light/Dark preview row */}
       <View style={{ flexDirection: 'row', gap: 10 }}>
-        {family.light && (
-          <PreviewSwatch
-            swatch={family.light}
-            label="สว่าง"
-            selected={family.light.key === currentTheme}
-            onPress={() => onSelect(family.light!.key)}
-          />
-        )}
-        {family.dark && (
-          <PreviewSwatch
-            swatch={family.dark}
-            label="มืด"
-            selected={family.dark.key === currentTheme}
-            onPress={() => onSelect(family.dark!.key)}
-          />
-        )}
-        {/* Fill empty slot (for midnight which has only dark) */}
-        {!family.light && <View style={{ flex: 1 }} />}
+        <View style={{ flex: 1 }}>
+          {family.light ? (
+            <PreviewSwatch
+              swatch={family.light}
+              label="สว่าง"
+              selected={family.light.key === currentTheme}
+              onPress={() => onSelect(family.light!.key)}
+            />
+          ) : null}
+        </View>
+        <View style={{ flex: 1 }}>
+          {family.dark ? (
+            <PreviewSwatch
+              swatch={family.dark}
+              label="มืด"
+              selected={family.dark.key === currentTheme}
+              onPress={() => onSelect(family.dark!.key)}
+            />
+          ) : null}
+        </View>
       </View>
     </View>
   );
@@ -238,7 +266,7 @@ function PreviewSwatch({
           </View>
         </View>
 
-        {/* Label footer */}
+        {/* Label footer — uses swatch's own colors so the preview reflects the theme */}
         <View
           style={{
             paddingVertical: 7,
@@ -246,20 +274,20 @@ function PreviewSwatch({
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: selected ? swatch.primary : '#fff',
+            backgroundColor: selected ? swatch.primary : swatch.card,
           }}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Ionicons
               name={label === 'สว่าง' ? 'sunny' : 'moon'}
               size={13}
-              color={selected ? '#fff' : '#6B5F52'}
+              color={selected ? '#fff' : swatch.inkMuted}
             />
             <Text
               style={{
                 fontFamily: 'IBMPlexSansThai_600SemiBold',
                 fontSize: 12,
-                color: selected ? '#fff' : '#2B2118',
+                color: selected ? '#fff' : swatch.ink,
               }}
             >
               {label}

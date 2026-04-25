@@ -60,7 +60,7 @@ const mascotPlus = require('@/assets/mascot-cosmic.png');
 const PREMIUM_FEATURES: { icon: keyof typeof Ionicons.glyphMap; title: string; desc: string }[] = [
   { icon: 'sparkles-outline', title: 'AI วิเคราะห์การใช้จ่าย', desc: 'มิวช่วยดูพฤติกรรมการใช้เงิน ทุกสัปดาห์' },
   { icon: 'download-outline', title: 'Export รายงาน PDF/Excel', desc: 'ส่งให้นักบัญชีหรือเก็บเป็นหลักฐาน' },
-  { icon: 'color-palette-outline', title: 'ธีมพิเศษ + มิวเปลี่ยนชุด', desc: '12 ธีม และชุดมิวตามฤดูกาล' },
+  { icon: 'color-palette-outline', title: 'ธีมพิเศษ + แมวเปลี่ยนชุด', desc: '16 ธีม และชุดมิวตามฤดูกาล' },
 ];
 
 function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
