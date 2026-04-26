@@ -11,7 +11,8 @@ import {
   upsertAnalysis,
 } from '@/lib/stores/db';
 import { getCurrentPeriod, getPeriodRange } from '@/lib/utils/period';
-import { sendBudgetAlert } from '@/lib/utils/notifications';
+import { sendBudgetAlert, sendDailyBudgetAlert } from '@/lib/utils/notifications';
+import { getToday } from '@/lib/utils/format';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 
 interface TransactionStore {
@@ -109,11 +110,18 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
       await get().loadTransactions();
 
       const alertSettings = useAlertSettingsStore.getState();
-      if (alertSettings.isMonthlyTargetEnabled && data.type === 'expense') {
-        const p = get().currentPeriod;
-        const { start, end } = getPeriodRange(p);
-        const summary = await getSummaryByRange(db, start, end, get().selectedWalletId);
-        await sendBudgetAlert(summary.totalExpense, alertSettings.monthlyExpenseTarget);
+      if (data.type === 'expense') {
+        if (alertSettings.isMonthlyTargetEnabled && alertSettings.monthlyExpenseTarget > 0) {
+          const p = get().currentPeriod;
+          const { start, end } = getPeriodRange(p);
+          const summary = await getSummaryByRange(db, start, end, get().selectedWalletId);
+          await sendBudgetAlert(summary.totalExpense, alertSettings.monthlyExpenseTarget);
+        }
+        if (alertSettings.isDailyTargetEnabled && alertSettings.dailyExpenseTarget > 0) {
+          const today = getToday();
+          const dailySummary = await getSummaryByRange(db, today, today, get().selectedWalletId);
+          await sendDailyBudgetAlert(dailySummary.totalExpense, alertSettings.dailyExpenseTarget);
+        }
       }
     } finally {
       set({ isLoading: false });

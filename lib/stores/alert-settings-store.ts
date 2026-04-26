@@ -7,6 +7,8 @@ const ALERT_SETTINGS_KEY = 'alert_settings';
 const DEFAULT_ALERT_SETTINGS: AlertSettings = {
   monthlyExpenseTarget: 0,
   isMonthlyTargetEnabled: false,
+  dailyExpenseTarget: 0,
+  isDailyTargetEnabled: false,
   categoryLimits: [],
   isCategoryLimitsEnabled: false,
 };
@@ -37,6 +39,8 @@ export const useAlertSettingsStore = create<AlertSettingsStore>((set, get) => ({
     const current: AlertSettings = {
       monthlyExpenseTarget: get().monthlyExpenseTarget,
       isMonthlyTargetEnabled: get().isMonthlyTargetEnabled,
+      dailyExpenseTarget: get().dailyExpenseTarget,
+      isDailyTargetEnabled: get().isDailyTargetEnabled,
       categoryLimits: get().categoryLimits,
       isCategoryLimitsEnabled: get().isCategoryLimitsEnabled,
     };

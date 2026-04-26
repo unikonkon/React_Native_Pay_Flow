@@ -194,7 +194,7 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                   value={showTopCategories}
                   onValueChange={(v) => handleToggle('showTopCategories', v)}
                   trackColor={{ false: '#A89888', true: '#E87A3D' }}
-                  thumbColor="#fff"
+                  thumbColor="#E5DCC9"
                 />
               </View>
 
@@ -253,7 +253,7 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                   value={showFrequentPills}
                   onValueChange={(v) => handleToggle('showFrequentPills', v)}
                   trackColor={{ false: '#A89888', true: '#E87A3D' }}
-                  thumbColor="#fff"
+                  thumbColor="#E5DCC9"
                 />
               </View>
             </View>
@@ -276,7 +276,7 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                   value={showCommonCategories}
                   onValueChange={(v) => handleToggle('showCommonCategories', v)}
                   trackColor={{ false: '#A89888', true: '#E87A3D' }}
-                  thumbColor="#fff"
+                  thumbColor="#E5DCC9"
                 />
               </View>
 

@@ -8,13 +8,14 @@ import { WalletFilter } from '@/components/wallet/WalletFilter';
 import { getBgMascotSource } from '@/lib/constants/mascots';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
+import { getDb, getSummaryByRange } from '@/lib/stores/db';
 import { useThemeStore } from '@/lib/stores/theme-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { formatCurrency, getToday } from '@/lib/utils/format';
 import type { Analysis, Transaction } from '@/types';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Image, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -33,9 +34,36 @@ export default function TransactionsScreen() {
   const totalExpense = useTransactionStore(s => s.totalExpense);
 
   const loadAnalysis = useAnalysisStore(s => s.loadAnalysis);
-  const { isMonthlyTargetEnabled, monthlyExpenseTarget } = useAlertSettingsStore();
+  const {
+    isMonthlyTargetEnabled, monthlyExpenseTarget,
+    isDailyTargetEnabled, dailyExpenseTarget,
+  } = useAlertSettingsStore();
   const bgMascotId = useThemeStore(s => s.currentBgMascot);
   const mascotRun = getBgMascotSource(bgMascotId);
+
+  const [todayExpense, setTodayExpense] = useState(0);
+  const [dismissDaily, setDismissDaily] = useState(false);
+  const [dismissMonthly, setDismissMonthly] = useState(false);
+
+  // Refresh today's expense whenever transactions or wallet filter change
+  useEffect(() => {
+    if (!isDailyTargetEnabled) { setTodayExpense(0); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const today = getToday();
+        const summary = await getSummaryByRange(getDb(), today, today, selectedWalletId);
+        if (!cancelled) setTodayExpense(summary.totalExpense);
+      } catch {
+        if (!cancelled) setTodayExpense(0);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [transactions, selectedWalletId, isDailyTargetEnabled]);
+
+  // Reset dismiss when target changes (so user sees the new threshold)
+  useEffect(() => { setDismissDaily(false); }, [dailyExpenseTarget, isDailyTargetEnabled]);
+  useEffect(() => { setDismissMonthly(false); }, [monthlyExpenseTarget, isMonthlyTargetEnabled]);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
@@ -191,9 +219,22 @@ export default function TransactionsScreen() {
         </View>
       </View>
 
-      {/* Budget Alert */}
-      {isMonthlyTargetEnabled && (
-        <AlertBanner currentExpense={totalExpense} target={monthlyExpenseTarget} />
+      {/* Budget Alerts */}
+      {isDailyTargetEnabled && !dismissDaily && (
+        <AlertBanner
+          scope="daily"
+          currentExpense={todayExpense}
+          target={dailyExpenseTarget}
+          onDismiss={() => setDismissDaily(true)}
+        />
+      )}
+      {isMonthlyTargetEnabled && !dismissMonthly && (
+        <AlertBanner
+          scope="monthly"
+          currentExpense={totalExpense}
+          target={monthlyExpenseTarget}
+          onDismiss={() => setDismissMonthly(true)}
+        />
       )}
 
       <FrequentTransactions

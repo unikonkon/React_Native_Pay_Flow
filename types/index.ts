@@ -164,6 +164,8 @@ export interface StructuredResult {
 export interface AlertSettings {
   monthlyExpenseTarget: number;
   isMonthlyTargetEnabled: boolean;
+  dailyExpenseTarget: number;
+  isDailyTargetEnabled: boolean;
   categoryLimits: CategoryLimit[];
   isCategoryLimitsEnabled: boolean;
 }

@@ -1,13 +1,14 @@
 import { AddWalletModal } from '@/components/wallet/AddWalletModal';
 import { deleteApiKey, getApiKey, setApiKey } from '@/lib/api/ai';
 import { getBgMascotSource } from '@/lib/constants/mascots';
+import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useThemeStore } from '@/lib/stores/theme-store';
 import { getBiometricEnabled, isBiometricAvailable, setBiometricEnabled } from '@/lib/utils/auth';
-import { getNotificationsEnabled, setNotificationsEnabled } from '@/lib/utils/notifications';
+import { getNotificationsEnabled } from '@/lib/utils/notifications';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -101,14 +102,38 @@ export default function SettingsScreen() {
   const [notificationsEnabled, setNotificationsEnabledState] = useState(false);
   const [addWalletVisible, setAddWalletVisible] = useState(false);
 
+  const isDailyTargetEnabled = useAlertSettingsStore(s => s.isDailyTargetEnabled);
+  const isMonthlyTargetEnabled = useAlertSettingsStore(s => s.isMonthlyTargetEnabled);
+
   useEffect(() => {
     getApiKey().then(key => {
       setApiKeyStatus(key ? `ตั้งค่าแล้ว (****${key.slice(-4)})` : 'ยังไม่ได้ตั้งค่า');
     });
     isBiometricAvailable().then(setBiometricAvailable);
     getBiometricEnabled().then(setBiometricEnabledState);
-    getNotificationsEnabled().then(setNotificationsEnabledState);
   }, []);
+
+  // Re-sync push enabled state every time this tab regains focus
+  // (so toggling in /settings/notifications reflects here when user navigates back)
+  useFocusEffect(
+    useCallback(() => {
+      getNotificationsEnabled().then(setNotificationsEnabledState);
+    }, [])
+  );
+
+  const notificationStatus = (() => {
+    const targets = [
+      isDailyTargetEnabled ? 'รายวัน' : null,
+      isMonthlyTargetEnabled ? 'รายเดือน' : null,
+    ].filter(Boolean) as string[];
+
+    if (targets.length === 0) {
+      return notificationsEnabled ? 'เปิด · ยังไม่ตั้งงบ' : 'ปิดอยู่';
+    }
+
+    const prefix = notificationsEnabled ? 'Push · ' : 'ในแอป · ';
+    return prefix + targets.join(' · ');
+  })();
 
   const handleBiometricToggle = async () => {
     const newValue = !biometricEnabled;
@@ -116,11 +141,6 @@ export default function SettingsScreen() {
     setBiometricEnabledState(newValue);
   };
 
-  const handleNotificationsToggle = async () => {
-    const newValue = !notificationsEnabled;
-    await setNotificationsEnabled(newValue);
-    setNotificationsEnabledState(newValue);
-  };
 
   const handleApiKey = () => {
     Alert.prompt(
@@ -173,8 +193,8 @@ export default function SettingsScreen() {
           <SettingsRow
             icon="notifications-outline"
             label="แจ้งเตือน Push"
-            value={notificationsEnabled ? 'เปิด' : 'ปิด'}
-            onPress={handleNotificationsToggle}
+            value={notificationStatus}
+            onPress={() => router.push('/settings/notifications')}
           />
           {/* <SettingsRow icon="cash-outline" label="สกุลเงิน" value={`${currency} ฿`} last /> */}
         </Section>
