@@ -1,34 +1,13 @@
 import { AddWalletModal } from '@/components/wallet/AddWalletModal';
 import { getBgMascotSource } from '@/lib/constants/mascots';
-import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useThemeStore } from '@/lib/stores/theme-store';
 import { getBiometricEnabled, isBiometricAvailable, setBiometricEnabled } from '@/lib/utils/auth';
-import { getNotificationsEnabled } from '@/lib/utils/notifications';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const THEME_LABELS: Record<string, string> = {
-  'warm': 'อบอุ่น',
-  'warm-dark': 'อบอุ่น (มืด)',
-  'sakura': 'ซากุระ',
-  'sakura-dark': 'ซากุระ (มืด)',
-  'ocean': 'มหาสมุทร',
-  'ocean-dark': 'มหาสมุทร (มืด)',
-  'forest': 'ป่าไม้',
-  'forest-dark': 'ป่าไม้ (มืด)',
-  'midnight-light': 'เที่ยงคืน (สว่าง)',
-  'midnight': 'เที่ยงคืน (มืด)',
-  'plum': 'ลีลัค',
-  'plum-dark': 'ลีลัค (มืด)',
-  'honey-light': 'น้ำผึ้ง (สว่าง)',
-  'honey': 'น้ำผึ้ง (มืด)',
-  'emerald': 'มรกต',
-  'emerald-dark': 'มรกต (มืด)',
-};
 
 function SettingsRow({
   icon,
@@ -90,52 +69,23 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function SettingsScreen() {
-  const currentTheme = useThemeStore(s => s.currentTheme);
   const bgMascotId = useThemeStore(s => s.currentBgMascot);
   const mascotRun = getBgMascotSource(bgMascotId);
 
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometricEnabled, setBiometricEnabledState] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabledState] = useState(false);
   const [addWalletVisible, setAddWalletVisible] = useState(false);
-
-  const isDailyTargetEnabled = useAlertSettingsStore(s => s.isDailyTargetEnabled);
-  const isMonthlyTargetEnabled = useAlertSettingsStore(s => s.isMonthlyTargetEnabled);
 
   useEffect(() => {
     isBiometricAvailable().then(setBiometricAvailable);
     getBiometricEnabled().then(setBiometricEnabledState);
   }, []);
 
-  // Re-sync push enabled state every time this tab regains focus
-  // (so toggling in /settings/notifications reflects here when user navigates back)
-  useFocusEffect(
-    useCallback(() => {
-      getNotificationsEnabled().then(setNotificationsEnabledState);
-    }, [])
-  );
-
-  const notificationStatus = (() => {
-    const targets = [
-      isDailyTargetEnabled ? 'รายวัน' : null,
-      isMonthlyTargetEnabled ? 'รายเดือน' : null,
-    ].filter(Boolean) as string[];
-
-    if (targets.length === 0) {
-      return notificationsEnabled ? 'เปิด · ยังไม่ตั้งงบ' : 'ปิดอยู่';
-    }
-
-    const prefix = notificationsEnabled ? 'Push · ' : 'ในแอป · ';
-    return prefix + targets.join(' · ');
-  })();
-
   const handleBiometricToggle = async () => {
     const newValue = !biometricEnabled;
     await setBiometricEnabled(newValue);
     setBiometricEnabledState(newValue);
   };
-
-  const themeLabel = THEME_LABELS[currentTheme] ?? 'อบอุ่น';
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
 
@@ -148,24 +98,17 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-        <Section title="ทั่วไป">
-          <SettingsRow icon="color-palette-outline" label="ธีม" value={themeLabel} onPress={() => router.push('/settings/theme')} />
-          {biometricAvailable && (
+        {biometricAvailable && (
+          <Section title="ทั่วไป">
             <SettingsRow
               icon="finger-print-outline"
               label="ล็อกด้วย Face ID/ลายนิ้วมือ"
               value={biometricEnabled ? 'เปิด' : 'ปิด'}
               onPress={handleBiometricToggle}
+              last
             />
-          )}
-          <SettingsRow
-            icon="notifications-outline"
-            label="แจ้งเตือน Push"
-            value={notificationStatus}
-            onPress={() => router.push('/settings/notifications')}
-            last
-          />
-        </Section>
+          </Section>
+        )}
 
         <Section title="กระเป๋าเงิน">
           <SettingsRow

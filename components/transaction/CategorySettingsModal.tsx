@@ -143,7 +143,7 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
               </View>
               <View style={{
                 flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-                backgroundColor: 'rgba(42,35,32,0.03)', borderRadius: 12, padding: 12,
+                backgroundColor: 'rgba(42,35,32,0.03)', borderRadius: 12, padding: 8,
               }}>
                 <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground">
                   ความสูงปัจจุบัน
@@ -152,7 +152,7 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                   <Pressable
                     onPress={() => handleSheetHeight(-1)}
                     style={{
-                      width: 32, height: 32, borderRadius: 16,
+                      width: 38, height: 38, borderRadius: 19,
                       alignItems: 'center', justifyContent: 'center',
                       backgroundColor: addTxSheetHeight <= 50 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
                     }}
@@ -165,7 +165,7 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                   <Pressable
                     onPress={() => handleSheetHeight(1)}
                     style={{
-                      width: 32, height: 32, borderRadius: 16,
+                      width: 38, height: 38, borderRadius: 19,
                       alignItems: 'center', justifyContent: 'center',
                       backgroundColor: addTxSheetHeight >= 95 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
                     }}
@@ -319,7 +319,7 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                   {/* Reorder grid — same style as TransactionForm quick row */}
                   <View style={{ borderRadius: 12, padding: 8 }}>
                     <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#E87A3D', marginBottom: 8, paddingHorizontal: 2 }}>
-                      {selectedId ? 'กดอีกตัวเพื่อสลับตำแหน่ง' : 'กดค้างเพื่อเลือกสลับตำแหน่ง หรือ ลบหมวดหมู่'}
+                      {selectedId ? 'กดอีกตัวเพื่อสลับตำแหน่ง หรือ เลื่อนไปด้านล่างเพิ่อลบ' : 'กดค้าง เพื่อเลือกสลับตำแหน่ง หรือ ลบหมวดหมู่'}
                     </Text>
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
                       {allCommonCats.map((cat, idx) => {

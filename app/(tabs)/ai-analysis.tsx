@@ -1,5 +1,7 @@
 import { GoldCracks, MiawThinking } from '@/assets/svg';
 import { AiResultView } from '@/components/ai/AiResultView';
+import { NotificationsSettingsContent } from '@/components/settings/NotificationsSettingsContent';
+import { ThemeSettingsContent } from '@/components/settings/ThemeSettingsContent';
 import { analyzeFinances, deleteApiKey, getApiKey, getThaiMonthName, setApiKey } from '@/lib/api/ai';
 import { useAiHistoryStore } from '@/lib/stores/ai-history-store';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
@@ -38,7 +40,7 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 type PromptType = 'structured' | 'full';
-type InnerTab = 'ai' | 'data';
+type InnerTab = 'ai' | 'data' | 'theme' | 'notifications';
 type DataTab = 'export' | 'import';
 type DataFormat = 'txt' | 'excel';
 
@@ -220,9 +222,10 @@ function ApiKeyHelpModal({ visible, onClose }: { visible: boolean; onClose: () =
 const mascotPlus = require('@/assets/mascot-cosmic.png');
 
 const PREMIUM_FEATURES: { icon: keyof typeof Ionicons.glyphMap; title: string; desc: string }[] = [
-  { icon: 'sparkles-outline', title: 'AI วิเคราะห์การใช้จ่าย', desc: 'มิวช่วยดูพฤติกรรมการใช้เงิน ทุกสัปดาห์' },
-  { icon: 'download-outline', title: 'Export รายงาน PDF/Excel', desc: 'ส่งให้นักบัญชีหรือเก็บเป็นหลักฐาน' },
-  { icon: 'color-palette-outline', title: 'ธีมพิเศษ + แมวเปลี่ยนชุด', desc: '16 ธีม และชุดมิวตามฤดูกาล' },
+  { icon: 'sparkles-outline', title: 'AI วิเคราะห์การใช้จ่าย', desc: 'แมวช่วยดูพฤติกรรมการใช้เงิน ทุกสัปดาห์' },
+  { icon: 'download-outline', title: 'Export และ Import ข้อมูล Excel/Txt', desc: 'ส่งออกรายงาน หรือนำเข้าข้อมูล' },
+  { icon: 'color-palette-outline', title: 'ธีมพิเศษ + แมวเปลี่ยนชุด', desc: '16 ธีมสี และชุดแมวให้เปลี่ยน' },
+  { icon: 'notifications-outline', title: 'แจ้งเตือน Push', desc: 'เตือนเมื่อใกล้/เกินงบรายวัน รายเดือน' },
 ];
 
 function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
@@ -277,7 +280,7 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
             fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13,
             marginTop: 6, maxWidth: 210,
           }}>
-            บันทึกไม่จำกัด พร้อมฟีเจอร์สุดคุ้มอีก 3 อย่าง
+            บันทึกไม่จำกัด พร้อมฟีเจอร์สุดคุ้มอีก 4 อย่าง
           </Text>
         </View>
 
@@ -1268,31 +1271,42 @@ export default function PremiumScreen() {
         <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 26, letterSpacing: -0.4 }}>Premium</Text>
       </View>
 
-      {/* Segmented tab */}
-      <View style={{
-        marginHorizontal: 16, marginBottom: 14, padding: 4, borderRadius: 14,
-        backgroundColor: '#F5EEE0', flexDirection: 'row', gap: 4,
-      }}>
-        {([['ai', 'sparkles-outline', 'AI วิเคราะห์'], ['data', 'swap-horizontal-outline', 'ข้อมูล']] as const).map(([key, icon, label]) => (
-          <Pressable
-            key={key}
-            onPress={() => setInnerTab(key as InnerTab)}
+      {/* Segmented tabs — 2 rows × 2 tabs */}
+      <View style={{ marginHorizontal: 16, marginBottom: 14, gap: 6 }}>
+        {([
+          [['ai', 'sparkles-outline', 'AI วิเคราะห์'], ['data', 'swap-horizontal-outline', 'ข้อมูล']],
+          [['theme', 'color-palette-outline', 'ธีม'], ['notifications', 'notifications-outline', 'แจ้งเตือน']],
+        ] as const).map((row, rowIdx) => (
+          <View
+            key={rowIdx}
             style={{
-              flex: 1, height: 44, borderRadius: 12,
-              backgroundColor: innerTab === key ? '#E87A3D' : 'transparent',
-              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+              padding: 4, borderRadius: 14,
+              backgroundColor: '#F5EEE0', flexDirection: 'row', gap: 4,
             }}
           >
-            <Ionicons name={icon} size={14} color={innerTab === key ? '#fff' : '#9A8D80'} />
-            <Text style={{
-              fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14.5,
-              color: innerTab === key ? '#fff' : '#9A8D80',
-            }}>{label}</Text>
-          </Pressable>
+            {row.map(([key, icon, label]) => (
+              <Pressable
+                key={key}
+                onPress={() => setInnerTab(key as InnerTab)}
+                style={{
+                  flex: 1, height: 44, borderRadius: 12,
+                  backgroundColor: innerTab === key ? '#E87A3D' : 'transparent',
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }}
+              >
+                <Ionicons name={icon} size={14} color={innerTab === key ? '#fff' : '#9A8D80'} />
+                <Text style={{
+                  fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14.5,
+                  color: innerTab === key ? '#fff' : '#9A8D80',
+                }}>{label}</Text>
+              </Pressable>
+            ))}
+          </View>
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
+      {innerTab === 'ai' || innerTab === 'data' ? (
+        <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
         {innerTab === 'ai' ? (
           <>
             {/* Gemini API Key */}
@@ -1583,7 +1597,12 @@ export default function PremiumScreen() {
             <SpecialImportSection onSuccess={reloadAfterSpecialImport} />
           </View>
         )}
-      </ScrollView>
+        </ScrollView>
+      ) : innerTab === 'theme' ? (
+        <ThemeSettingsContent />
+      ) : (
+        <NotificationsSettingsContent />
+      )}
 
       <HistoryModal
         visible={historyModalVisible}
