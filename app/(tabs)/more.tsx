@@ -1,5 +1,4 @@
 import { AddWalletModal } from '@/components/wallet/AddWalletModal';
-import { deleteApiKey, getApiKey, setApiKey } from '@/lib/api/ai';
 import { getBgMascotSource } from '@/lib/constants/mascots';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useThemeStore } from '@/lib/stores/theme-store';
@@ -9,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const THEME_LABELS: Record<string, string> = {
@@ -95,8 +94,6 @@ export default function SettingsScreen() {
   const bgMascotId = useThemeStore(s => s.currentBgMascot);
   const mascotRun = getBgMascotSource(bgMascotId);
 
-  const [apiKeyStatus, setApiKeyStatus] = useState('ตรวจสอบ...');
-
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometricEnabled, setBiometricEnabledState] = useState(false);
   const [notificationsEnabled, setNotificationsEnabledState] = useState(false);
@@ -106,9 +103,6 @@ export default function SettingsScreen() {
   const isMonthlyTargetEnabled = useAlertSettingsStore(s => s.isMonthlyTargetEnabled);
 
   useEffect(() => {
-    getApiKey().then(key => {
-      setApiKeyStatus(key ? `ตั้งค่าแล้ว (****${key.slice(-4)})` : 'ยังไม่ได้ตั้งค่า');
-    });
     isBiometricAvailable().then(setBiometricAvailable);
     getBiometricEnabled().then(setBiometricEnabledState);
   }, []);
@@ -141,30 +135,6 @@ export default function SettingsScreen() {
     setBiometricEnabledState(newValue);
   };
 
-
-  const handleApiKey = () => {
-    Alert.prompt(
-      'Gemini API Key',
-      'ใส่ API Key จาก Google AI Studio',
-      [
-        { text: 'ยกเลิก', style: 'cancel' },
-        { text: 'ลบ Key', style: 'destructive', onPress: async () => {
-          await deleteApiKey();
-          setApiKeyStatus('ยังไม่ได้ตั้งค่า');
-        }},
-        { text: 'บันทึก', onPress: async (key?: string) => {
-          if (key?.trim()) {
-            await setApiKey(key.trim());
-            setApiKeyStatus(`ตั้งค่าแล้ว (****${key.trim().slice(-4)})`);
-          }
-        }},
-      ],
-      'plain-text',
-      '',
-      'default'
-    );
-  };
-
   const themeLabel = THEME_LABELS[currentTheme] ?? 'อบอุ่น';
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
@@ -180,8 +150,6 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <Section title="ทั่วไป">
           <SettingsRow icon="color-palette-outline" label="ธีม" value={themeLabel} onPress={() => router.push('/settings/theme')} />
-          <SettingsRow icon="key-outline" label="Gemini API Key" value={apiKeyStatus} onPress={handleApiKey} />
-          <SettingsRow icon="sparkles-outline" label="AI วิเคราะห์" value={apiKeyStatus.startsWith('ตั้งค่าแล้ว') ? 'พร้อมใช้งาน' : 'ยังไม่ได้ตั้งค่า'} />
           {biometricAvailable && (
             <SettingsRow
               icon="finger-print-outline"
@@ -195,8 +163,8 @@ export default function SettingsScreen() {
             label="แจ้งเตือน Push"
             value={notificationStatus}
             onPress={() => router.push('/settings/notifications')}
+            last
           />
-          {/* <SettingsRow icon="cash-outline" label="สกุลเงิน" value={`${currency} ฿`} last /> */}
         </Section>
 
         <Section title="กระเป๋าเงิน">

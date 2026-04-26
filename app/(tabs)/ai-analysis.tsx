@@ -1,6 +1,6 @@
 import { GoldCracks, MiawThinking } from '@/assets/svg';
 import { AiResultView } from '@/components/ai/AiResultView';
-import { analyzeFinances, getApiKey, getThaiMonthName } from '@/lib/api/ai';
+import { analyzeFinances, deleteApiKey, getApiKey, getThaiMonthName, setApiKey } from '@/lib/api/ai';
 import { useAiHistoryStore } from '@/lib/stores/ai-history-store';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
@@ -23,7 +23,7 @@ import {
 import type { AiHistory } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
   FadeIn,
@@ -51,6 +51,168 @@ function getPeriodLabel(year: number, month: number | null): string {
   const buddhistYear = year + 543;
   if (month) return `${getThaiMonthName(month)} ${buddhistYear}`;
   return `ปี ${buddhistYear}`;
+}
+
+// ===== Settings Row helpers (for API Key card) =====
+
+function SettingsRow({
+  icon,
+  label,
+  value,
+  onPress,
+  last,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value?: string;
+  onPress?: () => void;
+  last?: boolean;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      className={last ? '' : 'border-b border-border'}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+      }}
+    >
+      <View style={{
+        width: 30, height: 30, borderRadius: 9,
+        backgroundColor: '#E87A3D22',
+        alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Ionicons name={icon} size={16} color="#E87A3D" />
+      </View>
+      <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14.5, flex: 1 }}>{label}</Text>
+      {value !== undefined && (
+        <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }}>{value}</Text>
+      )}
+      {onPress && <Ionicons name="chevron-forward" size={12} color="#A39685" />}
+    </Pressable>
+  );
+}
+
+function SettingsSection({ children }: { children: React.ReactNode }) {
+  return (
+    <View className="bg-card" style={{
+      borderRadius: 20, overflow: 'hidden',
+      shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 16,
+      shadowOffset: { width: 0, height: 4 }, elevation: 2,
+    }}>
+      {children}
+    </View>
+  );
+}
+
+// ===== API Key Help Modal =====
+
+const API_KEY_STEPS: { title: string; desc: string }[] = [
+  { title: 'เข้าสู่ระบบ', desc: 'ไปที่เว็บไซต์ Google AI Studio ด้วยบัญชี Google ของคุณ' },
+  { title: 'เปิดเมนู API', desc: 'ทางด้านซ้ายมือ คลิกที่ปุ่ม "Get API key"' },
+  { title: 'สร้าง Key', desc: 'คลิก "Create API key" — เลือกสร้างในโปรเจกต์ Google Cloud ใหม่ หรือเลือกโปรเจกต์ที่มีอยู่แล้ว' },
+  { title: 'คัดลอก Key', desc: 'เมื่อระบบสร้าง Key สำเร็จ ให้คัดลอกรหัสไปวางในแอปนี้' },
+];
+
+function ApiKeyHelpModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable onPress={onClose} className="flex-1 bg-black/40" />
+      <View className="absolute bottom-0 left-0 right-0 bg-background rounded-t-2xl" style={{ maxHeight: '88%' }}>
+        {/* Handle bar */}
+        <View style={{ alignItems: 'center', paddingTop: 8 }}>
+          <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#D9CFC3' }} />
+        </View>
+
+        {/* Header */}
+        <View className="flex-row items-center justify-between" style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+            <View style={{
+              width: 34, height: 34, borderRadius: 11,
+              backgroundColor: '#E87A3D22',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Ionicons name="key" size={16} color="#E87A3D" />
+            </View>
+            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, flex: 1 }}>
+              วิธีรับ Gemini API Key
+            </Text>
+          </View>
+          <Pressable onPress={onClose} hitSlop={8} style={{ padding: 4 }}>
+            <Ionicons name="close" size={22} color="#9A8D80" />
+          </Pressable>
+        </View>
+
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, paddingTop: 8 }}>
+          <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, lineHeight: 19, marginBottom: 14 }}>
+            ทำตามขั้นตอนด้านล่างเพื่อรับ API Key ฟรีจาก Google AI Studio
+          </Text>
+
+          {/* Steps */}
+          <View style={{ gap: 10, marginBottom: 18 }}>
+            {API_KEY_STEPS.map((step, i) => (
+              <View key={i} className="bg-card" style={{
+                flexDirection: 'row', alignItems: 'flex-start', gap: 12,
+                padding: 14, borderRadius: 16,
+                borderWidth: 1, borderColor: 'rgba(42,35,32,0.08)',
+              }}>
+                <View style={{
+                  width: 28, height: 28, borderRadius: 14,
+                  backgroundColor: '#E87A3D',
+                  alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 13, color: '#fff' }}>{i + 1}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14.5, marginBottom: 2 }}>
+                    {step.title}
+                  </Text>
+                  <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, lineHeight: 19 }}>
+                    {step.desc}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          {/* Link buttons */}
+          <Pressable
+            onPress={() => Linking.openURL('https://aistudio.google.com')}
+            style={{
+              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+              height: 52, borderRadius: 14, marginBottom: 10,
+              backgroundColor: '#E87A3D',
+              shadowColor: '#E87A3D', shadowOpacity: 0.3, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+              elevation: 6,
+            }}
+          >
+            <Ionicons name="open-outline" size={18} color="#fff" />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#fff' }}>
+              เปิด Google AI Studio
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => Linking.openURL('https://ai.google.dev/gemini-api/docs/api-key?hl=th')}
+            style={{
+              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+              height: 52, borderRadius: 14,
+              backgroundColor: 'transparent',
+              borderWidth: 1.5, borderColor: '#E87A3D',
+            }}
+          >
+            <Ionicons name="document-text-outline" size={18} color="#E87A3D" />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#E87A3D' }}>
+              อ่านคู่มือฉบับเต็ม
+            </Text>
+          </Pressable>
+        </ScrollView>
+      </View>
+    </Modal>
+  );
 }
 
 // ===== Premium Paywall =====
@@ -927,6 +1089,8 @@ export default function PremiumScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentResult, setCurrentResult] = useState<{ type: string; data: string; periodLabel: string } | null>(null);
   const [hasApiKey, setHasApiKey] = useState(false);
+  const [apiKeyStatus, setApiKeyStatus] = useState('ตรวจสอบ...');
+  const [apiKeyHelpVisible, setApiKeyHelpVisible] = useState(false);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
 
@@ -960,9 +1124,37 @@ export default function PremiumScreen() {
   }, [selectedMonth]);
 
   useEffect(() => {
-    getApiKey().then(key => setHasApiKey(!!key));
+    getApiKey().then(key => {
+      setHasApiKey(!!key);
+      setApiKeyStatus(key ? `ตั้งค่าแล้ว (****${key.slice(-4)})` : 'ยังไม่ได้ตั้งค่า');
+    });
     loadYears(selectedWalletId);
   }, []);
+
+  const handleApiKey = () => {
+    Alert.prompt(
+      'Gemini API Key',
+      'ใส่ API Key จาก Google AI Studio',
+      [
+        { text: 'ยกเลิก', style: 'cancel' },
+        { text: 'ลบ Key', style: 'destructive', onPress: async () => {
+          await deleteApiKey();
+          setHasApiKey(false);
+          setApiKeyStatus('ยังไม่ได้ตั้งค่า');
+        }},
+        { text: 'บันทึก', onPress: async (key?: string) => {
+          if (key?.trim()) {
+            await setApiKey(key.trim());
+            setHasApiKey(true);
+            setApiKeyStatus(`ตั้งค่าแล้ว (****${key.trim().slice(-4)})`);
+          }
+        }},
+      ],
+      'plain-text',
+      '',
+      'default'
+    );
+  };
 
   useEffect(() => {
     if (availableYears.length > 0) {
@@ -1103,14 +1295,14 @@ export default function PremiumScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
         {innerTab === 'ai' ? (
           <>
-            {!hasApiKey && (
-              <View style={{ marginHorizontal: 16, marginBottom: 14, padding: 12, borderRadius: 12, backgroundColor: 'rgba(239,68,68,0.08)', flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="warning-outline" size={18} color="#EF4444" />
-                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, marginLeft: 8, flex: 1 }}>
-                  กรุณาตั้งค่า Gemini API Key ในหน้าตั้งค่าก่อนใช้งาน
-                </Text>
-              </View>
-            )}
+            {/* Gemini API Key */}
+            <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+              <SettingsSection>
+                <SettingsRow icon="key-outline" label="Gemini API Key" value={apiKeyStatus} onPress={handleApiKey} />
+                <SettingsRow icon="help-circle-outline" label="วิธีรับ Gemini API Key" onPress={() => setApiKeyHelpVisible(true)} />
+                <SettingsRow icon="sparkles-outline" label="AI วิเคราะห์" value={hasApiKey ? 'พร้อมใช้งาน' : 'ยังไม่ได้ตั้งค่า'} last />
+              </SettingsSection>
+            </View>
 
             {/* ปี */}
             <View style={{ marginHorizontal: 16, marginBottom: 6 }}>
@@ -1401,6 +1593,11 @@ export default function PremiumScreen() {
         onView={handleViewHistory}
         onDelete={handleDeleteHistory}
         selectedHistoryId={selectedHistoryId}
+      />
+
+      <ApiKeyHelpModal
+        visible={apiKeyHelpVisible}
+        onClose={() => setApiKeyHelpVisible(false)}
       />
     </SafeAreaView>
   );
