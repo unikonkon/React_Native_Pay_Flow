@@ -63,10 +63,10 @@ export default function AnalyticsScreen() {
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScrollView>
         {/* Header */}
-        <View className="px-4 pt-2 mb-2">
+        <View className="px-4 mb-2">
           <View className="flex-row items-center mb-2 justify-between">
             <View className="flex-row items-center">
-              <Image source={mascotRun} style={{ width: 44, height: 34 }} resizeMode="contain" />
+              <Image source={mascotRun} style={{ width: 50, height: 34 }} resizeMode="contain" />
               <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground ml-2">สรุป</Text>
             </View>
             {/* Wallet filter */}

@@ -92,8 +92,8 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       {/* Header */}
-      <View style={{ paddingHorizontal: 18, paddingTop: 8, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <Image source={mascotRun} style={{ width: 40, height: 40 }} resizeMode="contain" />
+      <View style={{ paddingHorizontal: 18, paddingTop: 2, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <Image source={mascotRun} style={{ width: 50, height: 34 }} resizeMode="contain" />
         <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 26, letterSpacing: -0.4 }}>ตั้งค่า</Text>
       </View>
 
