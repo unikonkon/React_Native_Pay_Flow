@@ -1,5 +1,5 @@
-import { PawPrint } from '@/assets/svg';
 import { CalculatorPad } from '@/components/common/CalculatorPad';
+import { PawPrintIcon } from '@/components/common/PawPrintIcon';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { getDb, getDistinctNotesByCategory, getFrequentAmountsByWallet, getTopCategoryIdsByWallet } from '@/lib/stores/db';
 import { useSettingsStore } from '@/lib/stores/settings-store';
@@ -319,7 +319,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                               transform: [{ rotate: '-18deg' }],
                             }}
                           >
-                            <PawPrint size={22} color="#E87A3D" />
+                            <PawPrintIcon size={22} color="#E87A3D" />
                           </View>
                         )}
                       </View>
@@ -402,7 +402,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                               transform: [{ rotate: '-18deg' }],
                             }}
                           >
-                            <PawPrint size={22} color="#E87A3D" />
+                            <PawPrintIcon size={22} color="#E87A3D" />
                           </View>
                         )}
                       </View>

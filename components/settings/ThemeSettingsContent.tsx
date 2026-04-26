@@ -1,6 +1,7 @@
+import { PawPrintIcon, PAW_VARIANT_OPTIONS } from '@/components/common/PawPrintIcon';
 import { ADD_MASCOTS, BG_MASCOTS, type MascotOption } from '@/lib/constants/mascots';
 import { FAMILIES, type ThemeFamily, type ThemeSwatch } from '@/lib/constants/themes';
-import { useThemeStore } from '@/lib/stores/theme-store';
+import { useThemeStore, type PawPrintVariant } from '@/lib/stores/theme-store';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
@@ -12,6 +13,8 @@ export function ThemeSettingsContent({ showIntro = false }: { showIntro?: boolea
   const setBgMascot = useThemeStore(s => s.setBgMascot);
   const currentAddMascot = useThemeStore(s => s.currentAddMascot);
   const setAddMascot = useThemeStore(s => s.setAddMascot);
+  const pawPrintVariant = useThemeStore(s => s.pawPrintVariant);
+  const setPawPrintVariant = useThemeStore(s => s.setPawPrintVariant);
 
   const handleSelect = (key: string) => {
     if (key === currentTheme) return;
@@ -29,6 +32,12 @@ export function ThemeSettingsContent({ showIntro = false }: { showIntro?: boolea
     if (id === currentAddMascot) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setAddMascot(id);
+  };
+
+  const handleSelectPawVariant = (v: PawPrintVariant) => {
+    if (v === pawPrintVariant) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setPawPrintVariant(v);
   };
 
   return (
@@ -88,6 +97,108 @@ export function ThemeSettingsContent({ showIntro = false }: { showIntro?: boolea
           onSelect={handleSelectAddMascot}
           previewSize={{ width: 132, height: 102 }}
         />
+      </View>
+
+      {/* ===== ตีนแมว ===== */}
+      <View style={{ marginTop: 22 }}>
+        <Text
+          className="text-foreground"
+          style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, marginBottom: 4 }}
+        >
+          ลายตีนแมว
+        </Text>
+        <Text
+          className="text-muted-foreground"
+          style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, marginBottom: 12 }}
+        >
+          ใช้ในแถบแท็บ ปุ่มคำนวณ และเอฟเฟ็กต์เมื่อแตะ
+        </Text>
+
+        <View
+          className="bg-card"
+          style={{
+            borderRadius: 18,
+            padding: 14,
+            shadowColor: '#2A2320',
+            shadowOpacity: 0.05,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 3 },
+            elevation: 2,
+          }}
+        >
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 10, paddingTop: 2, paddingBottom: 2 }}
+          >
+            {PAW_VARIANT_OPTIONS.map((opt) => {
+              const isSelected = opt.id === pawPrintVariant;
+              return (
+                <Pressable
+                  key={opt.id}
+                  onPress={() => handleSelectPawVariant(opt.id)}
+                  style={({ pressed }) => ({
+                    opacity: pressed ? 0.7 : 1,
+                    transform: [{ scale: pressed ? 0.96 : 1 }],
+                  })}
+                  accessibilityRole="button"
+                  accessibilityLabel={`เลือกตีนแมว ${opt.name}`}
+                >
+                  <View
+                    style={{
+                      borderRadius: 12,
+                      borderWidth: 2,
+                      borderColor: isSelected ? '#E87A3D' : 'rgba(42,35,32,0.08)',
+                      backgroundColor: isSelected ? '#FFF6EE' : '#FAF5EC',
+                      paddingVertical: 12,
+                      paddingHorizontal: 8,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 76,
+                      height: 92,
+                    }}
+                  >
+                    <View style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+                      <PawPrintIcon
+                        size={40}
+                        color={isSelected ? '#C85F28' : '#9A8D80'}
+                        variant={opt.id}
+                      />
+                    </View>
+                    <Text
+                      style={{
+                        fontFamily: isSelected ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                        fontSize: 11,
+                        marginTop: 6,
+                        color: isSelected ? '#C85F28' : '#9A8D80',
+                      }}
+                      numberOfLines={1}
+                    >
+                      {opt.name}
+                    </Text>
+                    {isSelected && (
+                      <View
+                        style={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4,
+                          width: 18,
+                          height: 18,
+                          borderRadius: 9,
+                          backgroundColor: '#E87A3D',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Ionicons name="checkmark" size={12} color="#fff" />
+                      </View>
+                    )}
+                  </View>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
       </View>
     </ScrollView>
   );

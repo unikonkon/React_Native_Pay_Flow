@@ -1,4 +1,4 @@
-import { PawPrint } from '@/assets/svg/decorations/PawPrint';
+import { PawPrintIcon } from '@/components/common/PawPrintIcon';
 import { forwardRef, useImperativeHandle } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, {
@@ -47,7 +47,7 @@ export const PawPrintTapEffect = forwardRef<PawPrintTapEffectHandle, PawPrintTap
     return (
       <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.center]}>
         <Animated.View style={animatedStyle}>
-          <PawPrint size={size} color={color} />
+          <PawPrintIcon size={size} color={color} />
         </Animated.View>
       </Animated.View>
     );

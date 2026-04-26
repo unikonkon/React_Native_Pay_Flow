@@ -1,4 +1,4 @@
-import { PawPrint } from '@/assets/svg';
+import { PawPrintIcon } from '@/components/common/PawPrintIcon';
 import { HapticTab } from '@/components/layout/HapticTab';
 import { getTabBarBackgroundColor } from '@/lib/constants/themes';
 import { useThemeStore } from '@/lib/stores/theme-store';
@@ -66,7 +66,7 @@ function TabIcon({ icon, color, focused }: {
       {icon}
       {focused && (
         <View style={{ marginTop: 2 }}>
-          <PawPrint size={8} color="#E87A3D" />
+          <PawPrintIcon size={13} color="#E87A3D" />
         </View>
       )}
     </View>

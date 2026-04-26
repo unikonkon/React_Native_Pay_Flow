@@ -9,4 +9,4 @@ export { MiawCelebrating } from './mascot/MiawCelebrating';
 export { GoldCracks } from './decorations/GoldCracks';
 export { Sparkles } from './decorations/Sparkles';
 export { CosmicTail } from './decorations/CosmicTail';
-export { PawPrint } from './decorations/PawPrint';
+export { PawPrint, PawPrintDetailed, PawPrintHeart, PawPrintOutlined, PawPrintWithClaws } from './decorations/PawPrint';

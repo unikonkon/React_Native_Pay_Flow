@@ -1,4 +1,4 @@
-import { PawPrint } from '@/assets/svg';
+import { PawPrintIcon } from '@/components/common/PawPrintIcon';
 import type { TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -238,7 +238,7 @@ export function CalculatorPad({
                       }],
                     }}
                   >
-                    <PawPrint size={32} color="#E87A3D" />
+                    <PawPrintIcon size={32} color="#E87A3D" />
                   </Animated.View>
                 )}
               </Pressable>
@@ -270,7 +270,7 @@ export function CalculatorPad({
                 ],
               }}
             >
-              <PawPrint size={28} color="#E87A3D" />
+              <PawPrintIcon size={28} color="#E87A3D" />
             </Animated.View>
           )}
         </Pressable>
@@ -295,7 +295,7 @@ export function CalculatorPad({
                 ],
               }}
             >
-              <PawPrint size={28} color="#E87A3D" />
+              <PawPrintIcon size={28} color="#E87A3D" />
             </Animated.View>
           )}
         </Pressable>
