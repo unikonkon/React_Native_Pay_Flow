@@ -121,7 +121,7 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable onPress={onClose} className="flex-1 bg-black/40 items-center justify-center">
-        <Pressable onPress={(e) => e.stopPropagation()} className="w-11/12 max-w-md bg-card rounded-3xl border border-border" style={{ maxHeight: '80%' }}>
+        <Pressable onPress={(e) => e.stopPropagation()} className="w-11/12 max-w-md bg-card rounded-3xl border border-border" style={{ maxHeight: '85%' }}>
           {/* Header */}
           <View className="flex-row items-center justify-between" style={{ padding: 16, paddingBottom: 8 }}>
             <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }} className="text-foreground">ตั้งค่าหมวดหมู่</Text>
@@ -130,7 +130,13 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
             </Pressable>
           </View>
 
-          <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={{ flexShrink: 1 }}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
+            showsVerticalScrollIndicator={false}
+            nestedScrollEnabled
+            keyboardShouldPersistTaps="handled"
+          >
 
             {/* Section: ความสูงของหน้าต่าง */}
             <View style={{ marginBottom: 10 }}>

@@ -241,7 +241,7 @@ export default function TransactionsScreen() {
         onSelect={handleFrequentSelect}
       />
 
-      <View className="">
+      <View className="pb-44">
         <TransactionList
           transactions={transactions}
           onItemPress={handleItemPress}
