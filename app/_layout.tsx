@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
 import { IBMPlexSansThai_400Regular, IBMPlexSansThai_600SemiBold, IBMPlexSansThai_700Bold } from '@expo-google-fonts/ibm-plex-sans-thai';
 import { Inter_400Regular, Inter_700Bold, Inter_900Black } from '@expo-google-fonts/inter';
 import { useDatabase } from '@/lib/stores/db';
@@ -24,6 +25,8 @@ import '@/global.css';
 export const unstable_settings = {
   anchor: '(tabs)',
 };
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const DARK_THEMES = ['warm-dark', 'sakura-dark', 'ocean-dark', 'forest-dark', 'midnight', 'plum-dark', 'honey', 'emerald-dark'];
 
@@ -84,32 +87,16 @@ export default function RootLayout() {
     if (success) setIsLocked(false);
   }, []);
 
-  if (!isReady || checkingBiometric || !fontsLoaded) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
+  const ready = isReady && !checkingBiometric && fontsLoaded;
 
-  if (isLocked) {
-    return (
-      <View
-        className="flex-1 bg-background"
-        style={[{ justifyContent: 'center', alignItems: 'center' }, getThemeVars(currentTheme)]}
-      >
-        <Ionicons name="lock-closed" size={64} color="#E87A3D" />
-        <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 20, marginTop: 16 }}>MiawMoney</Text>
-        <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14, marginTop: 4 }}>กรุณาปลดล็อกเพื่อใช้งาน</Text>
-        <Pressable
-          onPress={handleUnlock}
-          className="bg-primary"
-          style={{ marginTop: 24, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 999 }}
-        >
-          <Text className="text-primary-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16 }}>ปลดล็อก</Text>
-        </Pressable>
-      </View>
-    );
+  useEffect(() => {
+    if (ready) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [ready]);
+
+  if (!ready) {
+    return null;
   }
 
   const statusBarStyle = DARK_THEMES.includes(currentTheme) ? 'light' : 'dark';
@@ -134,6 +121,26 @@ export default function RootLayout() {
         <Stack.Screen name="settings/notifications" options={{ headerShown: false }} />
         <Stack.Screen name="settings/data-transfer" options={{ title: 'ส่งออก / นำเข้าข้อมูล', headerBackTitle: 'กลับ' }} />
       </Stack>
+      {isLocked && (
+        <View
+          className="bg-background"
+          style={{
+            position: 'absolute', top: 0, bottom: 0, left: 0, right: 0,
+            justifyContent: 'center', alignItems: 'center',
+          }}
+        >
+          <Ionicons name="lock-closed" size={64} color="#E87A3D" />
+          <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 20, marginTop: 16 }}>MiawMoney</Text>
+          <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14, marginTop: 4 }}>กรุณาปลดล็อกเพื่อใช้งาน</Text>
+          <Pressable
+            onPress={handleUnlock}
+            className="bg-primary"
+            style={{ marginTop: 24, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 999 }}
+          >
+            <Text className="text-primary-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16 }}>ปลดล็อก</Text>
+          </Pressable>
+        </View>
+      )}
       <StatusBar style={statusBarStyle} />
     </GestureHandlerRootView>
   );
