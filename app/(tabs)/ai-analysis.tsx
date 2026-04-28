@@ -272,7 +272,7 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
           </View>
           <Text className="text-muted-foreground" style={{
             fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 24,
-            marginTop: 10, letterSpacing: -0.4, lineHeight: 30,
+            marginTop: 6, letterSpacing: -0.1, lineHeight: 39,
           }}>
             {'ปลดล็อกพลังทั้งหมด\nของแมวกันเถอะ'}
           </Text>
@@ -292,9 +292,14 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
             width: 328, height: 188,
             transform: [{ rotate: '-8deg' }],
             zIndex: 1,
+            shadowColor: '#2A2320',
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.42,
+            shadowRadius: 28,
           }}
           resizeMode="contain"
         />
+  
       </View>
 
       {/* Feature list */}
@@ -1029,6 +1034,7 @@ function SpecialImportSection({ onSuccess }: { onSuccess: () => void | Promise<v
             <ResultRow label="กระเป๋าเงิน" count={result.wallets} extra={result.walletsRenamed > 0 ? `เปลี่ยนชื่อ ${result.walletsRenamed}` : undefined} />
             <ResultRow label="หมวดหมู่ใหม่" count={result.categories} />
             <ResultRow label="ธุรกรรม" count={result.transactions} />
+            <ResultRow label="รายการที่ใช้บ่อย" count={result.analysis} />
           </View>
         </View>
       )}
@@ -1075,11 +1081,17 @@ export default function PremiumScreen() {
   const reloadWallets = useWalletStore(s => s.loadWallets);
   const reloadCategories = useCategoryStore(s => s.loadCategories);
   const reloadTransactions = useTransactionStore(s => s.loadTransactions);
+  const reloadAnalysis = useAnalysisStore(s => s.loadAnalysis);
   const { histories, addHistory, deleteHistory } = useAiHistoryStore();
 
   const reloadAfterSpecialImport = useCallback(async () => {
-    await Promise.all([reloadWallets(), reloadCategories(), reloadTransactions()]);
-  }, [reloadWallets, reloadCategories, reloadTransactions]);
+    await Promise.all([
+      reloadWallets(),
+      reloadCategories(),
+      reloadTransactions(),
+      reloadAnalysis(),
+    ]);
+  }, [reloadWallets, reloadCategories, reloadTransactions, reloadAnalysis]);
 
   const currentYear = new Date().getFullYear() + 543;
 

@@ -457,10 +457,11 @@ export async function insertTransaction(
     note?: string;
     date: string;
     walletId?: string;
+    createdAt?: string;
   },
 ) {
   const id = generateId();
-  const createdAt = new Date().toISOString();
+  const createdAt = data.createdAt ?? new Date().toISOString();
 
   await db.runAsync(
     `INSERT INTO transactions (id, type, amount, category_id, note, date, created_at, wallet_id)

@@ -243,7 +243,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, paddingHorizontal: 14 }}>
         {/* Amount display + selected category — fixed */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 16, paddingBottom: 8, justifyContent: 'center', position: 'relative' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 6, paddingBottom: 8, justifyContent: 'center', position: 'relative' }}>
           {/* Selected category at far left */}
           <View style={{ position: 'absolute', left: 0, justifyContent: 'center', height: '100%', minWidth: 60, alignItems: 'flex-start' }}>
             {selectedCategory && (

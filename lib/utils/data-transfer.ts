@@ -1,4 +1,4 @@
-import { getDb } from '@/lib/stores/db';
+import { getDb, insertTransaction, upsertAnalysis } from '@/lib/stores/db';
 import { generateId } from '@/lib/utils/id';
 import type { Transaction, TransactionType, WalletType } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -669,6 +669,7 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
   let walletsRenamed = 0;
   let categoriesImported = 0;
   let transactionsImported = 0;
+  let analysisImported = 0;
 
   try {
     await db.withTransactionAsync(async () => {
@@ -745,16 +746,49 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
         existingWallets[0]?.id ??
         'wallet-cash';
 
+      // Track which (wallet, type, category, amount, note) combos already had
+      // analysis rows before this import — we count newly-created rows for the
+      // result. Existing rows just get their `count` incremented.
+      const seenAnalysisKeys = new Set<string>();
+      const analysisKey = (
+        walletId: string, type: TransactionType, categoryId: string,
+        amount: number, note: string | undefined,
+      ) => `${walletId}|${type}|${categoryId}|${amount}|${note ?? ''}`;
+
+      // Mirror transaction-store.addTransaction() exactly: insertTransaction()
+      // then upsertAnalysis() so each imported row goes through the same code
+      // path as a manual add via TransactionForm. createdAt is preserved from
+      // the source file so historical sort order stays intact.
       for (const t of parsed.transactions) {
         const walletId = walletNameToId.get(t.walletName) ?? fallbackWalletId;
         const categoryId = await ensureCategory(t.categoryName, t.type, null);
-        const txId = generateId();
-        await db.runAsync(
-          `INSERT INTO transactions (id, type, amount, category_id, note, date, created_at, wallet_id)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-          [txId, t.type, t.amount, categoryId, t.note ?? null, t.date, t.createdAt, walletId],
-        );
+
+        const txId = await insertTransaction(db, {
+          type: t.type,
+          amount: t.amount,
+          categoryId,
+          note: t.note,
+          date: t.date,
+          walletId,
+          createdAt: t.createdAt,
+        });
         transactionsImported++;
+
+        const matchType: 'basic' | 'full' = t.note ? 'full' : 'basic';
+        await upsertAnalysis(db, {
+          walletId,
+          categoryId,
+          type: t.type,
+          amount: t.amount,
+          note: t.note,
+          transactionId: txId,
+        }, matchType);
+
+        const key = analysisKey(walletId, t.type, categoryId, t.amount, t.note);
+        if (!seenAnalysisKeys.has(key)) {
+          seenAnalysisKeys.add(key);
+          analysisImported++;
+        }
       }
     });
 
@@ -764,7 +798,7 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
       walletsRenamed,
       categories: categoriesImported,
       transactions: transactionsImported,
-      analysis: 0,
+      analysis: analysisImported,
       aiHistory: 0,
       settingsRestored: false,
     };
