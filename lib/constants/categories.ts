@@ -136,114 +136,31 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
 
 // ===== หมวดหมู่เสริม (ไม่ได้ใช้เป็นค่าเริ่มต้นแล้ว) =====
 // เคยอยู่ใน DEFAULT_EXPENSE_CATEGORIES แต่ถูกตัดออกเพื่อให้เหลือ 16 หมวดที่
-// จำเป็นสำหรับวัยทำงาน หากต้องการเปิดใช้ ให้ย้ายกลับเข้า array ด้านบน
-// และปรับ sortOrder ให้ต่อจาก 15 ตามลำดับ
-/*
-  {
-    id: "exp-fuel",
-    name: "น้ำมัน",
-    icon: "flame",
-    color: "#F0A830",
-    type: "expense",
-    sortOrder: 99,
-  },
-  {
-    id: "exp-electricity",
-    name: "ค่าไฟ",
-    icon: "bulb",
-    color: "#F0A830",
-    type: "expense",
-    sortOrder: 99,
-  },
-  {
-    id: "exp-water",
-    name: "ค่าน้ำ",
-    icon: "water",
-    color: "#8AC5C5",
-    type: "expense",
-    sortOrder: 99,
-  },
-  {
-    id: "exp-internet",
-    name: "ค่าอินเทอร์เน็ต",
-    icon: "wifi",
-    color: "#6B4A9E",
-    type: "expense",
-    sortOrder: 99,
-  },
-  {
-    id: "exp-public-transport",
-    name: "ขนส่งสาธารณะ",
-    icon: "bus",
-    color: "#8AC5C5",
-    type: "expense",
-    sortOrder: 99,
-  },
-  {
-    id: "exp-clothing",
-    name: "เสื้อผ้า",
-    icon: "shirt",
-    color: "#F59FB8",
-    type: "expense",
-    sortOrder: 99,
-  },
-  {
-    id: "exp-exercise",
-    name: "ออกกำลังกาย",
-    icon: "barbell",
-    color: "#9FC9A8",
-    type: "expense",
-    sortOrder: 99,
-  },
-  {
-    id: "exp-games",
-    name: "เกม",
-    icon: "game-controller",
-    color: "#F5D988",
-    type: "expense",
-    sortOrder: 99,
-  },
-  {
-    id: "exp-subscription",
-    name: "Subscription",
-    icon: "tv",
-    color: "#B5A8DB",
-    type: "expense",
-    sortOrder: 99,
-  },
-  {
-    id: "exp-social",
-    name: "สังสรรค์",
-    icon: "wine",
-    color: "#F5B8BC",
-    type: "expense",
-    sortOrder: 99,
-  },
-  {
-    id: "exp-gifts",
-    name: "ของขวัญ",
-    icon: "gift",
-    color: "#E8B547",
-    type: "expense",
-    sortOrder: 99,
-  },
-  {
-    id: "exp-education",
-    name: "การศึกษา",
-    icon: "school",
-    color: "#B5A8DB",
-    type: "expense",
-    sortOrder: 99,
-  },
-  {
-    id: "exp-pets",
-    name: "สัตว์เลี้ยง",
-    icon: "paw",
-    color: "#F5A185",
-    type: "expense",
-    sortOrder: 99,
-  },
-*/
+// จำเป็นสำหรับวัยทำงาน — ใช้เป็นรายการ "หมวดแนะนำ" ในหน้าเพิ่มหมวดเอง
+// (AddCategoryModal) เพื่อให้ผู้ใช้กดเลือกแล้วเติม name/icon/color ให้ทันที
+export const SUGGESTED_EXPENSE_CATEGORIES: {
+  name: string;
+  icon: string;
+  color: string;
+}[] = [
+  { name: "น้ำมัน", icon: "flame", color: "#F0A830" },
+  { name: "ค่าไฟ", icon: "bulb", color: "#F0A830" },
+  { name: "ค่าน้ำ", icon: "water", color: "#8AC5C5" },
+  { name: "ค่าอินเทอร์เน็ต", icon: "wifi", color: "#6B4A9E" },
+  { name: "ขนส่งสาธารณะ", icon: "bus", color: "#8AC5C5" },
+  { name: "เสื้อผ้า", icon: "shirt", color: "#F59FB8" },
+  { name: "ออกกำลังกาย", icon: "barbell", color: "#9FC9A8" },
+  { name: "เกม", icon: "game-controller", color: "#F5D988" },
+  { name: "Subscription", icon: "tv", color: "#B5A8DB" },
+  { name: "สังสรรค์", icon: "wine", color: "#F5B8BC" },
+  { name: "ของขวัญ", icon: "gift", color: "#E8B547" },
+  { name: "การศึกษา", icon: "school", color: "#B5A8DB" },
+  { name: "สัตว์เลี้ยง", icon: "paw", color: "#F5A185" },
+  { name: "ค่าซ่อมแซม/บำรุงรักษา", icon: "construct", color: "#4A7FC1" },
+  { name: "บริจาค", icon: "heart-circle", color: "#F59FB8" },
+  { name: "ค่าทางด่วน/ที่จอดรถ", icon: "car-sport", color: "#8AC5C5" },
+  { name: "ค่าดูแลบุตร/เด็ก", icon: "body", color: "#F59FB8" },
+];
 
 // 14 Income Categories (ตามเอกสาร MOBILE-APP-ARCHITECTURE.md section 9.2)
 export const DEFAULT_INCOME_CATEGORIES: Omit<Category, "isCustom">[] = [

@@ -1,8 +1,9 @@
+import { SUGGESTED_EXPENSE_CATEGORIES } from '@/lib/constants/categories';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import type { TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 interface Props {
@@ -27,6 +28,7 @@ const COLOR_OPTIONS = [
 
 export function AddCategoryModal({ visible, type, onClose }: Props) {
   const addCategory = useCategoryStore(s => s.addCategory);
+  const categories = useCategoryStore(s => s.categories);
   const [name, setName] = useState('');
   const [icon, setIcon] = useState(ICON_OPTIONS[0]);
   const [color, setColor] = useState(COLOR_OPTIONS[0]);
@@ -40,6 +42,21 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
       setSaving(false);
     }
   }, [visible]);
+
+  const suggestions = useMemo(() => {
+    if (type !== 'expense') return [];
+    const existing = new Set(
+      categories.filter(c => c.type === 'expense').map(c => c.name.trim())
+    );
+    return SUGGESTED_EXPENSE_CATEGORIES.filter(s => !existing.has(s.name));
+  }, [type, categories]);
+
+  const applySuggestion = (s: { name: string; icon: string; color: string }) => {
+    Haptics.selectionAsync();
+    setName(s.name);
+    setIcon(s.icon);
+    setColor(s.color);
+  };
 
   const handleSave = async () => {
     const trimmed = name.trim();
@@ -69,8 +86,91 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
             </Pressable>
           </View>
 
-          <ScrollView className="max-h-[590px]" keyboardShouldPersistTaps="handled">
-            <View className="items-center mb-4">
+          <ScrollView className="max-h-[700px]" keyboardShouldPersistTaps="handled">
+            {suggestions.length > 0 && (
+              <View style={{ marginBottom: 14 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 6 }}>
+                  <Ionicons name="sparkles" size={13} color="#E87A3D" />
+                  <Text
+                    className="text-foreground"
+                    style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }}
+                  >
+                    หมวดที่แนะนำ
+                  </Text>
+                  <Text
+                    className="text-muted-foreground"
+                    style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }}
+                  >
+                    · กดเพื่อใช้ทันที
+                  </Text>
+                </View>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={{ paddingVertical: 2, paddingRight: 4 }}
+                >
+                  <View style={{ flexDirection: 'column', gap: 6 }}>
+                    {[0, 1].map((row) => (
+                      <View key={row} style={{ flexDirection: 'row', gap: 6 }}>
+                        {suggestions.filter((_, i) => i % 2 === row).map((s) => (
+                          <Pressable
+                            key={s.name}
+                            onPress={() => applySuggestion(s)}
+                            style={({ pressed }) => ({
+                              opacity: pressed ? 0.75 : 1,
+                              transform: [{ scale: pressed ? 0.97 : 1 }],
+                            })}
+                            accessibilityRole="button"
+                            accessibilityLabel={`ใช้หมวดแนะนำ ${s.name}`}
+                          >
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                gap: 6,
+                                paddingLeft: 4,
+                                paddingRight: 10,
+                                paddingVertical: 4,
+                                borderRadius: 999,
+                                backgroundColor: s.color + '1F',
+                                borderWidth: 1,
+                                borderColor: s.color + '55',
+                              }}
+                            >
+                              <View
+                                style={{
+                                  width: 22,
+                                  height: 22,
+                                  borderRadius: 11,
+                                  backgroundColor: s.color,
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                <Ionicons
+                                  name={s.icon as keyof typeof Ionicons.glyphMap}
+                                  size={13}
+                                  color="#fff"
+                                />
+                              </View>
+                              <Text
+                                className="text-foreground"
+                                style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12.5 }}
+                              >
+                                {s.name}
+                              </Text>
+                            </View>
+                          </Pressable>
+                        ))}
+                      </View>
+                    ))}
+                  </View>
+                </ScrollView>
+              </View>
+            )}
+
+            <View className="items-center">
               <View
                 className="w-16 h-16 rounded-full items-center justify-center"
                 style={{ backgroundColor: color }}

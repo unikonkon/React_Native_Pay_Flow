@@ -318,9 +318,26 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
 
                   {/* Reorder grid — same style as TransactionForm quick row */}
                   <View style={{ borderRadius: 12, padding: 8 }}>
-                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#E87A3D', marginBottom: 8, paddingHorizontal: 2 }}>
-                      {selectedId ? 'กดอีกตัวเพื่อสลับตำแหน่ง หรือ เลื่อนไปด้านล่างเพิ่อลบ' : 'กดค้าง เพื่อเลือกสลับตำแหน่ง หรือ ลบหมวดหมู่'}
-                    </Text>
+                    {selectedId ? (
+                      <View style={{ marginBottom: 8, paddingHorizontal: 2 }}>
+                        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#E87A3D', marginBottom: 2, textAlign: 'center' }}>
+                          กดอีกตัวเพื่อสลับตำแหน่ง
+                        </Text>
+                        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9D3A1D', textAlign: 'center' }}>
+                          หรือเลื่อนไปด้านล่างเพื่อลบ (หมวดหมู่เริ่มต้นลบไม่ได้)
+                        </Text>
+                      </View>
+                    ) : (
+                      <View style={{ marginBottom: 8, paddingHorizontal: 2 }}>
+                        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#E87A3D', marginBottom: 2, textAlign: 'center' }}>
+                          กดค้างเพื่อเลือกสลับตำแหน่ง
+                        </Text>
+                        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#B66B13', textAlign: 'center' }}>
+                          หรือกดค้างเพื่อลบหมวดหมู่
+                        </Text>
+                      </View>
+                    )}
+               
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
                       {allCommonCats.map((cat, idx) => {
                         const isVisible = idx < commonCategoryLimit;
