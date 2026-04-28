@@ -1,3 +1,4 @@
+import { CAT_CATEGORY_ICON_KEYS, CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { SUGGESTED_EXPENSE_CATEGORIES } from '@/lib/constants/categories';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import type { TransactionType } from '@/types';
@@ -12,13 +13,9 @@ interface Props {
   onClose: () => void;
 }
 
-const ICON_OPTIONS = [
-  'cart', 'fast-food', 'cafe', 'car', 'bus', 'home', 'bulb', 'water',
-  'wifi', 'phone-portrait', 'basket', 'shirt', 'bag', 'medkit', 'barbell',
-  'film', 'game-controller', 'tv', 'people', 'heart', 'gift', 'school',
-  'book', 'airplane', 'shield-checkmark', 'card', 'paw', 'briefcase',
-  'sparkles', 'trending-up', 'cash', 'wallet', 'pricetag', 'star',
-];
+// Use the full set of cat-themed icons exported from CatCategoryIcon as a
+// single source of truth — keeps modal and the rest of the app in sync.
+const ICON_OPTIONS = CAT_CATEGORY_ICON_KEYS;
 
 const COLOR_OPTIONS = [
   '#FF6B6B', '#F59E0B', '#FACC15', '#84CC16', '#22C55E', '#14B8A6',
@@ -30,7 +27,7 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
   const addCategory = useCategoryStore(s => s.addCategory);
   const categories = useCategoryStore(s => s.categories);
   const [name, setName] = useState('');
-  const [icon, setIcon] = useState(ICON_OPTIONS[0]);
+  const [icon, setIcon] = useState<string>(ICON_OPTIONS[0]);
   const [color, setColor] = useState(COLOR_OPTIONS[0]);
   const [saving, setSaving] = useState(false);
 
@@ -138,22 +135,7 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
                                 borderColor: s.color + '55',
                               }}
                             >
-                              <View
-                                style={{
-                                  width: 22,
-                                  height: 22,
-                                  borderRadius: 11,
-                                  backgroundColor: s.color,
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                }}
-                              >
-                                <Ionicons
-                                  name={s.icon as keyof typeof Ionicons.glyphMap}
-                                  size={13}
-                                  color="#fff"
-                                />
-                              </View>
+                              <CatCategoryIcon kind={s.icon} bg={s.color} size={22} />
                               <Text
                                 className="text-foreground"
                                 style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12.5 }}
@@ -171,12 +153,7 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
             )}
 
             <View className="items-center">
-              <View
-                className="w-16 h-16 rounded-full items-center justify-center"
-                style={{ backgroundColor: color }}
-              >
-                <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={30} color="white" />
-              </View>
+              <CatCategoryIcon kind={icon} bg={color} size={64} />
             </View>
 
             <Text className="text-foreground font-semibold mb-2" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>ชื่อ</Text>
@@ -199,10 +176,11 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
                     onPress={() => setIcon(ic)}
                     className={`w-10 h-10 rounded-full items-center justify-center border ${active ? 'border-primary bg-primary/10' : 'border-border bg-background'}`}
                   >
-                    <Ionicons
-                      name={ic as keyof typeof Ionicons.glyphMap}
-                      size={18}
-                      color={active ? '#E87A3D' : '#666'}
+                    <CatCategoryIcon
+                      kind={ic}
+                      size={26}
+                      strokeColor={active ? '#E87A3D' : '#9A8D80'}
+                      bare
                     />
                   </Pressable>
                 );

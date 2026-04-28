@@ -1,3 +1,4 @@
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { getDb } from '@/lib/stores/db';
 import { useSettingsStore } from '@/lib/stores/settings-store';
@@ -357,12 +358,14 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                               borderColor: isSelected ? '#E87A3D' : (isTarget ? 'rgba(232,122,61,0.3)' : 'transparent'),
                             }}>
                               <View style={{
-                                width: 40, height: 40, borderRadius: 23,
-                                backgroundColor: isVisible ? cat.color : '#D1C7BC',
-                                alignItems: 'center', justifyContent: 'center',
                                 opacity: isSelected ? 1 : (isVisible ? (isTarget ? 0.85 : 1) : 0.5),
                               }}>
-                                <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color={isVisible ? 'white' : '#F5F0E8'} />
+                                <CatCategoryIcon
+                                  kind={cat.icon}
+                                  bg={isVisible ? cat.color : '#D1C7BC'}
+                                  size={40}
+                                  strokeColor={isVisible ? '#FFFFFF' : '#F5F0E8'}
+                                />
                               </View>
                             </View>
                             <Text

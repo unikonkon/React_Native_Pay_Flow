@@ -1,4 +1,5 @@
 import { CalculatorPad } from '@/components/common/CalculatorPad';
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { PawPrintIcon } from '@/components/common/PawPrintIcon';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { getDb, getDistinctNotesByCategory, getFrequentAmountsByWallet, getTopCategoryIdsByWallet } from '@/lib/stores/db';
@@ -248,9 +249,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           <View style={{ position: 'absolute', left: 0, justifyContent: 'center', height: '100%', minWidth: 60, alignItems: 'flex-start' }}>
             {selectedCategory && (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: selectedCategory.color, alignItems: 'center', justifyContent: 'center' }}>
-                  <Ionicons name={selectedCategory.icon as keyof typeof Ionicons.glyphMap} size={10} color="white" />
-                </View>
+                <CatCategoryIcon kind={selectedCategory.icon} bg={selectedCategory.color} size={20} />
                 <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }}>
                   {selectedCategory.name}
                 </Text>
@@ -303,12 +302,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                         padding: sel ? 2 : 0, borderRadius: 999,
                         borderWidth: 2, borderColor: sel ? '#E87A3D' : 'transparent',
                       }}>
-                        <View
-                          className="rounded-full items-center justify-center"
-                          style={{ width: 46, height: 46, backgroundColor: cat.color }}
-                        >
-                          <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
-                        </View>
+                        <CatCategoryIcon kind={cat.icon} bg={cat.color} size={46} />
                         {sel && (
                           <View
                             pointerEvents="none"
@@ -386,12 +380,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                         padding: sel ? 2 : 0, borderRadius: 999,
                         borderWidth: 2, borderColor: sel ? '#E87A3D' : 'transparent',
                       }}>
-                        <View
-                          className="rounded-full items-center justify-center"
-                          style={{ width: 46, height: 46, backgroundColor: cat.color }}
-                        >
-                          <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
-                        </View>
+                        <CatCategoryIcon kind={cat.icon} bg={cat.color} size={46} />
                         {sel && (
                           <View
                             pointerEvents="none"

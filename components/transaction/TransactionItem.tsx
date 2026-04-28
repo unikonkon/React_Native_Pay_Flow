@@ -1,7 +1,7 @@
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { type PawPrintTapEffectHandle } from '@/components/ui/PawPrintTapEffect';
 import { formatCurrency } from '@/lib/utils/format';
 import type { Transaction } from '@/types';
-import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRef } from 'react';
 import { Pressable, Text, View } from 'react-native';
@@ -41,11 +41,8 @@ export function TransactionItem({ item, onPress, onLongPress }: TransactionItemP
       android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
       className="flex-row items-center py-3 px-4 bg-card border-b border-border"
     >
-      <View
-        className="w-10 h-10 rounded-full items-center justify-center mr-3"
-        style={{ backgroundColor: color }}
-      >
-        <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={20} color="white" />
+      <View className="mr-3">
+        <CatCategoryIcon kind={icon} size={40} bg={color} />
       </View>
 
       <View className="flex-1">

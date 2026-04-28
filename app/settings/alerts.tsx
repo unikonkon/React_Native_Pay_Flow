@@ -1,6 +1,7 @@
 import { View, Text, Pressable, ScrollView, Switch, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { formatCurrency } from '@/lib/utils/format';
@@ -89,8 +90,8 @@ export default function AlertsScreen() {
                     { text: 'ลบ', style: 'destructive', onPress: () => removeCategoryLimit(limit.categoryId) },
                   ]);
                 }} className="flex-row items-center px-4 py-3 bg-card border-b border-border">
-                  <View className="w-8 h-8 rounded-full items-center justify-center mr-3" style={{ backgroundColor: cat.color }}>
-                    <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={16} color="white" />
+                  <View className="mr-3">
+                    <CatCategoryIcon kind={cat.icon} bg={cat.color} size={32} />
                   </View>
                   <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 15 }} className="text-foreground flex-1">{cat.name}</Text>
                   <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 15, fontVariant: ['tabular-nums'] }} className="text-foreground">{formatCurrency(limit.limit)}</Text>

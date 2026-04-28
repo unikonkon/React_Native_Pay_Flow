@@ -1,5 +1,6 @@
 import { formatCurrency } from '@/lib/utils/format';
 import type { Category, CategorySummary, Period } from '@/types';
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
@@ -154,7 +155,7 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
                   elevation: 2,
                 }}
               >
-                <Ionicons name={arc.icon} size={14} color={arc.color} />
+                <CatCategoryIcon kind={arc.icon} size={20} strokeColor={arc.color} bare />
               </View>
             ))}
             {/* Segment name labels (outside the ring) */}
@@ -298,16 +299,12 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
                 paddingVertical: 14, paddingHorizontal: 16,
               }}
             >
-              <View
-                className="rounded-full items-center justify-center"
-                style={{ width: 44, height: 44, backgroundColor: color + '20' }}
-              >
-                <Ionicons
-                  name={(item.category?.icon ?? 'help-circle') as keyof typeof Ionicons.glyphMap}
-                  size={18}
-                  color={color}
-                />
-              </View>
+              <CatCategoryIcon
+                kind={item.category?.icon ?? 'help-circle'}
+                size={44}
+                bg={color + '20'}
+                strokeColor={color}
+              />
               <View style={{ flex: 1 }}>
                 <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, marginBottom: 6 }} className="text-foreground">{item.category?.name ?? 'อื่น ๆ'}</Text>
                 {/* Progress bar */}

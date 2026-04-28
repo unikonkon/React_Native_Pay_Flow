@@ -1,3 +1,4 @@
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { getDb, getTransactionsByCategoryAndRange } from '@/lib/stores/db';
 import { formatCurrency } from '@/lib/utils/format';
 import { getPeriodRange } from '@/lib/utils/period';
@@ -110,12 +111,12 @@ export function CategoryCalendarModal({ visible, onClose, category, period, wall
         <View style={{ paddingTop: 56, paddingBottom: 12, paddingHorizontal: 16, backgroundColor: category.color + '15' }}>
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center flex-1">
-              <View
-                className="rounded-full items-center justify-center"
-                style={{ width: 40, height: 40, backgroundColor: category.color + '25' }}
-              >
-                <Ionicons name={category.icon as keyof typeof Ionicons.glyphMap} size={18} color={category.color} />
-              </View>
+              <CatCategoryIcon
+                kind={category.icon}
+                bg={category.color + '25'}
+                strokeColor={category.color}
+                size={40}
+              />
               <View className="ml-3 flex-1">
                 <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }} className="text-foreground">{category.name}</Text>
                 <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">

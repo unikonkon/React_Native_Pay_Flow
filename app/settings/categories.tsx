@@ -1,6 +1,7 @@
 import { View, Text, Pressable, SectionList, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import type { Category, TransactionType } from '@/types';
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -107,8 +108,8 @@ export default function CategoriesScreen() {
       onLongPress={() => handleDelete(item)}
       className="flex-row items-center px-4 py-3 bg-card border-b border-border"
     >
-      <View className="w-9 h-9 rounded-full items-center justify-center mr-3" style={{ backgroundColor: item.color }}>
-        <Ionicons name={item.icon as keyof typeof Ionicons.glyphMap} size={18} color="white" />
+      <View className="mr-3">
+        <CatCategoryIcon kind={item.icon} bg={item.color} size={36} />
       </View>
       <Text className="text-foreground flex-1" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>{item.name}</Text>
       {item.isCustom && (

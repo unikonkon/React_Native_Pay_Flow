@@ -4,6 +4,7 @@ import { getDb, getFrequentAmountsByWallet } from '@/lib/stores/db';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { formatCurrency } from '@/lib/utils/format';
 import type { Analysis, Category } from '@/types';
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
@@ -74,16 +75,11 @@ function FrequentItem({ analysis, category, onSelect }: FrequentItemProps) {
       className="items-center"
       style={{ width: 56 }}
     >
-      <View
-        className="w-14 h-14 rounded-full items-center justify-center"
-        style={{ backgroundColor: category?.color ?? '#999' }}
-      >
-        <Ionicons
-          name={(category?.icon ?? 'help-circle') as keyof typeof Ionicons.glyphMap}
-          size={24}
-          color="white"
-        />
-      </View>
+      <CatCategoryIcon
+        kind={category?.icon ?? 'ellipsis-horizontal'}
+        bg={category?.color ?? '#999'}
+        size={56}
+      />
       <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-foreground text-center mt-1.5" numberOfLines={1}>
         {analysis.note || category?.name || 'อื่นๆ'}
       </Text>

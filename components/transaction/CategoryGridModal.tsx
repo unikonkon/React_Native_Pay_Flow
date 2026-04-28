@@ -1,3 +1,4 @@
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import type { Category, TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -47,15 +48,13 @@ export function CategoryGridModal({ visible, categories, selectedId, type, onSel
                     className="items-center mb-3"
                   >
                     <View
-                      className="rounded-full items-center justify-center"
                       style={{
-                        width: 50, height: 50,
-                        backgroundColor: cat.color,
+                        borderRadius: 25,
                         borderWidth: isSelected ? 2.5 : 0,
                         borderColor: '#E87A3D',
                       }}
                     >
-                      <Ionicons name={cat.icon as keyof typeof Ionicons.glyphMap} size={22} color="white" />
+                      <CatCategoryIcon kind={cat.icon} bg={cat.color} size={50} />
                     </View>
                     <Text
                       style={{

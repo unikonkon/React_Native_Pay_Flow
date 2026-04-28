@@ -1,3 +1,4 @@
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { PawPrintTapEffect, type PawPrintTapEffectHandle } from '@/components/ui/PawPrintTapEffect';
 import { formatCurrency } from '@/lib/utils/format';
 import type { Transaction } from '@/types';
@@ -73,12 +74,7 @@ export function TransactionGroupItem({
         elevation: 2,
       }}
     >
-      <View
-        className="rounded-full items-center justify-center"
-        style={{ width: 38, height: 38, backgroundColor: color }}
-      >
-        <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={18} color="white" />
-      </View>
+      <CatCategoryIcon kind={icon} size={38} bg={color} />
 
       <View className="flex-1" style={{ minWidth: 0 }}>
         <View className="flex-row items-center" style={{ gap: 7 }}>

@@ -1,3 +1,4 @@
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { getDb, getTopAnalysesByWallet, getTopCategoryIdsByWallet } from '@/lib/stores/db';
@@ -260,11 +261,8 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
         </Text>
         {tab === 'select' && selectedCat && (
           <View className="flex-row items-center px-3 py-1 rounded-full bg-primary/10 border border-primary">
-            <View
-              className="w-5 h-5 rounded-full items-center justify-center mr-1.5"
-              style={{ backgroundColor: selectedCat.color }}
-            >
-              <Ionicons name={selectedCat.icon as keyof typeof Ionicons.glyphMap} size={12} color="white" />
+            <View className="mr-1.5">
+              <CatCategoryIcon kind={selectedCat.icon} bg={selectedCat.color} size={20} />
             </View>
             <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }} className="text-primary">{selectedCat.name}</Text>
           </View>
@@ -396,14 +394,9 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                             className="items-center mb-2"
                           >
                             <View
-                              className={`w-12 h-12 rounded-full items-center justify-center ${isSelected ? 'border-2 border-primary' : ''}`}
-                              style={{ backgroundColor: cat.color }}
+                              className={`rounded-full ${isSelected ? 'border-2 border-primary' : ''}`}
                             >
-                              <Ionicons
-                                name={cat.icon as keyof typeof Ionicons.glyphMap}
-                                size={22}
-                                color="white"
-                              />
+                              <CatCategoryIcon kind={cat.icon} bg={cat.color} size={48} />
                             </View>
                             <Text
                               style={{ fontFamily: isSelected ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 11, textAlign: 'center' }}
@@ -436,14 +429,9 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                               className={`flex-row items-center py-1.5 px-1 rounded-2xl border ${isActive ? 'border-primary bg-primary/10' : 'border-border bg-card'}`}
                             >
                               <View
-                                className={`w-8 h-8 rounded-full items-center justify-center mr-2 ${isActive ? 'border-2 border-primary' : ''}`}
-                                style={{ backgroundColor: cat.color }}
+                                className={`rounded-full mr-2 ${isActive ? 'border-2 border-primary' : ''}`}
                               >
-                                <Ionicons
-                                  name={cat.icon as keyof typeof Ionicons.glyphMap}
-                                  size={16}
-                                  color="white"
-                                />
+                                <CatCategoryIcon kind={cat.icon} bg={cat.color} size={32} />
                               </View>
                               <View className="flex-1">
                                 <Text
@@ -493,15 +481,9 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                     className="items-center mb-2"
                   >
                     <View
-                      className={`w-14 h-14 rounded-full items-center justify-center ${isSelected ? 'border-2 border-primary' : ''
-                        }`}
-                      style={{ backgroundColor: cat.color }}
+                      className={`rounded-full ${isSelected ? 'border-2 border-primary' : ''}`}
                     >
-                      <Ionicons
-                        name={cat.icon as keyof typeof Ionicons.glyphMap}
-                        size={26}
-                        color="white"
-                      />
+                      <CatCategoryIcon kind={cat.icon} bg={cat.color} size={56} />
                     </View>
                     <Text
                       style={{ fontFamily: isSelected ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular', fontSize: 12, textAlign: 'center' }}
@@ -530,15 +512,10 @@ export function CategoryPicker({ categories, selectedId, onSelect, type, walletI
                       className="items-center mb-2"
                     >
                       <View
-                        className={`w-14 h-14 rounded-full items-center justify-center ${isPicked ? 'border-2 border-primary opacity-60' : isTarget ? 'border-2 border-dashed border-primary/50' : ''
-                          }`}
-                        style={{ backgroundColor: cat.color }}
+                        className={`rounded-full ${isPicked ? 'border-2 border-primary opacity-60' : isTarget ? 'border-2 border-dashed border-primary/50' : ''}`}
+                        style={{ position: 'relative' }}
                       >
-                        <Ionicons
-                          name={cat.icon as keyof typeof Ionicons.glyphMap}
-                          size={26}
-                          color="white"
-                        />
+                        <CatCategoryIcon kind={cat.icon} bg={cat.color} size={56} />
                         {cat.isCustom ? (
                           <Pressable
                             onPress={() => handleDelete(cat)}
