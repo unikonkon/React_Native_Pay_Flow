@@ -19,9 +19,9 @@ const DEFAULT_SETTINGS: Settings = {
   showCommonCategories: true,
   showTopCategories: false,
   showFrequentPills: true,
-  commonCategoryLimit: 10,
+  commonCategoryLimit: 7,
   topCategoryLimit: 8,
-  addTxSheetHeight: 87,
+  addTxSheetHeight: 90,
 };
 
 interface SettingsStore extends Settings {

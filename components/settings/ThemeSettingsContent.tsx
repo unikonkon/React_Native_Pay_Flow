@@ -1,10 +1,19 @@
-import { PawPrintIcon, PAW_VARIANT_OPTIONS } from '@/components/common/PawPrintIcon';
+import { PAW_VARIANT_OPTIONS, PawPrintIcon } from '@/components/common/PawPrintIcon';
 import { ADD_MASCOTS, BG_MASCOTS, type MascotOption } from '@/lib/constants/mascots';
 import { FAMILIES, type ThemeFamily, type ThemeSwatch } from '@/lib/constants/themes';
 import { useThemeStore, type PawPrintVariant } from '@/lib/stores/theme-store';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+
+type ThemeOption = { swatch: ThemeSwatch; family: ThemeFamily; isDark: boolean };
+
+const LIGHT_OPTIONS: ThemeOption[] = FAMILIES.flatMap((family) =>
+  family.light ? [{ swatch: family.light, family, isDark: false }] : []
+);
+const DARK_OPTIONS: ThemeOption[] = FAMILIES.flatMap((family) =>
+  family.dark ? [{ swatch: family.dark, family, isDark: true }] : []
+);
 
 export function ThemeSettingsContent({ showIntro = false }: { showIntro?: boolean }) {
   const currentTheme = useThemeStore(s => s.currentTheme);
@@ -51,17 +60,21 @@ export function ThemeSettingsContent({ showIntro = false }: { showIntro?: boolea
         </Text>
       )}
 
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-        {FAMILIES.map((family) => (
-          <View key={family.id} style={{ width: '48.5%' }}>
-            <FamilyCard
-              family={family}
-              currentTheme={currentTheme}
-              onSelect={handleSelect}
-            />
-          </View>
-        ))}
-      </View>
+      <ThemeRow
+        label="โหมดสว่าง"
+        icon="sunny"
+        options={LIGHT_OPTIONS}
+        currentTheme={currentTheme}
+        onSelect={handleSelect}
+      />
+      <View style={{ height: 12 }} />
+      <ThemeRow
+        label="โหมดมืด"
+        icon="moon"
+        options={DARK_OPTIONS}
+        currentTheme={currentTheme}
+        onSelect={handleSelect}
+      />
 
       {/* ===== ตัวการ์ตูน ===== */}
       <View style={{ marginTop: 22 }}>
@@ -320,112 +333,64 @@ function MascotPickerSection({
   );
 }
 
-// ===== Family card with Light/Dark pair =====
+// ===== Horizontal theme row (label + scrollable cards) =====
 
-function FamilyCard({
-  family,
+function ThemeRow({
+  label,
+  icon,
+  options,
   currentTheme,
   onSelect,
 }: {
-  family: ThemeFamily;
+  label: string;
+  icon: 'sunny' | 'moon';
+  options: ThemeOption[];
   currentTheme: string;
   onSelect: (key: string) => void;
 }) {
-  const isActiveFamily =
-    (family.light && family.light.key === currentTheme) ||
-    (family.dark && family.dark.key === currentTheme);
-
   return (
-    <View
-      className="bg-card"
-      style={{
-        borderRadius: 20,
-        padding: 14,
-        shadowColor: '#2A2320',
-        shadowOpacity: 0.05,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 3 },
-        elevation: 2,
-        borderWidth: isActiveFamily ? 1.5 : 0,
-        borderColor: isActiveFamily ? '#E87A3D' : 'transparent',
-      }}
-    >
-      {/* Family header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 10 }}>
-        <View
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            backgroundColor: (family.light ?? family.dark!).accent,
-            borderWidth: 1,
-            borderColor: 'rgba(42,35,32,0.06)',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+    <View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6, paddingHorizontal: 2 }}>
+        <Ionicons name={icon} size={13} color="#7A6A50" />
+        <Text
+          className="text-foreground"
+          style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12.5 }}
         >
-          <View
-            style={{
-              width: 14,
-              height: 14,
-              borderRadius: 7,
-              backgroundColor: (family.light ?? family.dark!).primary,
-            }}
+          {label}
+        </Text>
+      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 10, paddingVertical: 4, paddingRight: 4 }}
+      >
+        {options.map(({ swatch, family, isDark }) => (
+          <ThemeListItem
+            key={swatch.key}
+            swatch={swatch}
+            family={family}
+            isDark={isDark}
+            selected={swatch.key === currentTheme}
+            onPress={() => onSelect(swatch.key)}
           />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text
-            style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15.5 }}
-            className="text-foreground"
-          >
-            {family.name}
-          </Text>
-          <Text
-            style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 1 }}
-            className="text-muted-foreground"
-          >
-            {family.description}
-          </Text>
-        </View>
-      </View>
-
-      {/* Light/Dark preview row */}
-      <View style={{ flexDirection: 'row', gap: 10 }}>
-        <View style={{ flex: 1 }}>
-          {family.light ? (
-            <PreviewSwatch
-              swatch={family.light}
-              label="สว่าง"
-              selected={family.light.key === currentTheme}
-              onPress={() => onSelect(family.light!.key)}
-            />
-          ) : null}
-        </View>
-        <View style={{ flex: 1 }}>
-          {family.dark ? (
-            <PreviewSwatch
-              swatch={family.dark}
-              label="มืด"
-              selected={family.dark.key === currentTheme}
-              onPress={() => onSelect(family.dark!.key)}
-            />
-          ) : null}
-        </View>
-      </View>
+        ))}
+      </ScrollView>
     </View>
   );
 }
 
-// ===== Single swatch preview (mock UI card) =====
+// ===== Horizontal theme list item — preview UI on left, summary on right =====
 
-function PreviewSwatch({
+function ThemeListItem({
   swatch,
-  label,
+  family,
+  isDark,
   selected,
   onPress,
 }: {
   swatch: ThemeSwatch;
-  label: string;
+  family: ThemeFamily;
+  isDark: boolean;
   selected: boolean;
   onPress: () => void;
 }) {
@@ -433,122 +398,174 @@ function PreviewSwatch({
     <Pressable
       onPress={onPress}
       style={({ pressed }) => ({
-        flex: 1,
-        opacity: pressed ? 0.85 : 1,
+        opacity: pressed ? 0.9 : 1,
         transform: [{ scale: pressed ? 0.98 : 1 }],
       })}
+      accessibilityRole="button"
+      accessibilityLabel={`เลือกธีม ${family.name} ${isDark ? 'มืด' : 'สว่าง'}`}
     >
       <View
         style={{
-          borderRadius: 14,
-          overflow: 'hidden',
+          width: 268,
+          flexDirection: 'row',
+          gap: 10,
+          padding: 10,
+          borderRadius: 18,
           borderWidth: 2,
           borderColor: selected ? swatch.primary : 'rgba(42,35,32,0.08)',
+          backgroundColor: '#FFFFFF',
+          shadowColor: '#2A2320',
+          shadowOpacity: 0.05,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 3 },
+          elevation: 2,
         }}
       >
-        {/* Mock UI preview */}
-        <View style={{ backgroundColor: swatch.bg, padding: 10, minHeight: 92 }}>
-          {/* Mini "card" row */}
+        {/* === Mini UI preview (left) === */}
+        <View
+          style={{
+            width: 96,
+            height: 90,
+            borderRadius: 12,
+            overflow: 'hidden',
+            backgroundColor: swatch.bg,
+            padding: 8,
+            borderWidth: 1,
+            borderColor: swatch.border,
+          }}
+        >
+          {/* Mock card row */}
           <View
             style={{
               backgroundColor: swatch.card,
-              borderRadius: 8,
-              padding: 7,
+              borderRadius: 6,
+              padding: 6,
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 6,
+              gap: 5,
             }}
           >
-            <View
-              style={{
-                width: 16,
-                height: 16,
-                borderRadius: 8,
-                backgroundColor: swatch.primary,
-              }}
-            />
-            <View style={{ flex: 1, gap: 3 }}>
-              <View
-                style={{
-                  height: 3,
-                  borderRadius: 2,
-                  backgroundColor: swatch.ink,
-                  opacity: 0.85,
-                  width: '70%',
-                }}
-              />
-              <View
-                style={{
-                  height: 2.5,
-                  borderRadius: 1.5,
-                  backgroundColor: swatch.inkMuted,
-                  width: '45%',
-                }}
-              />
+            <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: swatch.primary }} />
+            <View style={{ flex: 1, gap: 2.5 }}>
+              <View style={{ height: 3, borderRadius: 1.5, backgroundColor: swatch.ink, opacity: 0.85, width: '75%' }} />
+              <View style={{ height: 2.5, borderRadius: 1, backgroundColor: swatch.inkMuted, width: '50%' }} />
             </View>
           </View>
 
-          {/* Mini accent band */}
+          {/* Mock accent strip */}
           <View
             style={{
-              marginTop: 8,
-              height: 18,
-              borderRadius: 6,
+              marginTop: 6,
+              height: 16,
+              borderRadius: 5,
               backgroundColor: swatch.accent,
               flexDirection: 'row',
               alignItems: 'center',
-              paddingHorizontal: 6,
+              paddingHorizontal: 5,
               gap: 4,
             }}
           >
-            <View
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: 3,
-                backgroundColor: swatch.primary,
-              }}
-            />
-            <View
-              style={{
-                flex: 1,
-                height: 3,
-                borderRadius: 2,
-                backgroundColor: swatch.ink,
-                opacity: 0.3,
-              }}
-            />
+            <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: swatch.primary }} />
+            <View style={{ flex: 1, height: 2.5, borderRadius: 1, backgroundColor: swatch.ink, opacity: 0.3 }} />
+          </View>
+
+          {/* Mock tab bar */}
+          <View
+            style={{
+              marginTop: 6,
+              height: 16,
+              borderRadius: 5,
+              backgroundColor: swatch.backgroundColorTab,
+              borderWidth: 1,
+              borderColor: swatch.border,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-around',
+              paddingHorizontal: 4,
+            }}
+          >
+            <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: swatch.primary }} />
+            <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: swatch.inkMuted }} />
+            <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: swatch.inkMuted }} />
           </View>
         </View>
 
-        {/* Label footer — uses swatch's own colors so the preview reflects the theme */}
-        <View
-          style={{
-            paddingVertical: 7,
-            paddingHorizontal: 10,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            backgroundColor: selected ? swatch.primary : swatch.card,
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <Ionicons
-              name={label === 'สว่าง' ? 'sunny' : 'moon'}
-              size={13}
-              color={selected ? '#fff' : swatch.inkMuted}
-            />
+        {/* === Summary (right) === */}
+        <View style={{ flex: 1, paddingTop: 2 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             <Text
+              className="text-foreground"
+              style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14.5 }}
+              numberOfLines={1}
+            >
+              {family.name}
+            </Text>
+            <View
               style={{
-                fontFamily: 'IBMPlexSansThai_600SemiBold',
-                fontSize: 12,
-                color: selected ? '#fff' : swatch.ink,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 3,
+                backgroundColor: isDark ? '#2A2320' : '#F3EADB',
+                paddingHorizontal: 6,
+                paddingVertical: 2,
+                borderRadius: 6,
               }}
             >
-              {label}
-            </Text>
+              <Ionicons
+                name={isDark ? 'moon' : 'sunny'}
+                size={9}
+                color={isDark ? '#F5EDE0' : '#7A6A50'}
+              />
+              <Text
+                style={{
+                  fontFamily: 'IBMPlexSansThai_600SemiBold',
+                  fontSize: 9.5,
+                  color: isDark ? '#F5EDE0' : '#5A4830',
+                }}
+              >
+                {isDark ? 'มืด' : 'สว่าง'}
+              </Text>
+            </View>
           </View>
-          {selected && <Ionicons name="checkmark-circle" size={15} color="#fff" />}
+
+          {/* Color dots */}
+          <View style={{ flexDirection: 'row', gap: 5, marginTop: 8 }}>
+            {[swatch.bg, swatch.card, swatch.accent, swatch.primary, swatch.ink].map((c, i) => (
+              <View
+                key={i}
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: 7,
+                  backgroundColor: c,
+                  borderWidth: 0.5,
+                  borderColor: 'rgba(42,35,32,0.15)',
+                }}
+              />
+            ))}
+          </View>
+
+          {selected && (
+            <View
+              style={{
+                marginTop: 8,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 3,
+              }}
+            >
+              <Ionicons name="checkmark-circle" size={13} color={swatch.primary} />
+              <Text
+                style={{
+                  fontFamily: 'IBMPlexSansThai_600SemiBold',
+                  fontSize: 11,
+                  color: swatch.primary,
+                }}
+              >
+                ใช้งานอยู่
+              </Text>
+            </View>
+          )}
         </View>
       </View>
     </Pressable>

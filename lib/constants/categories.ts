@@ -1,6 +1,8 @@
 import type { Category } from "@/types";
 
-// 30 Expense Categories (ตามเอกสาร MOBILE-APP-ARCHITECTURE.md section 9.1)
+// 16 Essential Expense Categories — เลือกเฉพาะที่จำเป็นสำหรับวัยทำงาน
+// (อาหาร, การเดินทาง, ที่อยู่อาศัย/utility, ช้อปปิ้ง, สุขภาพ, บันเทิง,
+//  ประกัน/ผ่อน/ภาษี และ "อื่นๆ" สำหรับใช้รวมหมวดที่ไม่เข้าหมวด)
 export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
   {
     id: "exp-food",
@@ -27,20 +29,12 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
     sortOrder: 2,
   },
   {
-    id: "exp-fuel",
-    name: "น้ำมัน",
-    icon: "flame",
-    color: "#F0A830",
+    id: "exp-family",
+    name: "ครอบครัว",
+    icon: "people",
+    color: "#F5B8BC",
     type: "expense",
     sortOrder: 3,
-  },
-  {
-    id: "exp-public-transport",
-    name: "ขนส่งสาธารณะ",
-    icon: "bus",
-    color: "#8AC5C5",
-    type: "expense",
-    sortOrder: 4,
   },
   {
     id: "exp-rent",
@@ -48,31 +42,7 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
     icon: "home",
     color: "#D4A544",
     type: "expense",
-    sortOrder: 5,
-  },
-  {
-    id: "exp-electricity",
-    name: "ค่าไฟ",
-    icon: "bulb",
-    color: "#F0A830",
-    type: "expense",
-    sortOrder: 6,
-  },
-  {
-    id: "exp-water",
-    name: "ค่าน้ำ",
-    icon: "water",
-    color: "#8AC5C5",
-    type: "expense",
-    sortOrder: 7,
-  },
-  {
-    id: "exp-internet",
-    name: "ค่าอินเทอร์เน็ต",
-    icon: "wifi",
-    color: "#6B4A9E",
-    type: "expense",
-    sortOrder: 8,
+    sortOrder: 4,
   },
   {
     id: "exp-phone",
@@ -80,7 +50,7 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
     icon: "phone-portrait",
     color: "#4A7FC1",
     type: "expense",
-    sortOrder: 9,
+    sortOrder: 5,
   },
   {
     id: "exp-personal",
@@ -88,15 +58,7 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
     icon: "basket",
     color: "#FFB3C7",
     type: "expense",
-    sortOrder: 10,
-  },
-  {
-    id: "exp-clothing",
-    name: "เสื้อผ้า",
-    icon: "shirt",
-    color: "#F59FB8",
-    type: "expense",
-    sortOrder: 11,
+    sortOrder: 6,
   },
   {
     id: "exp-shopping",
@@ -104,7 +66,7 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
     icon: "bag",
     color: "#F59FB8",
     type: "expense",
-    sortOrder: 12,
+    sortOrder: 7,
   },
   {
     id: "exp-health",
@@ -112,15 +74,7 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
     icon: "medkit",
     color: "#9FC9A8",
     type: "expense",
-    sortOrder: 13,
-  },
-  {
-    id: "exp-exercise",
-    name: "ออกกำลังกาย",
-    icon: "barbell",
-    color: "#9FC9A8",
-    type: "expense",
-    sortOrder: 14,
+    sortOrder: 8,
   },
   {
     id: "exp-entertainment",
@@ -128,31 +82,7 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
     icon: "film",
     color: "#F5D988",
     type: "expense",
-    sortOrder: 15,
-  },
-  {
-    id: "exp-games",
-    name: "เกม",
-    icon: "game-controller",
-    color: "#F5D988",
-    type: "expense",
-    sortOrder: 16,
-  },
-  {
-    id: "exp-subscription",
-    name: "Subscription",
-    icon: "tv",
-    color: "#B5A8DB",
-    type: "expense",
-    sortOrder: 17,
-  },
-  {
-    id: "exp-family",
-    name: "ครอบครัว",
-    icon: "people",
-    color: "#F5B8BC",
-    type: "expense",
-    sortOrder: 18,
+    sortOrder: 9,
   },
   {
     id: "exp-date",
@@ -160,31 +90,7 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
     icon: "heart",
     color: "#FFB3C7",
     type: "expense",
-    sortOrder: 19,
-  },
-  {
-    id: "exp-social",
-    name: "สังสรรค์",
-    icon: "wine",
-    color: "#F5B8BC",
-    type: "expense",
-    sortOrder: 20,
-  },
-  {
-    id: "exp-gifts",
-    name: "ของขวัญ",
-    icon: "gift",
-    color: "#E8B547",
-    type: "expense",
-    sortOrder: 21,
-  },
-  {
-    id: "exp-education",
-    name: "การศึกษา",
-    icon: "school",
-    color: "#B5A8DB",
-    type: "expense",
-    sortOrder: 22,
+    sortOrder: 10,
   },
   {
     id: "exp-travel",
@@ -192,7 +98,7 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
     icon: "airplane",
     color: "#8AC5C5",
     type: "expense",
-    sortOrder: 23,
+    sortOrder: 11,
   },
   {
     id: "exp-insurance",
@@ -200,7 +106,7 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
     icon: "shield-checkmark",
     color: "#A39685",
     type: "expense",
-    sortOrder: 24,
+    sortOrder: 12,
   },
   {
     id: "exp-installment",
@@ -208,7 +114,7 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
     icon: "card",
     color: "#6B4A9E",
     type: "expense",
-    sortOrder: 26,
+    sortOrder: 13,
   },
   {
     id: "exp-tax",
@@ -216,15 +122,7 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
     icon: "business",
     color: "#A39685",
     type: "expense",
-    sortOrder: 26,
-  },
-  {
-    id: "exp-pets",
-    name: "สัตว์เลี้ยง",
-    icon: "paw",
-    color: "#F5A185",
-    type: "expense",
-    sortOrder: 27,
+    sortOrder: 14,
   },
   {
     id: "exp-other",
@@ -232,9 +130,120 @@ export const DEFAULT_EXPENSE_CATEGORIES: Omit<Category, "isCustom">[] = [
     icon: "ellipsis-horizontal",
     color: "#A39685",
     type: "expense",
-    sortOrder: 28,
+    sortOrder: 15,
   },
 ];
+
+// ===== หมวดหมู่เสริม (ไม่ได้ใช้เป็นค่าเริ่มต้นแล้ว) =====
+// เคยอยู่ใน DEFAULT_EXPENSE_CATEGORIES แต่ถูกตัดออกเพื่อให้เหลือ 16 หมวดที่
+// จำเป็นสำหรับวัยทำงาน หากต้องการเปิดใช้ ให้ย้ายกลับเข้า array ด้านบน
+// และปรับ sortOrder ให้ต่อจาก 15 ตามลำดับ
+/*
+  {
+    id: "exp-fuel",
+    name: "น้ำมัน",
+    icon: "flame",
+    color: "#F0A830",
+    type: "expense",
+    sortOrder: 99,
+  },
+  {
+    id: "exp-electricity",
+    name: "ค่าไฟ",
+    icon: "bulb",
+    color: "#F0A830",
+    type: "expense",
+    sortOrder: 99,
+  },
+  {
+    id: "exp-water",
+    name: "ค่าน้ำ",
+    icon: "water",
+    color: "#8AC5C5",
+    type: "expense",
+    sortOrder: 99,
+  },
+  {
+    id: "exp-internet",
+    name: "ค่าอินเทอร์เน็ต",
+    icon: "wifi",
+    color: "#6B4A9E",
+    type: "expense",
+    sortOrder: 99,
+  },
+  {
+    id: "exp-public-transport",
+    name: "ขนส่งสาธารณะ",
+    icon: "bus",
+    color: "#8AC5C5",
+    type: "expense",
+    sortOrder: 99,
+  },
+  {
+    id: "exp-clothing",
+    name: "เสื้อผ้า",
+    icon: "shirt",
+    color: "#F59FB8",
+    type: "expense",
+    sortOrder: 99,
+  },
+  {
+    id: "exp-exercise",
+    name: "ออกกำลังกาย",
+    icon: "barbell",
+    color: "#9FC9A8",
+    type: "expense",
+    sortOrder: 99,
+  },
+  {
+    id: "exp-games",
+    name: "เกม",
+    icon: "game-controller",
+    color: "#F5D988",
+    type: "expense",
+    sortOrder: 99,
+  },
+  {
+    id: "exp-subscription",
+    name: "Subscription",
+    icon: "tv",
+    color: "#B5A8DB",
+    type: "expense",
+    sortOrder: 99,
+  },
+  {
+    id: "exp-social",
+    name: "สังสรรค์",
+    icon: "wine",
+    color: "#F5B8BC",
+    type: "expense",
+    sortOrder: 99,
+  },
+  {
+    id: "exp-gifts",
+    name: "ของขวัญ",
+    icon: "gift",
+    color: "#E8B547",
+    type: "expense",
+    sortOrder: 99,
+  },
+  {
+    id: "exp-education",
+    name: "การศึกษา",
+    icon: "school",
+    color: "#B5A8DB",
+    type: "expense",
+    sortOrder: 99,
+  },
+  {
+    id: "exp-pets",
+    name: "สัตว์เลี้ยง",
+    icon: "paw",
+    color: "#F5A185",
+    type: "expense",
+    sortOrder: 99,
+  },
+*/
 
 // 14 Income Categories (ตามเอกสาร MOBILE-APP-ARCHITECTURE.md section 9.2)
 export const DEFAULT_INCOME_CATEGORIES: Omit<Category, "isCustom">[] = [

@@ -204,7 +204,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
       <View className="flex-row items-center" style={{ paddingHorizontal: 14, paddingBottom: 1, gap: 8 }}>
         <Pressable
           onPress={() => setShowSettingsModal(true)}
-          style={{ width: 82, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' }}
+          style={{ width: 82, height: 44, borderRadius: 17, alignItems: 'center', justifyContent: 'center' }}
           className="bg-secondary"
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, padding: 3 }}>
@@ -234,7 +234,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
 
         <Pressable
           onPress={onClose}
-          style={{ width: 62, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' }}
+          style={{ width: 62, height: 44, borderRadius: 17, alignItems: 'center', justifyContent: 'center' }}
           className="bg-secondary"
         >
           <Ionicons name="close" size={16} color="#9A8D80" />
@@ -602,7 +602,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                 color: '#2A2320',
                 paddingVertical: 0,
                 paddingRight: 6,
-                minHeight: 24,
+                maxHeight: 16,
                 minWidth: 56,
               }}
             />
