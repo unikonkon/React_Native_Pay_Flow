@@ -143,6 +143,9 @@ export const SUGGESTED_EXPENSE_CATEGORIES: {
   icon: string;
   color: string;
 }[] = [
+  { name: "ก๋วยเตี๋ยว", icon: "noodles", color: "#B8856B" },
+  { name: "ของหวาน", icon: "dessert", color: "#FFB3C7" },
+  { name: "ผลไม้", icon: "fruit", color: "#F5A185" },
   { name: "น้ำมัน", icon: "flame", color: "#F0A830" },
   { name: "ค่าไฟ", icon: "bulb", color: "#F0A830" },
   { name: "ค่าน้ำ", icon: "water", color: "#8AC5C5" },
@@ -157,9 +160,16 @@ export const SUGGESTED_EXPENSE_CATEGORIES: {
   { name: "การศึกษา", icon: "school", color: "#B5A8DB" },
   { name: "สัตว์เลี้ยง", icon: "paw", color: "#F5A185" },
   { name: "ค่าซ่อมแซม/บำรุงรักษา", icon: "construct", color: "#4A7FC1" },
-  { name: "บริจาค", icon: "heart-circle", color: "#F59FB8" },
+  { name: "ทำบุญ/บริจาค", icon: "donate", color: "#F5A185" },
   { name: "ค่าทางด่วน/ที่จอดรถ", icon: "car-sport", color: "#8AC5C5" },
   { name: "ค่าดูแลบุตร/เด็ก", icon: "body", color: "#F59FB8" },
+  { name: "ซักผ้า", icon: "laundry", color: "#8AC5C5" },
+  { name: "เงินเดือน", icon: "salary", color: "#F0A830" },
+  { name: "Amway", icon: "network", color: "#B5A8DB" },
+  { name: "ออมเงิน", icon: "savings", color: "#FFB3C7" },
+  { name: "ออมทอง", icon: "gold-coin", color: "#E8B547" },
+  { name: "หนังสือ", icon: "notebook", color: "#B5A8DB" },
+  { name: "อยากสวย", icon: "beauty", color: "#F59FB8" },
 ];
 
 // 14 Income Categories (ตามเอกสาร MOBILE-APP-ARCHITECTURE.md section 9.2)
@@ -281,4 +291,19 @@ export const DEFAULT_INCOME_CATEGORIES: Omit<Category, "isCustom">[] = [
 export const ALL_DEFAULT_CATEGORIES = [
   ...DEFAULT_EXPENSE_CATEGORIES,
   ...DEFAULT_INCOME_CATEGORIES,
+];
+
+// ===== Color palette for the category color picker =====
+// Curated warm/pastel palette pulled from the colors actually used across
+// DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES, and
+// SUGGESTED_EXPENSE_CATEGORIES — keeps user-created categories visually
+// cohesive with the seeded defaults instead of clashing saturated hues.
+// Grouped by hue family for a tidy 3×6 grid in `AddCategoryModal`.
+export const CATEGORY_COLOR_OPTIONS: string[] = [
+  // warm / orange / yellow
+  '#F5A185', '#E87A3D', '#F0A830', '#E8B547', '#D4A544', '#F5D988',
+  // brown / pink / red
+  '#B8856B', '#F59FB8', '#FFB3C7', '#F5B8BC', '#E11D48', '#9FC9A8',
+  // green / blue / purple / neutral
+  '#5CB88A', '#3E8B68', '#8AC5C5', '#4A7FC1', '#B5A8DB', '#6B4A9E',
 ];

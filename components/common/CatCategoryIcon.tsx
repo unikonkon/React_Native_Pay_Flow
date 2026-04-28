@@ -1024,6 +1024,105 @@ function renderGlyph(kind: string, stroke: string) {
         </G>
       );
 
+    // ───────── FOOD EXTRAS (noodles, dessert, fruit) ─────────
+
+    // ก๋วยเตี๋ยว/บะหมี่ — chubby bowl + steam + chopsticks + cat face
+    case 'noodles':
+      return (
+        <G>
+          {/* Steam wisps */}
+          <Path d="M14 5 q2 2 0 5" stroke={stroke} strokeWidth={2} fill="none" strokeLinecap="round" />
+          <Path d="M22 3 q2 2 0 5" stroke={stroke} strokeWidth={2} fill="none" strokeLinecap="round" />
+          <Path d="M30 5 q2 2 0 5" stroke={stroke} strokeWidth={2} fill="none" strokeLinecap="round" />
+          {/* Cat ears poking up from bowl rim */}
+          <Path d="M12 17 L11 12 L16 15 Z" {...f} />
+          <Path d="M32 17 L33 12 L28 15 Z" {...f} />
+          {/* Bowl rim (chunky lip) */}
+          <Path d="M5 17 H39 V20 Q22 23 5 20 Z" {...f} />
+          {/* Bowl body — chubby trapezoid */}
+          <Path d="M7 21 H37 L33 35 Q22 39 11 35 Z" {...f} />
+          {/* Noodle squiggles peeking over rim */}
+          <Path d="M13 16 q2 -3 4 0 M20 16 q2 -3 4 0 M27 16 q2 -3 4 0" stroke="#2A2320" strokeWidth={1.3} fill="none" strokeLinecap="round" opacity={0.55} />
+          {/* Chopsticks lifted from bowl */}
+          <Path d="M30 8 L36 28" stroke="#6B4F35" strokeWidth={2.2} fill="none" strokeLinecap="round" />
+          <Path d="M33 7 L38 26" stroke="#6B4F35" strokeWidth={2.2} fill="none" strokeLinecap="round" />
+          {/* Cat face on bowl */}
+          <Circle cx={18} cy={27} r={1} fill="#2A2320" stroke="none" />
+          <Circle cx={26} cy={27} r={1} fill="#2A2320" stroke="none" />
+          <Circle cx={14} cy={30} r={1.2} fill="#E87A3D" opacity={0.55} stroke="none" />
+          <Circle cx={30} cy={30} r={1.2} fill="#E87A3D" opacity={0.55} stroke="none" />
+          <Path d="M21 30 q1 1 2 0" stroke="#2A2320" strokeWidth={1.1} fill="none" strokeLinecap="round" />
+          {/* Whiskers */}
+          <Path d="M9 28 h2.5 M10 30 h2 M35 28 h-2.5 M34 30 h-2" stroke="#2A2320" strokeWidth={0.7} strokeLinecap="round" opacity={0.55} />
+        </G>
+      );
+
+    // ของหวาน — fat cupcake w/ cherry, fluted wrapper, frosting cat face
+    case 'dessert':
+      return (
+        <G>
+          {/* Cherry stem */}
+          <Path d="M22 9 q-2 -3 -5 -5" stroke="#6B4F35" strokeWidth={1.6} fill="none" strokeLinecap="round" />
+          {/* Cherry */}
+          <Circle cx={22} cy={9} r={3} fill="#E11D48" stroke="none" />
+          <Path d="M21 7.5 q1 -1 2 0" stroke="#FFFFFF" strokeWidth={1} fill="none" strokeLinecap="round" opacity={0.85} />
+          {/* Frosting cat ears */}
+          <Path d="M14 14 L13 9 L18 12 Z" {...f} />
+          <Path d="M30 14 L31 9 L26 12 Z" {...f} />
+          {/* Frosting swirl — chubby dome */}
+          <Path
+            d="M9 25 Q9 14 22 13 Q35 14 35 25 Q35 26 33 26 H11 Q9 26 9 25 Z"
+            {...f}
+          />
+          {/* Wrapper top band */}
+          <Path d="M9 26 H35 V29 H9 Z" {...f} />
+          {/* Fluted wrapper */}
+          <Path
+            d="M11 29 L13 38 L16 29 L18 38 L21 29 L23 38 L26 29 L28 38 L31 29 L33 38 V29 Z"
+            {...f}
+          />
+          <Path d="M14 29 V37 M19 29 V37 M25 29 V37 M30 29 V37" stroke="#2A2320" strokeWidth={0.9} opacity={0.35} />
+          {/* Cat face on frosting */}
+          <Circle cx={17} cy={20} r={1} fill="#2A2320" stroke="none" />
+          <Circle cx={27} cy={20} r={1} fill="#2A2320" stroke="none" />
+          <Circle cx={13.5} cy={23} r={1.2} fill="#E87A3D" opacity={0.55} stroke="none" />
+          <Circle cx={30.5} cy={23} r={1.2} fill="#E87A3D" opacity={0.55} stroke="none" />
+          <Path d="M21 23 q1 1 2 0" stroke="#2A2320" strokeWidth={1.1} fill="none" strokeLinecap="round" />
+        </G>
+      );
+
+    // ผลไม้ — fat apple w/ leaf, dimple, cat-ears tuft, cheek blush
+    case 'fruit':
+      return (
+        <G>
+          {/* Stem */}
+          <Path d="M22 11 L22 7" stroke="#6B4F35" strokeWidth={2.2} fill="none" strokeLinecap="round" />
+          {/* Leaf — cat-ear shape */}
+          <Path d="M22 9 Q28 4 33 7 Q31 13 24 11 Z" fill="#5CB88A" stroke="none" />
+          <Path d="M24 9 q3 0 5 -1.5" stroke="#FFFFFF" strokeWidth={0.9} fill="none" strokeLinecap="round" opacity={0.7} />
+          {/* Apple body — chubby double-lobe */}
+          <Path
+            d="M22 12 Q13 11 10 22 Q9 34 16 37 Q19 38 22 36 Q25 38 28 37 Q35 34 34 22 Q31 11 22 12 Z"
+            {...f}
+          />
+          {/* Top center dimple */}
+          <Path d="M21 13 q1 1 2 0" stroke="#2A2320" strokeWidth={1.1} fill="none" strokeLinecap="round" opacity={0.5} />
+          {/* Cat ears tuft on apple top */}
+          <Path d="M16 14 L15 10 L19 12 Z" {...f} />
+          <Path d="M28 14 L29 10 L25 12 Z" {...f} />
+          {/* Cat face */}
+          <Circle cx={18} cy={25} r={1.1} fill="#2A2320" stroke="none" />
+          <Circle cx={26} cy={25} r={1.1} fill="#2A2320" stroke="none" />
+          {/* Cheeks (apple blush) */}
+          <Circle cx={14} cy={29} r={1.5} fill="#E87A3D" opacity={0.55} stroke="none" />
+          <Circle cx={30} cy={29} r={1.5} fill="#E87A3D" opacity={0.55} stroke="none" />
+          {/* Mouth */}
+          <Path d="M22 29 q-1.5 1.5 -3 0.4 M22 29 q1.5 1.5 3 0.4" stroke="#2A2320" strokeWidth={1.1} fill="none" strokeLinecap="round" />
+          {/* Whiskers */}
+          <Path d="M11 27 h2.5 M12 29 h2 M33 27 h-2.5 M32 29 h-2" stroke="#2A2320" strokeWidth={0.8} strokeLinecap="round" opacity={0.6} />
+        </G>
+      );
+
     // ───────── MISC / FALLBACKS ─────────
 
     case 'cart':
@@ -1148,7 +1247,7 @@ export function CatCategoryIcon({
 // theme for nicer rendering inside pickers (AddCategoryModal etc.).
 export const CAT_CATEGORY_ICON_KEYS = [
   // Food & drinks
-  'fast-food', 'cafe', 'wine',
+  'fast-food', 'noodles', 'dessert', 'fruit', 'cafe', 'wine',
   // Transport
   'car', 'car-sport', 'bus', 'airplane',
   // Home & utilities

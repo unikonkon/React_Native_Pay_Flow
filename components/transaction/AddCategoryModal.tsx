@@ -1,5 +1,5 @@
 import { CAT_CATEGORY_ICON_KEYS, CatCategoryIcon } from '@/components/common/CatCategoryIcon';
-import { SUGGESTED_EXPENSE_CATEGORIES } from '@/lib/constants/categories';
+import { CATEGORY_COLOR_OPTIONS, SUGGESTED_EXPENSE_CATEGORIES } from '@/lib/constants/categories';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import type { TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,15 +13,11 @@ interface Props {
   onClose: () => void;
 }
 
-// Use the full set of cat-themed icons exported from CatCategoryIcon as a
-// single source of truth — keeps modal and the rest of the app in sync.
+// Use the full set of cat-themed icons + curated color palette exported from
+// the shared constants — single source of truth, keeps every category-related
+// UI (this modal, defaults, suggestions) in visual sync.
 const ICON_OPTIONS = CAT_CATEGORY_ICON_KEYS;
-
-const COLOR_OPTIONS = [
-  '#FF6B6B', '#F59E0B', '#FACC15', '#84CC16', '#22C55E', '#14B8A6',
-  '#06B6D4', '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#EC4899',
-  '#E11D48', '#64748B',
-];
+const COLOR_OPTIONS = CATEGORY_COLOR_OPTIONS;
 
 export function AddCategoryModal({ visible, type, onClose }: Props) {
   const addCategory = useCategoryStore(s => s.addCategory);
