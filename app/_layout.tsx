@@ -15,6 +15,7 @@ import { useAnalysisStore } from '@/lib/stores/analysis-store';
 import { useAiHistoryStore } from '@/lib/stores/ai-history-store';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useThemeStore } from '@/lib/stores/theme-store';
+import { getThemeVars } from '@/lib/utils/theme-vars';
 import { requestNotificationPermissions } from '@/lib/utils/notifications';
 import { authenticate, getBiometricEnabled } from '@/lib/utils/auth';
 import 'react-native-reanimated';
@@ -94,8 +95,8 @@ export default function RootLayout() {
   if (isLocked) {
     return (
       <View
-        className={`flex-1 bg-background ${currentTheme !== 'warm' ? currentTheme : ''}`}
-        style={{ justifyContent: 'center', alignItems: 'center' }}
+        className="flex-1 bg-background"
+        style={[{ justifyContent: 'center', alignItems: 'center' }, getThemeVars(currentTheme)]}
       >
         <Ionicons name="lock-closed" size={64} color="#E87A3D" />
         <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 20, marginTop: 16 }}>MiawMoney</Text>
@@ -114,7 +115,7 @@ export default function RootLayout() {
   const statusBarStyle = DARK_THEMES.includes(currentTheme) ? 'light' : 'dark';
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }} className={currentTheme !== 'warm' ? currentTheme : undefined}>
+    <GestureHandlerRootView style={[{ flex: 1 }, getThemeVars(currentTheme)]}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
