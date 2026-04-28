@@ -201,7 +201,7 @@ export function CalculatorPad({
   return (
     <View style={{ paddingVertical: 1 }}>
       {BUTTONS.map((row, rowIdx) => (
-        <View key={rowIdx} className="flex-row" style={{ marginBottom: 4 }}>
+        <View key={rowIdx} className="flex-row" style={{ marginBottom: 2 }}>
           {row.map((btn, colIdx) => {
             const isNumber = btn.kind === 'num';
             return (
@@ -210,7 +210,7 @@ export function CalculatorPad({
                 onPress={() => handlePress(btn.label)}
                 android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
                 className={`flex-1 items-center justify-center ${isNumber ? 'bg-card' : 'bg-secondary'}`}
-                style={{ marginHorizontal: 4, paddingVertical: 16, borderRadius: 12, overflow: 'hidden' }}
+                style={{ marginHorizontal: 4, paddingVertical: 12, borderRadius: 10, overflow: 'hidden' }}
               >
                 {btn.icon ? (
                   <Ionicons name="backspace-outline" size={20} color="#A39685" />
