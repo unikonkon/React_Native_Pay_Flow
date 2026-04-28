@@ -1271,3 +1271,17 @@ export const CAT_CATEGORY_ICON_KEYS = [
   // Tools & misc
   'package', 'construct', 'ellipsis-horizontal',
 ] as const;
+
+
+// Highlights ที่โดดเด่นที่สุด:
+// piggy-bank — แมวอ้วน 4 ขามีหางขด, blush แก้ม, ตาดำกลม
+// cafe — แก้วกาแฟหน้าแมว มีไอน้ำ + หูบนปากแก้ว
+// home — บ้านมีหูแมวบนหลังคา + หน้าต่างเป็น negative space
+// wifi — คลื่น 3 ชั้น ปลายเป็นจุดมีหูแมว
+// default/อื่นๆ — FatCatFace แมวอ้วนเต็มตัวมี blush + หนวด ใช้แทน 3 จุดน่าเบื่อ
+// flame, water — solid silhouette มี core สีส้มเปล่งออก
+// bag, phone, tv, laptop, star, film — มีหน้าแมวยิ้มอยู่บน "จอ/หน้า"
+
+// ✅ โดดเด่น — solid fill + ขนาดใหญ่ขึ้น เห็นจากระยะไกลได้ชัด
+// ✅ ดูง่าย — ลด stroke noise, ใช้ silhouette ที่ระบุได้ทันทีแม้ size 24-28px
+// ✅ ธีมแมวส้มอ้วน — หู/หนวด/อุ้งเท้า/หน้าแมวกระจายทุก icon 

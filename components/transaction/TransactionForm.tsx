@@ -249,7 +249,9 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           <View style={{ position: 'absolute', left: 0, justifyContent: 'center', height: '100%', minWidth: 60, alignItems: 'flex-start' }}>
             {selectedCategory && (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <CatCategoryIcon kind={selectedCategory.icon} bg={selectedCategory.color} size={20} />
+                <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: selectedCategory.color, alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name={selectedCategory.icon as keyof typeof Ionicons.glyphMap} size={10} color="white" />
+                </View>
                 <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }}>
                   {selectedCategory.name}
                 </Text>
@@ -519,10 +521,10 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                         <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={8} color="white" />
                       </View>
                       <Text
-                        className={isSelected ? '' : 'text-foreground'}
+                        className={isSelected ? 'text-primary' : 'text-foreground'}
                         style={{
                           fontFamily: isSelected ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
-                          fontSize: 13, color: isSelected ? '#E87A3D' : undefined,
+                          fontSize: 13,
                         }}
                       >{w.name}</Text>
                     </Pressable>
