@@ -299,7 +299,7 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
           }}
           resizeMode="contain"
         />
-  
+
       </View>
 
       {/* Feature list */}
@@ -487,6 +487,7 @@ function HistoryModal({
   wallets,
   onView,
   onDelete,
+  onBulkDelete,
   selectedHistoryId,
 }: {
   visible: boolean;
@@ -495,11 +496,13 @@ function HistoryModal({
   wallets: { id: string; name: string }[];
   onView: (h: AiHistory) => void;
   onDelete: (h: AiHistory) => void;
+  onBulkDelete: (ids: string[]) => void;
   selectedHistoryId: string | null;
 }) {
   const [filterYear, setFilterYear] = useState<number | null>(null);
   const [filterMonth, setFilterMonth] = useState<number | null>(null);
   const [filterWalletId, setFilterWalletId] = useState<string | 'all'>('all');
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const years = useMemo(() => {
     const set = new Set(histories.map(h => h.year));
@@ -515,12 +518,57 @@ function HistoryModal({
     });
   }, [histories, filterYear, filterMonth, filterWalletId]);
 
+  const filterSummary = useMemo(() => {
+    const yearLabel = filterYear === null ? 'ทุกปี' : `พ.ศ. ${filterYear + 543}`;
+    const monthLabel =
+      filterYear === null ? null : filterMonth === null ? 'ทุกเดือน' : THAI_MONTHS_SHORT[filterMonth];
+    let walletLabel: string;
+    if (filterWalletId === 'all') walletLabel = 'ทุกกระเป๋า';
+    else if (filterWalletId === 'none') walletLabel = 'ไม่ระบุกระเป๋า';
+    else walletLabel = wallets.find(w => w.id === filterWalletId)?.name ?? 'กระเป๋า';
+    return { yearLabel, monthLabel, walletLabel };
+  }, [filterYear, filterMonth, filterWalletId, wallets]);
+
+  const handleConfirmBulkDelete = () => {
+    onBulkDelete(filtered.map(h => h.id));
+    setConfirmOpen(false);
+  };
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable onPress={onClose} className="flex-1 bg-black/40" />
       <View className="absolute bottom-0 left-0 right-0 bg-background rounded-t-2xl" style={{ height: '90%' }}>
         <View className="flex-row items-center justify-between px-4 pt-4 pb-2">
-          <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }}>ประวัติการวิเคราะห์</Text>
+          <View className="flex-row items-center gap-4">
+            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }}>ประวัติการวิเคราะห์</Text>
+            <Pressable
+              onPress={() => setConfirmOpen(true)}
+              disabled={filtered.length === 0}
+              hitSlop={6}
+              style={({ pressed }) => ({
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: filtered.length === 0 ? '#FECACA80' : '#FECACA',
+                backgroundColor: pressed ? '#FEE2E2' : '#FFF1F1',
+                opacity: filtered.length === 0 ? 0.5 : 1,
+              })}
+              accessibilityRole="button"
+              accessibilityLabel="ลบทั้งหมดตามตัวกรอง"
+            >
+              <View className="flex-row items-center gap-2 border border-border rounded-lg px-2 py-1">
+                <Ionicons name="trash-outline" size={14} color="#DC2626" />
+                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#DC2626' }}>
+                  ลบตามตัวกรอง
+                </Text>
+              </View>
+            </Pressable>
+
+          </View>
           <Pressable onPress={onClose} className="p-1">
             <Ionicons name="close" size={22} color="#666" />
           </Pressable>
@@ -664,6 +712,95 @@ function HistoryModal({
           )}
         </ScrollView>
       </View>
+
+      {/* Bulk delete confirmation dialog */}
+      <Modal visible={confirmOpen} transparent animationType="fade" onRequestClose={() => setConfirmOpen(false)}>
+        <Pressable
+          onPress={() => setConfirmOpen(false)}
+          className="flex-1 bg-black/50 items-center justify-center px-6"
+        >
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            className="w-full max-w-md bg-background rounded-2xl p-5"
+            style={{ borderWidth: 1, borderColor: '#FECACA' }}
+          >
+            <View className="flex-row items-center gap-2 mb-3">
+              <View
+                style={{
+                  width: 32, height: 32, borderRadius: 16,
+                  backgroundColor: '#FEE2E2',
+                  alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="warning-outline" size={18} color="#DC2626" />
+              </View>
+              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16 }}>
+                ยืนยันการลบ
+              </Text>
+            </View>
+
+            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, lineHeight: 20, marginBottom: 12 }}>
+              จะลบประวัติการวิเคราะห์{' '}
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', color: '#DC2626' }}>
+                {filtered.length} รายการ
+              </Text>
+              {' '}ตามตัวกรองด้านล่าง การลบนี้ไม่สามารถย้อนกลับได้
+            </Text>
+
+            <View
+              style={{
+                backgroundColor: '#FFF6EE',
+                borderRadius: 12,
+                padding: 12,
+                marginBottom: 16,
+                borderWidth: 1,
+                borderColor: '#FED7AA',
+              }}
+            >
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80' }}>ปี</Text>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#2B2118' }}>
+                  {filterSummary.yearLabel}
+                </Text>
+              </View>
+              {filterSummary.monthLabel !== null && (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80' }}>เดือน</Text>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#2B2118' }}>
+                    {filterSummary.monthLabel}
+                  </Text>
+                </View>
+              )}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80' }}>กระเป๋า</Text>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#2B2118' }}>
+                  {filterSummary.walletLabel}
+                </Text>
+              </View>
+            </View>
+
+            <View className="flex-row gap-2">
+              <Pressable
+                onPress={() => setConfirmOpen(false)}
+                className="flex-1 py-3 rounded-full items-center border border-border bg-card"
+              >
+                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }}>
+                  ยกเลิก
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={handleConfirmBulkDelete}
+                className="flex-1 py-3 rounded-full items-center"
+                style={{ backgroundColor: '#DC2626' }}
+              >
+                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, color: '#fff' }}>
+                  ยืนยันลบ {filtered.length} รายการ
+                </Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </Modal>
   );
 }
@@ -1082,7 +1219,7 @@ export default function PremiumScreen() {
   const reloadCategories = useCategoryStore(s => s.loadCategories);
   const reloadTransactions = useTransactionStore(s => s.loadTransactions);
   const reloadAnalysis = useAnalysisStore(s => s.loadAnalysis);
-  const { histories, addHistory, deleteHistory } = useAiHistoryStore();
+  const { histories, addHistory, deleteHistory, deleteHistoriesBulk } = useAiHistoryStore();
 
   const reloadAfterSpecialImport = useCallback(async () => {
     await Promise.all([
@@ -1152,18 +1289,22 @@ export default function PremiumScreen() {
       'ใส่ API Key จาก Google AI Studio',
       [
         { text: 'ยกเลิก', style: 'cancel' },
-        { text: 'ลบ Key', style: 'destructive', onPress: async () => {
-          await deleteApiKey();
-          setHasApiKey(false);
-          setApiKeyStatus('ยังไม่ได้ตั้งค่า');
-        }},
-        { text: 'บันทึก', onPress: async (key?: string) => {
-          if (key?.trim()) {
-            await setApiKey(key.trim());
-            setHasApiKey(true);
-            setApiKeyStatus(`ตั้งค่าแล้ว (****${key.trim().slice(-4)})`);
+        {
+          text: 'ลบ Key', style: 'destructive', onPress: async () => {
+            await deleteApiKey();
+            setHasApiKey(false);
+            setApiKeyStatus('ยังไม่ได้ตั้งค่า');
           }
-        }},
+        },
+        {
+          text: 'บันทึก', onPress: async (key?: string) => {
+            if (key?.trim()) {
+              await setApiKey(key.trim());
+              setHasApiKey(true);
+              setApiKeyStatus(`ตั้งค่าแล้ว (****${key.trim().slice(-4)})`);
+            }
+          }
+        },
       ],
       'plain-text',
       '',
@@ -1263,6 +1404,12 @@ export default function PremiumScreen() {
     ]);
   }, [deleteHistory]);
 
+  const handleBulkDeleteHistory = useCallback(async (ids: string[]) => {
+    if (ids.length === 0) return;
+    await deleteHistoriesBulk(ids);
+    setSelectedHistoryId(prev => (prev !== null && ids.includes(prev) ? null : prev));
+  }, [deleteHistoriesBulk]);
+
   const recentHistories = histories.slice(0, 5);
 
   // ===== Not Premium: show paywall =====
@@ -1319,296 +1466,296 @@ export default function PremiumScreen() {
 
       {innerTab === 'ai' || innerTab === 'data' ? (
         <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
-        {innerTab === 'ai' ? (
-          <>
-            {/* Gemini API Key */}
-            <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
-              <SettingsSection>
-                <SettingsRow icon="key-outline" label="Gemini API Key" value={apiKeyStatus} onPress={handleApiKey} />
-                <SettingsRow icon="help-circle-outline" label="วิธีรับ Gemini API Key" onPress={() => setApiKeyHelpVisible(true)} />
-                <SettingsRow icon="sparkles-outline" label="AI วิเคราะห์" value={hasApiKey ? 'พร้อมใช้งาน' : 'ยังไม่ได้ตั้งค่า'} last />
-              </SettingsSection>
-            </View>
+          {innerTab === 'ai' ? (
+            <>
+              {/* Gemini API Key */}
+              <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+                <SettingsSection>
+                  <SettingsRow icon="key-outline" label="Gemini API Key" value={apiKeyStatus} onPress={handleApiKey} />
+                  <SettingsRow icon="help-circle-outline" label="วิธีรับ Gemini API Key" onPress={() => setApiKeyHelpVisible(true)} />
+                  <SettingsRow icon="sparkles-outline" label="AI วิเคราะห์" value={hasApiKey ? 'พร้อมใช้งาน' : 'ยังไม่ได้ตั้งค่า'} last />
+                </SettingsSection>
+              </View>
 
-            {/* ปี */}
-            <View style={{ marginHorizontal: 16, marginBottom: 6 }}>
-              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14 }}>ปี</Text>
-              {availableYears.length === 0 ? (
-                <View style={{ padding: 12, borderRadius: 12, backgroundColor: '#F5EEE0' }}>
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80', textAlign: 'center' }}>
-                    ยังไม่มีข้อมูลรายการ{selectedWalletId ? 'ในกระเป๋านี้' : ''}
-                  </Text>
-                </View>
-              ) : (
-                <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-                  {availableYears.map(y => (
-                    <Pressable
-                      key={y}
-                      onPress={() => handleSelectYear(y)}
-                      style={{
-                        height: 34, paddingHorizontal: 14, borderRadius: 999,
-                        backgroundColor: selectedYear === y ? '#fff' : 'transparent',
-                        borderWidth: 1.5,
-                        borderColor: selectedYear === y ? '#E87A3D' : '#D9CFC3',
-                        alignItems: 'center', justifyContent: 'center',
-                      }}
-                    >
-                      <Text style={{
-                        fontFamily: selectedYear === y ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
-                        fontSize: 13, color: selectedYear === y ? '#C85F28' : '#9A8D80',
-                      }}>{y}</Text>
-                    </Pressable>
-                  ))}
-                </View>
-              )}
-            </View>
-
-            {/* เดือน */}
-            {availableMonths.length > 0 && (
+              {/* ปี */}
               <View style={{ marginHorizontal: 16, marginBottom: 6 }}>
-                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14 }}>เดือน</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <View style={{ flexDirection: 'row', gap: 8 }}>
-                    <Pressable
-                      onPress={() => setSelectedMonth(null)}
-                      style={{
-                        height: 34, paddingHorizontal: 14, borderRadius: 999,
-                        backgroundColor: selectedMonth === null ? '#fff' : 'transparent',
-                        borderWidth: 1.5,
-                        borderColor: selectedMonth === null ? '#E87A3D' : '#D9CFC3',
-                        alignItems: 'center', justifyContent: 'center',
-                      }}
-                    >
-                      <Text style={{
-                        fontFamily: selectedMonth === null ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
-                        fontSize: 13, color: selectedMonth === null ? '#C85F28' : '#9A8D80',
-                      }}>ทั้งปี</Text>
-                    </Pressable>
-                    {availableMonths.map(m => (
+                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14 }}>ปี</Text>
+                {availableYears.length === 0 ? (
+                  <View style={{ padding: 12, borderRadius: 12, backgroundColor: '#F5EEE0' }}>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80', textAlign: 'center' }}>
+                      ยังไม่มีข้อมูลรายการ{selectedWalletId ? 'ในกระเป๋านี้' : ''}
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+                    {availableYears.map(y => (
                       <Pressable
-                        key={m}
-                        onPress={() => setSelectedMonth(m)}
+                        key={y}
+                        onPress={() => handleSelectYear(y)}
                         style={{
                           height: 34, paddingHorizontal: 14, borderRadius: 999,
-                          backgroundColor: selectedMonth === m ? '#fff' : 'transparent',
+                          backgroundColor: selectedYear === y ? '#fff' : 'transparent',
                           borderWidth: 1.5,
-                          borderColor: selectedMonth === m ? '#E87A3D' : '#D9CFC3',
+                          borderColor: selectedYear === y ? '#E87A3D' : '#D9CFC3',
                           alignItems: 'center', justifyContent: 'center',
                         }}
                       >
                         <Text style={{
-                          fontFamily: selectedMonth === m ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
-                          fontSize: 13, color: selectedMonth === m ? '#C85F28' : '#9A8D80',
-                        }}>{THAI_MONTHS_SHORT[m]}</Text>
+                          fontFamily: selectedYear === y ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                          fontSize: 13, color: selectedYear === y ? '#C85F28' : '#9A8D80',
+                        }}>{y}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* เดือน */}
+              {availableMonths.length > 0 && (
+                <View style={{ marginHorizontal: 16, marginBottom: 6 }}>
+                  <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14 }}>เดือน</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                      <Pressable
+                        onPress={() => setSelectedMonth(null)}
+                        style={{
+                          height: 34, paddingHorizontal: 14, borderRadius: 999,
+                          backgroundColor: selectedMonth === null ? '#fff' : 'transparent',
+                          borderWidth: 1.5,
+                          borderColor: selectedMonth === null ? '#E87A3D' : '#D9CFC3',
+                          alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        <Text style={{
+                          fontFamily: selectedMonth === null ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                          fontSize: 13, color: selectedMonth === null ? '#C85F28' : '#9A8D80',
+                        }}>ทั้งปี</Text>
+                      </Pressable>
+                      {availableMonths.map(m => (
+                        <Pressable
+                          key={m}
+                          onPress={() => setSelectedMonth(m)}
+                          style={{
+                            height: 34, paddingHorizontal: 14, borderRadius: 999,
+                            backgroundColor: selectedMonth === m ? '#fff' : 'transparent',
+                            borderWidth: 1.5,
+                            borderColor: selectedMonth === m ? '#E87A3D' : '#D9CFC3',
+                            alignItems: 'center', justifyContent: 'center',
+                          }}
+                        >
+                          <Text style={{
+                            fontFamily: selectedMonth === m ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                            fontSize: 13, color: selectedMonth === m ? '#C85F28' : '#9A8D80',
+                          }}>{THAI_MONTHS_SHORT[m]}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </ScrollView>
+                </View>
+              )}
+
+              {/* กระเป๋าเงิน */}
+              <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
+                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>กระเป๋าเงิน</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <Pressable
+                      onPress={() => handleSelectWallet(null)}
+                      style={{
+                        height: 34, paddingHorizontal: 14, borderRadius: 999,
+                        backgroundColor: !selectedWalletId ? '#fff' : 'transparent',
+                        borderWidth: 1.5,
+                        borderColor: !selectedWalletId ? '#E87A3D' : '#D9CFC3',
+                        alignItems: 'center', justifyContent: 'center',
+                      }}
+                    >
+                      <Text style={{
+                        fontFamily: !selectedWalletId ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                        fontSize: 13, color: !selectedWalletId ? '#C85F28' : '#9A8D80',
+                      }}>ทุกกระเป๋า</Text>
+                    </Pressable>
+                    {wallets.map(w => (
+                      <Pressable
+                        key={w.id}
+                        onPress={() => handleSelectWallet(w.id)}
+                        style={{
+                          height: 34, paddingHorizontal: 14, borderRadius: 999,
+                          backgroundColor: selectedWalletId === w.id ? '#fff' : 'transparent',
+                          borderWidth: 1.5,
+                          borderColor: selectedWalletId === w.id ? '#E87A3D' : '#D9CFC3',
+                          flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                        }}
+                      >
+                        <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: w.color, alignItems: 'center', justifyContent: 'center' }}>
+                          <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={8} color="#fff" />
+                        </View>
+                        <Text style={{
+                          fontFamily: selectedWalletId === w.id ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                          fontSize: 13, color: selectedWalletId === w.id ? '#C85F28' : '#9A8D80',
+                        }}>{w.name}</Text>
                       </Pressable>
                     ))}
                   </View>
                 </ScrollView>
               </View>
-            )}
 
-            {/* กระเป๋าเงิน */}
-            <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
-              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>กระเป๋าเงิน</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {/* รูปแบบ */}
+              <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>รูปแบบ</Text>
                 <View style={{ flexDirection: 'row', gap: 8 }}>
-                  <Pressable
-                    onPress={() => handleSelectWallet(null)}
-                    style={{
-                      height: 34, paddingHorizontal: 14, borderRadius: 999,
-                      backgroundColor: !selectedWalletId ? '#fff' : 'transparent',
-                      borderWidth: 1.5,
-                      borderColor: !selectedWalletId ? '#E87A3D' : '#D9CFC3',
-                      alignItems: 'center', justifyContent: 'center',
-                    }}
-                  >
-                    <Text style={{
-                      fontFamily: !selectedWalletId ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
-                      fontSize: 13, color: !selectedWalletId ? '#C85F28' : '#9A8D80',
-                    }}>ทุกกระเป๋า</Text>
-                  </Pressable>
-                  {wallets.map(w => (
+                  {([['structured', 'วิเคราะห์แบบสรุป'], ['full', 'วิเคราะห์แบบละเอียด']] as const).map(([k, l]) => (
                     <Pressable
-                      key={w.id}
-                      onPress={() => handleSelectWallet(w.id)}
+                      key={k}
+                      onPress={() => setPromptType(k)}
                       style={{
-                        height: 34, paddingHorizontal: 14, borderRadius: 999,
-                        backgroundColor: selectedWalletId === w.id ? '#fff' : 'transparent',
+                        flex: 1, height: 44, borderRadius: 12,
+                        backgroundColor: promptType === k ? '#E87A3D' : '#fff',
                         borderWidth: 1.5,
-                        borderColor: selectedWalletId === w.id ? '#E87A3D' : '#D9CFC3',
-                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                        borderColor: promptType === k ? '#E87A3D' : '#D9CFC3',
+                        alignItems: 'center', justifyContent: 'center',
                       }}
                     >
-                      <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: w.color, alignItems: 'center', justifyContent: 'center' }}>
-                        <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={8} color="#fff" />
-                      </View>
                       <Text style={{
-                        fontFamily: selectedWalletId === w.id ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
-                        fontSize: 13, color: selectedWalletId === w.id ? '#C85F28' : '#9A8D80',
-                      }}>{w.name}</Text>
+                        fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14,
+                        color: promptType === k ? '#fff' : '#2A2320',
+                      }}>{l}</Text>
                     </Pressable>
                   ))}
                 </View>
-              </ScrollView>
-            </View>
-
-            {/* รูปแบบ */}
-            <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
-              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>รูปแบบ</Text>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {([['structured', 'วิเคราะห์แบบสรุป'], ['full', 'วิเคราะห์แบบละเอียด']] as const).map(([k, l]) => (
-                  <Pressable
-                    key={k}
-                    onPress={() => setPromptType(k)}
-                    style={{
-                      flex: 1, height: 44, borderRadius: 12,
-                      backgroundColor: promptType === k ? '#E87A3D' : '#fff',
-                      borderWidth: 1.5,
-                      borderColor: promptType === k ? '#E87A3D' : '#D9CFC3',
-                      alignItems: 'center', justifyContent: 'center',
-                    }}
-                  >
-                    <Text style={{
-                      fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14,
-                      color: promptType === k ? '#fff' : '#2A2320',
-                    }}>{l}</Text>
-                  </Pressable>
-                ))}
               </View>
-            </View>
 
-            {/* เริ่มวิเคราะห์ */}
-            <Pressable
-              onPress={handleAnalyze}
-              disabled={isLoading || !hasApiKey || availableYears.length === 0}
-              style={{
-                marginHorizontal: 16, marginTop: 6, marginBottom: 18,
-                height: 54, borderRadius: 14,
-                backgroundColor: isLoading || !hasApiKey || availableYears.length === 0 ? 'rgba(232,122,61,0.5)' : '#E87A3D',
-                shadowColor: '#E87A3D', shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
-                elevation: 8,
-                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-              }}
-            >
-              {isLoading ? <ActivityIndicator color="white" /> : <Ionicons name="sparkles" size={18} color="#fff" />}
-              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, color: '#fff' }}>
-                {isLoading ? 'กำลังวิเคราะห์...' : 'เริ่มวิเคราะห์'}
-              </Text>
-            </Pressable>
+              {/* เริ่มวิเคราะห์ */}
+              <Pressable
+                onPress={handleAnalyze}
+                disabled={isLoading || !hasApiKey || availableYears.length === 0}
+                style={{
+                  marginHorizontal: 16, marginTop: 6, marginBottom: 18,
+                  height: 54, borderRadius: 14,
+                  backgroundColor: isLoading || !hasApiKey || availableYears.length === 0 ? 'rgba(232,122,61,0.5)' : '#E87A3D',
+                  shadowColor: '#E87A3D', shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+                  elevation: 8,
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}
+              >
+                {isLoading ? <ActivityIndicator color="white" /> : <Ionicons name="sparkles" size={18} color="#fff" />}
+                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, color: '#fff' }}>
+                  {isLoading ? 'กำลังวิเคราะห์...' : 'เริ่มวิเคราะห์'}
+                </Text>
+              </Pressable>
 
-            {isLoading && <View style={{ marginHorizontal: 16 }}><AiLoadingView /></View>}
+              {isLoading && <View style={{ marginHorizontal: 16 }}><AiLoadingView /></View>}
 
-            {/* ประวัติการวิเคราะห์ */}
-            {histories.length > 0 && !isLoading && (
-              <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                  <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, flex: 1 }}>ประวัติการวิเคราะห์</Text>
-                  {histories.length > 5 && (
-                    <Pressable onPress={() => setHistoryModalVisible(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#E87A3D' }}>ดูทั้งหมด ({histories.length})</Text>
-                      <Ionicons name="chevron-forward" size={12} color="#E87A3D" />
-                    </Pressable>
-                  )}
-                </View>
-                <View style={{ gap: 10 }}>
-                  {recentHistories.map(h => {
-                    const isSelected = selectedHistoryId === h.id;
-                    return (
-                      <Pressable
-                        key={h.id}
-                        onPress={() => handleViewHistory(h)}
-                        onLongPress={() => handleDeleteHistory(h)}
-                        className={isSelected ? '' : 'bg-card'}
-                        style={({ pressed }) => ({
-                          borderRadius: 16, padding: 14,
-                          flexDirection: 'row', alignItems: 'center', gap: 10,
-                          backgroundColor: isSelected ? '#FFF6EE' : undefined,
-                          borderWidth: 1.5,
-                          borderColor: isSelected ? '#E87A3D' : 'transparent',
-                          shadowColor: isSelected ? '#E87A3D' : '#2A2320',
-                          shadowOpacity: isSelected ? 0.18 : 0.05,
-                          shadowRadius: 16,
-                          shadowOffset: { width: 0, height: 4 },
-                          elevation: isSelected ? 4 : 2,
-                          opacity: pressed ? 0.6 : 1,
-                          transform: [{ scale: pressed ? 0.97 : 1 }],
-                        })}
-                      >
-                        <View className="flex-row items-center gap-4 px-2 py-1 rounded-lg border border-border">
-                          <View style={{
-                            width: 30, height: 30, borderRadius: 8,
-                            backgroundColor: isSelected ? '#E87A3D' : '#FCE8D4',
-                            alignItems: 'center', justifyContent: 'center',
-                          }}>
-                            <Ionicons name="document-text-outline" size={14} color={isSelected ? '#fff' : '#C85F28'} />
-                          </View>
-                          <View style={{ flex: 1, minWidth: 0 }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, flexShrink: 1 }} numberOfLines={1}>
-                                {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
-                              </Text>
-                              {isSelected && (
-                                <View style={{
-                                  paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6,
-                                  backgroundColor: '#E87A3D',
-                                  flexDirection: 'row', alignItems: 'center', gap: 3,
-                                }}>
-                                  <Ionicons name="eye" size={9} color="#fff" />
-                                  <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 9.5, color: '#fff' }}>กำลังดู</Text>
-                                </View>
-                              )}
-                            </View>
-                            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: isSelected ? '#C85F28' : '#9A8D80', marginTop: 2 }}>
-                              {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
-                            </Text>
-                          </View>
-                          <Ionicons
-                            name={isSelected ? 'checkmark-circle' : 'chevron-forward'}
-                            size={isSelected ? 18 : 14}
-                            color={isSelected ? '#E87A3D' : '#9A8D80'}
-                          />
-                          <Pressable
-                            onPress={() => handleDeleteHistory(h)}
-                            hitSlop={8}
-                            style={({ pressed }) => ({
-                              width: 32, height: 32, borderRadius: 10,
-                              alignItems: 'center', justifyContent: 'center',
-                              backgroundColor: pressed ? '#FEE2E2' : '#FFF1F1',
-                              borderWidth: 1, borderColor: '#FECACA',
-                              opacity: pressed ? 0.7 : 1,
-                              transform: [{ scale: pressed ? 0.92 : 1 }],
-                            })}
-                            accessibilityRole="button"
-                            accessibilityLabel="ลบประวัติ"
-                          >
-                            <Ionicons name="trash-outline" size={15} color="#DC2626" />
-                          </Pressable>
-                        </View>
+              {/* ประวัติการวิเคราะห์ */}
+              {histories.length > 0 && !isLoading && (
+                <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                    <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, flex: 1 }}>ประวัติการวิเคราะห์</Text>
+                    {histories.length > 5 && (
+                      <Pressable onPress={() => setHistoryModalVisible(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#E87A3D' }}>ดูทั้งหมด ({histories.length})</Text>
+                        <Ionicons name="chevron-forward" size={12} color="#E87A3D" />
                       </Pressable>
-                    );
-                  })}
+                    )}
+                  </View>
+                  <View style={{ gap: 10 }}>
+                    {recentHistories.map(h => {
+                      const isSelected = selectedHistoryId === h.id;
+                      return (
+                        <Pressable
+                          key={h.id}
+                          onPress={() => handleViewHistory(h)}
+                          onLongPress={() => handleDeleteHistory(h)}
+                          className={isSelected ? '' : 'bg-card'}
+                          style={({ pressed }) => ({
+                            borderRadius: 16, padding: 14,
+                            flexDirection: 'row', alignItems: 'center', gap: 10,
+                            backgroundColor: isSelected ? '#FFF6EE' : undefined,
+                            borderWidth: 1.5,
+                            borderColor: isSelected ? '#E87A3D' : 'transparent',
+                            shadowColor: isSelected ? '#E87A3D' : '#2A2320',
+                            shadowOpacity: isSelected ? 0.18 : 0.05,
+                            shadowRadius: 16,
+                            shadowOffset: { width: 0, height: 4 },
+                            elevation: isSelected ? 4 : 2,
+                            opacity: pressed ? 0.6 : 1,
+                            transform: [{ scale: pressed ? 0.97 : 1 }],
+                          })}
+                        >
+                          <View className="flex-row items-center gap-4 px-2 py-1 rounded-lg border border-border">
+                            <View style={{
+                              width: 30, height: 30, borderRadius: 8,
+                              backgroundColor: isSelected ? '#E87A3D' : '#FCE8D4',
+                              alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              <Ionicons name="document-text-outline" size={14} color={isSelected ? '#fff' : '#C85F28'} />
+                            </View>
+                            <View style={{ flex: 1, minWidth: 0 }}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, flexShrink: 1 }} numberOfLines={1}>
+                                  {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
+                                </Text>
+                                {isSelected && (
+                                  <View style={{
+                                    paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6,
+                                    backgroundColor: '#E87A3D',
+                                    flexDirection: 'row', alignItems: 'center', gap: 3,
+                                  }}>
+                                    <Ionicons name="eye" size={9} color="#fff" />
+                                    <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 9.5, color: '#fff' }}>กำลังดู</Text>
+                                  </View>
+                                )}
+                              </View>
+                              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: isSelected ? '#C85F28' : '#9A8D80', marginTop: 2 }}>
+                                {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
+                              </Text>
+                            </View>
+                            <Ionicons
+                              name={isSelected ? 'checkmark-circle' : 'chevron-forward'}
+                              size={isSelected ? 18 : 14}
+                              color={isSelected ? '#E87A3D' : '#9A8D80'}
+                            />
+                            <Pressable
+                              onPress={() => handleDeleteHistory(h)}
+                              hitSlop={8}
+                              style={({ pressed }) => ({
+                                width: 32, height: 32, borderRadius: 10,
+                                alignItems: 'center', justifyContent: 'center',
+                                backgroundColor: pressed ? '#FEE2E2' : '#FFF1F1',
+                                borderWidth: 1, borderColor: '#FECACA',
+                                opacity: pressed ? 0.7 : 1,
+                                transform: [{ scale: pressed ? 0.92 : 1 }],
+                              })}
+                              accessibilityRole="button"
+                              accessibilityLabel="ลบประวัติ"
+                            >
+                              <Ionicons name="trash-outline" size={15} color="#DC2626" />
+                            </Pressable>
+                          </View>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
                 </View>
-              </View>
-            )}
+              )}
 
-            {/* Current Result */}
-            {currentResult && !isLoading && (
-              <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
-                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, marginBottom: 10 }}>ผลวิเคราะห์</Text>
-                <AiResultView
-                  responseType={currentResult.type as any}
-                  responseData={currentResult.data}
-                  periodLabel={currentResult.periodLabel}
-                />
-              </View>
-            )}
-          </>
-        ) : (
-          <View style={{ paddingHorizontal: 16 }}>
-            <DataTransferTab />
-            <SpecialImportSection onSuccess={reloadAfterSpecialImport} />
-          </View>
-        )}
+              {/* Current Result */}
+              {currentResult && !isLoading && (
+                <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
+                  <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, marginBottom: 10 }}>ผลวิเคราะห์</Text>
+                  <AiResultView
+                    responseType={currentResult.type as any}
+                    responseData={currentResult.data}
+                    periodLabel={currentResult.periodLabel}
+                  />
+                </View>
+              )}
+            </>
+          ) : (
+            <View style={{ paddingHorizontal: 16 }}>
+              <DataTransferTab />
+              <SpecialImportSection onSuccess={reloadAfterSpecialImport} />
+            </View>
+          )}
         </ScrollView>
       ) : innerTab === 'theme' ? (
         <ThemeSettingsContent />
@@ -1623,6 +1770,7 @@ export default function PremiumScreen() {
         wallets={wallets}
         onView={handleViewHistory}
         onDelete={handleDeleteHistory}
+        onBulkDelete={handleBulkDeleteHistory}
         selectedHistoryId={selectedHistoryId}
       />
 

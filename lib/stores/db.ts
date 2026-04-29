@@ -1009,6 +1009,18 @@ export async function deleteAiHistory(
   await db.runAsync("DELETE FROM ai_history WHERE id = ?", [id]);
 }
 
+export async function deleteAiHistoryByIds(
+  db: SQLiteDatabase,
+  ids: string[],
+): Promise<void> {
+  if (ids.length === 0) return;
+  const placeholders = ids.map(() => "?").join(",");
+  await db.runAsync(
+    `DELETE FROM ai_history WHERE id IN (${placeholders})`,
+    ids,
+  );
+}
+
 async function migrateAiHistoryMonth(db: SQLiteDatabase) {
   const cols = await db.getAllAsync<{ name: string }>(
     "PRAGMA table_info(ai_history)",
