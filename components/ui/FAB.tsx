@@ -34,7 +34,7 @@ export function FAB({ onPress }: FABProps) {
         style={{
           width: 232,
           height: 142,
-          transform: [{ rotate: '-8deg' }],
+          transform: [{ rotate: '-3deg' }],
           shadowColor: '#B75513',
           shadowOpacity: 0.36,
           shadowRadius: 12,

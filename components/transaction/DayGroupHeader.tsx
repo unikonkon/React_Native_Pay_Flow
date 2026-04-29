@@ -14,7 +14,7 @@ export function DayGroupHeader({ date, income, expense }: DayGroupHeaderProps) {
   const hasAny = income > 0 && expense > 0;
 
   return (
-    <View className="flex-row items-center" style={{ paddingHorizontal: 18, paddingTop: 14, paddingBottom: 6, borderTopWidth: 0.5, borderTopColor: 'rgba(42,35,32,0.08)', marginTop: 8, gap: 10 }}>
+    <View className="flex-row items-center" style={{ paddingHorizontal: 18, paddingTop: 10, paddingBottom: 2, borderTopWidth: 0.5, borderTopColor: 'rgba(42,35,32,0.08)', marginTop: 8, gap: 10 }}>
       <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, fontVariant: ['tabular-nums'] }} className="text-foreground">
         {formatRelativeDate(date)}
       </Text>

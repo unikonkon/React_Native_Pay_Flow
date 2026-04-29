@@ -68,17 +68,17 @@ export function TransactionGroupItem({
       android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
       className="flex-row items-center bg-card"
       style={{
-        paddingVertical: 10, paddingHorizontal: 12, gap: 11,
+        paddingVertical: 6, paddingHorizontal: 12, gap: 11,
         borderRadius: 16,
         shadowColor: '#2A2320', shadowOpacity: 0.04, shadowRadius: 13, shadowOffset: { width: 0, height: 3 },
         elevation: 2,
       }}
     >
-      <CatCategoryIcon kind={icon} size={38} bg={color} />
+      <CatCategoryIcon kind={icon} size={45} bg={color} />
 
       <View className="flex-1" style={{ minWidth: 0 }}>
         <View className="flex-row items-center" style={{ gap: 7 }}>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground" numberOfLines={1}>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 16 }} className="text-foreground" numberOfLines={1}>
             {head.category?.name ?? 'ไม่ระบุ'}
           </Text>
           {isGroup && (

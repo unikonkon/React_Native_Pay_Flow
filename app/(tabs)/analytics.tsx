@@ -100,7 +100,7 @@ export default function AnalyticsScreen() {
                   key={key}
                   onPress={() => { Haptics.selectionAsync(); setViewType(key); }}
                   style={{ backgroundColor: active ? accent : 'transparent' }}
-                  className="px-3 py-2 rounded-full"
+                  className="px-2 py-2 rounded-full"
                 >
                   <Text style={{
                     fontFamily: 'IBMPlexSansThai_600SemiBold',

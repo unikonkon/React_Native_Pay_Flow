@@ -49,9 +49,10 @@ export function CategoryGridModal({ visible, categories, selectedId, type, onSel
                   >
                     <View
                       style={{
-                        borderRadius: 25,
-                        borderWidth: isSelected ? 2.5 : 0,
+                        borderRadius: 999,
+                        borderWidth: isSelected ? 4 : 0,
                         borderColor: '#E87A3D',
+                        padding: isSelected ? 2 : 0,
                       }}
                     >
                       <CatCategoryIcon kind={cat.icon} bg={cat.color} size={50} />

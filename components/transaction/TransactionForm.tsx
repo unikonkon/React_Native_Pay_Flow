@@ -249,9 +249,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           <View style={{ position: 'absolute', left: 0, justifyContent: 'center', height: '100%', minWidth: 60, alignItems: 'flex-start' }}>
             {selectedCategory && (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: selectedCategory.color, alignItems: 'center', justifyContent: 'center' }}>
-                  <Ionicons name={selectedCategory.icon as keyof typeof Ionicons.glyphMap} size={10} color="white" />
-                </View>
+                <CatCategoryIcon kind={selectedCategory.icon} bg={selectedCategory.color} size={22} />
                 <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }}>
                   {selectedCategory.name}
                 </Text>
@@ -302,7 +300,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                     >
                       <View style={{
                         padding: sel ? 2 : 0, borderRadius: 999,
-                        borderWidth: 2, borderColor: sel ? '#E87A3D' : 'transparent',
+                        borderWidth: 4, borderColor: sel ? '#E87A3D' : 'transparent',
                       }}>
                         <CatCategoryIcon kind={cat.icon} bg={cat.color} size={46} />
                         {sel && (
@@ -311,7 +309,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                             style={{
                               position: 'absolute',
                               top: -5,
-                              right: -15,
+                              right: -18,
                               transform: [{ rotate: '-18deg' }],
                             }}
                           >

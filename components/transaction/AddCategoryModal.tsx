@@ -69,7 +69,7 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
         <Pressable
           onPress={(e) => e.stopPropagation()}
           className="w-11/12 max-w-md bg-card rounded-2xl p-4 border border-border"
-          style={{ maxHeight: '90%' }}
+          style={{ maxHeight: '89%' }}
         >
           <View className="flex-row items-center justify-between mb-3">
             <Text className="text-foreground font-bold text-lg" style={{ fontFamily: 'IBMPlexSansThai_700Bold' }}>
@@ -156,10 +156,10 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
             )}
 
             <View className="items-center">
-              <CatCategoryIcon kind={icon} bg={color} size={74} />
+              <CatCategoryIcon kind={icon} bg={color} size={80} />
             </View>
 
-            <Text className="text-foreground font-semibold mb-2" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>ชื่อ</Text>
+            <Text className="text-foreground font-semibold " style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>ชื่อ</Text>
             <TextInput
               value={name}
               onChangeText={setName}
@@ -169,7 +169,7 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
               style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}
             />
 
-            <Text className="text-foreground font-semibold mb-2" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>ไอคอน</Text>
+            <Text className="text-foreground font-semibold" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>ไอคอน</Text>
             <View className="flex-row flex-wrap gap-2 mb-4">
               {ICON_OPTIONS.map((ic) => {
                 const active = icon === ic;

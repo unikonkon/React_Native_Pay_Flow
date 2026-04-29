@@ -110,6 +110,15 @@ function renderGlyph(kind: string, stroke: string) {
     strokeLinejoin: 'round' as const,
     strokeLinecap: 'round' as const,
   };
+  // Tinted variant — same outline as `f`, but with a custom fill color so we
+  // can paint icons with semantic palette (gold trophy, red heart, …).
+  const tint = (color: string) => ({
+    fill: color,
+    stroke: '#2A2320',
+    strokeWidth: 1.2,
+    strokeLinejoin: 'round' as const,
+    strokeLinecap: 'round' as const,
+  });
 
   switch (kind) {
     // ───────── EXPENSE ─────────
@@ -265,19 +274,19 @@ function renderGlyph(kind: string, stroke: string) {
           {/* Car body — chubby */}
           <Path
             d="M7 27 Q7 22 9 19 L13 14 Q15 12 18 12 H26 Q29 12 31 14 L35 19 Q37 22 37 27 V31 Q37 33 35 33 H9 Q7 33 7 31 Z"
-            {...f}
+            {...tint('#E54B5C')}
           />
           {/* Windows (cut with bg) */}
-          <Path d="M14 16 H21 L23 21 H12 Z" fill="#2A2320" opacity={0.35} stroke="none" />
-          <Path d="M23 16 H28 L31 21 H25 Z" fill="#2A2320" opacity={0.35} stroke="none" />
+          <Path d="M14 16 H21 L23 21 H12 Z" fill="#5B8FB9" stroke="#2A2320" strokeWidth={0.8} />
+          <Path d="M23 16 H28 L31 21 H25 Z" fill="#5B8FB9" stroke="#2A2320" strokeWidth={0.8} />
           {/* Wheels */}
           <Circle cx={13} cy={33} r={3.2} fill="#2A2320" stroke="none" />
           <Circle cx={31} cy={33} r={3.2} fill="#2A2320" stroke="none" />
-          <Circle cx={13} cy={33} r={1.2} fill={stroke} stroke="none" />
-          <Circle cx={31} cy={33} r={1.2} fill={stroke} stroke="none" />
+          <Circle cx={13} cy={33} r={1.2} fill="#FFFFFF" stroke="none" />
+          <Circle cx={31} cy={33} r={1.2} fill="#FFFFFF" stroke="none" />
           {/* Cat ears on roof */}
-          <Path d="M16 12 L15 8 L19 10 Z" {...f} />
-          <Path d="M28 12 L29 8 L25 10 Z" {...f} />
+          <Path d="M16 12 L15 8 L19 10 Z" {...tint('#E54B5C')} />
+          <Path d="M28 12 L29 8 L25 10 Z" {...tint('#E54B5C')} />
         </G>
       );
 
@@ -302,7 +311,7 @@ function renderGlyph(kind: string, stroke: string) {
     case 'bus':
       return (
         <G>
-          <Rect x={8} y={9} width={28} height={22} rx={4} {...f} />
+          <Rect x={8} y={9} width={28} height={22} rx={4} {...tint('#FFD24A')} />
           {/* Windows */}
           <Rect x={11} y={12} width={6} height={6} rx={1} fill="#2A2320" opacity={0.4} stroke="none" />
           <Rect x={19} y={12} width={6} height={6} rx={1} fill="#2A2320" opacity={0.4} stroke="none" />
@@ -314,8 +323,8 @@ function renderGlyph(kind: string, stroke: string) {
           <Circle cx={14} cy={33} r={2.4} fill="#2A2320" stroke="none" />
           <Circle cx={30} cy={33} r={2.4} fill="#2A2320" stroke="none" />
           {/* Cat ears */}
-          <Path d="M14 9 L13 5 L17 7 Z" {...f} />
-          <Path d="M30 9 L31 5 L27 7 Z" {...f} />
+          <Path d="M14 9 L13 5 L17 7 Z" {...tint('#FFD24A')} />
+          <Path d="M30 9 L31 5 L27 7 Z" {...tint('#FFD24A')} />
         </G>
       );
 
@@ -345,12 +354,12 @@ function renderGlyph(kind: string, stroke: string) {
           {/* Bulb */}
           <Path
             d="M22 7 C29 7 32 12 32 17 C32 21 29 23 28 26 V29 H16 V26 C15 23 12 21 12 17 C12 12 15 7 22 7 Z"
-            {...f}
+            {...tint('#FFE066')}
           />
           {/* Base */}
-          <Rect x={16} y={29} width={12} height={3} rx={1} {...f} />
-          <Rect x={17} y={32} width={10} height={2.5} rx={1} {...f} />
-          <Path d="M19 35 H25" stroke={stroke} strokeWidth={1.6} strokeLinecap="round" />
+          <Rect x={16} y={29} width={12} height={3} rx={1} {...tint('#B8B8B8')} />
+          <Rect x={17} y={32} width={10} height={2.5} rx={1} {...tint('#B8B8B8')} />
+          <Path d="M19 35 H25" stroke="#2A2320" strokeWidth={1.6} strokeLinecap="round" />
           {/* Cat eyes inside */}
           <Circle cx={19} cy={17} r={1} fill="#2A2320" stroke="none" />
           <Circle cx={25} cy={17} r={1} fill="#2A2320" stroke="none" />
@@ -408,10 +417,10 @@ function renderGlyph(kind: string, stroke: string) {
     case 'basket':
       return (
         <G>
-          <Path d="M8 17 H36 L33 35 Q33 36 32 36 H12 Q11 36 11 35 Z" {...f} />
+          <Path d="M8 17 H36 L33 35 Q33 36 32 36 H12 Q11 36 11 35 Z" {...tint('#E54B5C')} />
           {/* Handles */}
-          <Path d="M14 17 L18 9 L21 9" {...p} strokeWidth={2.6} />
-          <Path d="M30 17 L26 9 L23 9" {...p} strokeWidth={2.6} />
+          <Path d="M14 17 L18 9 L21 9" stroke="#E54B5C" strokeWidth={2.6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <Path d="M30 17 L26 9 L23 9" stroke="#E54B5C" strokeWidth={2.6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
           {/* Stripes (cut) */}
           <Path
             d="M16 22 V32 M22 22 V32 M28 22 V32"
@@ -488,10 +497,10 @@ function renderGlyph(kind: string, stroke: string) {
         <G>
           <Path
             d="M11 14 H33 L31 35 Q31 36 30 36 H14 Q13 36 13 35 Z"
-            {...f}
+            {...tint('#C19A6B')}
           />
           {/* Handle */}
-          <Path d="M16 14 Q16 7 22 7 Q28 7 28 14" stroke={stroke} strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <Path d="M16 14 Q16 7 22 7 Q28 7 28 14" stroke="#8B5A3C" strokeWidth={2.4} fill="none" strokeLinecap="round" />
           {/* Cat face */}
           <Circle cx={19} cy={23} r={1} fill="#2A2320" stroke="none" />
           <Circle cx={25} cy={23} r={1} fill="#2A2320" stroke="none" />
@@ -503,11 +512,11 @@ function renderGlyph(kind: string, stroke: string) {
     case 'medkit':
       return (
         <G>
-          <Rect x={6} y={13} width={32} height={22} rx={4} {...f} />
-          <Path d="M16 13 V9 Q16 8 17 8 H27 Q28 8 28 9 V13 Z" {...f} />
-          {/* Cross (cut) */}
-          <Rect x={20} y={17} width={4} height={14} rx={1} fill="#2A2320" stroke="none" />
-          <Rect x={15} y={22} width={14} height={4} rx={1} fill="#2A2320" stroke="none" />
+          <Rect x={6} y={13} width={32} height={22} rx={4} {...tint('#FFFFFF')} />
+          <Path d="M16 13 V9 Q16 8 17 8 H27 Q28 8 28 9 V13 Z" {...tint('#FFFFFF')} />
+          {/* Cross (red medical cross) */}
+          <Rect x={20} y={17} width={4} height={14} rx={1} fill="#E54B5C" stroke="none" />
+          <Rect x={15} y={22} width={14} height={4} rx={1} fill="#E54B5C" stroke="none" />
           <PawStamp x={32} y={31} s={0.45} color="#2A2320" />
         </G>
       );
@@ -529,7 +538,7 @@ function renderGlyph(kind: string, stroke: string) {
     case 'film':
       return (
         <G>
-          <Rect x={6} y={9} width={32} height={26} rx={3} {...f} />
+          <Rect x={6} y={9} width={32} height={26} rx={3} {...tint('#A8324B')} />
           {/* Sprocket holes (cut) */}
           <Rect x={9} y={12} width={3} height={3} rx={0.5} fill="#2A2320" stroke="none" />
           <Rect x={9} y={20} width={3} height={3} rx={0.5} fill="#2A2320" stroke="none" />
@@ -538,10 +547,10 @@ function renderGlyph(kind: string, stroke: string) {
           <Rect x={32} y={20} width={3} height={3} rx={0.5} fill="#2A2320" stroke="none" />
           <Rect x={32} y={28} width={3} height={3} rx={0.5} fill="#2A2320" stroke="none" />
           {/* Center cat face */}
-          <Circle cx={22} cy={22} r={6} fill="#2A2320" stroke="none" opacity={0.85} />
-          <Circle cx={19.5} cy={21} r={1} fill={stroke} stroke="none" />
-          <Circle cx={24.5} cy={21} r={1} fill={stroke} stroke="none" />
-          <Path d="M20 24 q2 2 4 0" stroke={stroke} strokeWidth={1.2} fill="none" strokeLinecap="round" />
+          <Circle cx={22} cy={22} r={6} fill="#FFD24A" stroke="#2A2320" strokeWidth={1} />
+          <Circle cx={19.5} cy={21} r={1} fill="#2A2320" stroke="none" />
+          <Circle cx={24.5} cy={21} r={1} fill="#2A2320" stroke="none" />
+          <Path d="M20 24 q2 2 4 0" stroke="#2A2320" strokeWidth={1.2} fill="none" strokeLinecap="round" />
         </G>
       );
 
@@ -550,17 +559,17 @@ function renderGlyph(kind: string, stroke: string) {
         <G>
           <Path
             d="M11 16 H33 Q39 16 39 22 V27 Q39 31 35 31 Q33 31 32 30 L29 27 H15 L12 30 Q11 31 9 31 Q5 31 5 27 V22 Q5 16 11 16 Z"
-            {...f}
+            {...tint('#5B8FB9')}
           />
           {/* D-pad cross */}
           <Rect x={11} y={22} width={2} height={6} rx={0.5} fill="#2A2320" stroke="none" />
           <Rect x={9} y={24} width={6} height={2} rx={0.5} fill="#2A2320" stroke="none" />
-          {/* Buttons */}
-          <Circle cx={29} cy={22} r={1.2} fill="#2A2320" stroke="none" />
-          <Circle cx={33} cy={25} r={1.2} fill="#2A2320" stroke="none" />
+          {/* Buttons (colorful — Nintendo-style) */}
+          <Circle cx={29} cy={22} r={1.4} fill="#FFD24A" stroke="#2A2320" strokeWidth={0.7} />
+          <Circle cx={33} cy={25} r={1.4} fill="#E54B5C" stroke="#2A2320" strokeWidth={0.7} />
           {/* Cat ears */}
-          <Path d="M14 16 L13 12 L17 14 Z" {...f} />
-          <Path d="M30 16 L31 12 L27 14 Z" {...f} />
+          <Path d="M14 16 L13 12 L17 14 Z" {...tint('#5B8FB9')} />
+          <Path d="M30 16 L31 12 L27 14 Z" {...tint('#5B8FB9')} />
         </G>
       );
 
@@ -608,11 +617,11 @@ function renderGlyph(kind: string, stroke: string) {
         <G>
           <Path
             d="M22 35 C20 33 8 25 8 17 C8 12 12 9 16 9 Q19 9 22 12 Q25 9 28 9 C32 9 36 12 36 17 C36 25 24 33 22 35 Z"
-            {...f}
+            {...tint('#E54B5C')}
           />
           {/* Cat ears on heart */}
-          <Path d="M14 12 L12 7 L17 9 Z" {...f} />
-          <Path d="M30 12 L32 7 L27 9 Z" {...f} />
+          <Path d="M14 12 L12 7 L17 9 Z" {...tint('#E54B5C')} />
+          <Path d="M30 12 L32 7 L27 9 Z" {...tint('#E54B5C')} />
           {/* Eyes — heart shaped */}
           <Path d="M17 18 q-1.5 -2 -3 0 q1.5 3 3 4 q1.5 -1 3 -4 q-1.5 -2 -3 0 z" fill="#2A2320" stroke="none" />
           <Path d="M27 18 q-1.5 -2 -3 0 q1.5 3 3 4 q1.5 -1 3 -4 q-1.5 -2 -3 0 z" fill="#2A2320" stroke="none" />
@@ -641,17 +650,17 @@ function renderGlyph(kind: string, stroke: string) {
     case 'gift':
       return (
         <G>
-          <Rect x={6} y={18} width={32} height={18} rx={2.5} {...f} />
+          <Rect x={6} y={18} width={32} height={18} rx={2.5} {...tint('#E54B5C')} />
           {/* Lid */}
-          <Rect x={4} y={14} width={36} height={6} rx={1.5} {...f} />
+          <Rect x={4} y={14} width={36} height={6} rx={1.5} {...tint('#E54B5C')} />
           {/* Ribbon */}
-          <Rect x={20} y={14} width={4} height={22} fill="#2A2320" opacity={0.4} stroke="none" />
+          <Rect x={20} y={14} width={4} height={22} fill="#FFD24A" stroke="#2A2320" strokeWidth={0.6} />
           {/* Bow loops */}
-          <Path d="M22 14 Q16 8 18 6 Q22 6 22 14 Z" {...f} />
-          <Path d="M22 14 Q28 8 26 6 Q22 6 22 14 Z" {...f} />
+          <Path d="M22 14 Q16 8 18 6 Q22 6 22 14 Z" {...tint('#FFD24A')} />
+          <Path d="M22 14 Q28 8 26 6 Q22 6 22 14 Z" {...tint('#FFD24A')} />
           {/* Cat ears on bow */}
-          <Path d="M18 8 L17 5 L20 7 Z" {...f} />
-          <Path d="M26 8 L27 5 L24 7 Z" {...f} />
+          <Path d="M18 8 L17 5 L20 7 Z" {...tint('#FFD24A')} />
+          <Path d="M26 8 L27 5 L24 7 Z" {...tint('#FFD24A')} />
         </G>
       );
 
@@ -700,13 +709,13 @@ function renderGlyph(kind: string, stroke: string) {
         <G>
           <Path
             d="M22 6 L37 11 V21 Q37 31 22 38 Q7 31 7 21 V11 Z"
-            {...f}
+            {...tint('#5B8FB9')}
           />
           {/* Check */}
-          <Path d="M14 22 L20 28 L31 16" stroke="#2A2320" strokeWidth={2.6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <Path d="M14 22 L20 28 L31 16" stroke="#FFD24A" strokeWidth={2.8} fill="none" strokeLinecap="round" strokeLinejoin="round" />
           {/* Cat ears */}
-          <Path d="M15 9 L14 5 L18 7 Z" {...f} />
-          <Path d="M29 9 L30 5 L26 7 Z" {...f} />
+          <Path d="M15 9 L14 5 L18 7 Z" {...tint('#5B8FB9')} />
+          <Path d="M29 9 L30 5 L26 7 Z" {...tint('#5B8FB9')} />
         </G>
       );
 
@@ -774,21 +783,21 @@ function renderGlyph(kind: string, stroke: string) {
       return (
         <G>
           {/* Body */}
-          <Ellipse cx={22} cy={26} rx={15} ry={9.5} {...f} />
+          <Ellipse cx={22} cy={26} rx={15} ry={9.5} {...tint('#F2A8BD')} />
           {/* Cat ears */}
-          <Path d="M14 19 L13 13 L18 16 Z" {...f} />
-          <Path d="M30 19 L31 13 L26 16 Z" {...f} />
+          <Path d="M14 19 L13 13 L18 16 Z" {...tint('#F2A8BD')} />
+          <Path d="M30 19 L31 13 L26 16 Z" {...tint('#F2A8BD')} />
           {/* Coin slot */}
           <Rect x={19} y={17} width={6} height={1.6} rx={0.6} fill="#2A2320" stroke="none" />
           {/* Eye + nose */}
           <Circle cx={29.5} cy={24} r={1} fill="#2A2320" stroke="none" />
           <Circle cx={36} cy={26} r={0.9} fill="#2A2320" stroke="none" />
           {/* Cheek blush */}
-          <Circle cx={32.5} cy={28} r={1.4} fill="#E87A3D" opacity={0.55} stroke="none" />
+          <Circle cx={32.5} cy={28} r={1.4} fill="#E54B5C" opacity={0.55} stroke="none" />
           {/* Legs */}
-          <Path d="M13 35 V38 M18 36 V38 M26 36 V38 M31 35 V38" stroke={stroke} strokeWidth={2.4} strokeLinecap="round" />
+          <Path d="M13 35 V38 M18 36 V38 M26 36 V38 M31 35 V38" stroke="#F2A8BD" strokeWidth={2.4} strokeLinecap="round" />
           {/* Tail curl */}
-          <Path d="M7 24 q-3 -1 -3 -4 q0 -3 3 -3" stroke={stroke} strokeWidth={2.2} fill="none" strokeLinecap="round" />
+          <Path d="M7 24 q-3 -1 -3 -4 q0 -3 3 -3" stroke="#F2A8BD" strokeWidth={2.2} fill="none" strokeLinecap="round" />
         </G>
       );
 
@@ -799,28 +808,28 @@ function renderGlyph(kind: string, stroke: string) {
           {/* Heart */}
           <Path
             d="M22 22 C20 20 14 16 14 12 A3.5 3.5 0 0 1 22 10 A3.5 3.5 0 0 1 30 12 C30 16 24 20 22 22 Z"
-            {...f}
+            {...tint('#E54B5C')}
           />
           {/* Hands cradling */}
           <Path
             d="M6 28 Q11 28 14 32 L17 36 H27 L30 32 Q33 28 38 28 V31 Q34 31 32 33 L29 38 H15 L12 33 Q10 31 6 31 Z"
-            {...f}
+            {...tint('#F4B48A')}
           />
           {/* Cat ears on heart */}
-          <Path d="M16 12 L14 8 L19 10 Z" {...f} />
-          <Path d="M28 12 L30 8 L25 10 Z" {...f} />
+          <Path d="M16 12 L14 8 L19 10 Z" {...tint('#E54B5C')} />
+          <Path d="M28 12 L30 8 L25 10 Z" {...tint('#E54B5C')} />
         </G>
       );
 
     case 'gold-bars':
       return (
         <G>
-          <Path d="M17 19 H27 L29 24 H15 Z" {...f} />
-          <Path d="M13 24 H31 L33 29 H11 Z" {...f} />
-          <Path d="M7 29 H37 L40 35 H4 Z" {...f} />
+          <Path d="M17 19 H27 L29 24 H15 Z" {...tint('#E8B547')} />
+          <Path d="M13 24 H31 L33 29 H11 Z" {...tint('#E8B547')} />
+          <Path d="M7 29 H37 L40 35 H4 Z" {...tint('#E8B547')} />
           {/* Sparkle */}
-          <Path d="M22 7 l1 3 3 1 -3 1 -1 3 -1 -3 -3 -1 3 -1 z" {...f} />
-          <Path d="M10 13 l0.6 1.6 1.6 0.6 -1.6 0.6 -0.6 1.6 -0.6 -1.6 -1.6 -0.6 1.6 -0.6 z" {...f} />
+          <Path d="M22 7 l1 3 3 1 -3 1 -1 3 -1 -3 -3 -1 3 -1 z" {...tint('#FFE08A')} />
+          <Path d="M10 13 l0.6 1.6 1.6 0.6 -1.6 0.6 -0.6 1.6 -0.6 -1.6 -1.6 -0.6 1.6 -0.6 z" {...tint('#FFE08A')} />
         </G>
       );
 
@@ -829,24 +838,24 @@ function renderGlyph(kind: string, stroke: string) {
     case 'briefcase':
       return (
         <G>
-          <Rect x={6} y={13} width={32} height={22} rx={3} {...f} />
+          <Rect x={6} y={13} width={32} height={22} rx={3} {...tint('#8B5A3C')} />
           {/* Handle */}
-          <Path d="M16 13 V9 Q16 7 18 7 H26 Q28 7 28 9 V13" stroke={stroke} strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <Path d="M16 13 V9 Q16 7 18 7 H26 Q28 7 28 9 V13" stroke="#8B5A3C" strokeWidth={2.4} fill="none" strokeLinecap="round" />
           {/* Front clasp band */}
           <Rect x={6} y={20} width={32} height={3.5} fill="#2A2320" opacity={0.4} stroke="none" />
-          <Rect x={20} y={21} width={4} height={3.5} rx={0.5} fill="#2A2320" stroke="none" />
+          <Rect x={20} y={21} width={4} height={3.5} rx={0.5} fill="#FFD24A" stroke="none" />
           {/* Cat ears */}
-          <Path d="M14 13 L13 9 L17 11 Z" {...f} />
-          <Path d="M30 13 L31 9 L27 11 Z" {...f} />
+          <Path d="M14 13 L13 9 L17 11 Z" {...tint('#8B5A3C')} />
+          <Path d="M30 13 L31 9 L27 11 Z" {...tint('#8B5A3C')} />
         </G>
       );
 
     case 'sparkles':
       return (
         <G>
-          <Path d="M22 5 L24.5 13.5 L33 16 L24.5 18.5 L22 27 L19.5 18.5 L11 16 L19.5 13.5 Z" {...f} />
-          <Path d="M34 24 L35.2 27.5 L38.7 28.7 L35.2 30 L34 33.5 L32.8 30 L29.3 28.7 L32.8 27.5 Z" {...f} />
-          <Path d="M10 30 L10.8 32.4 L13.2 33.2 L10.8 34 L10 36.4 L9.2 34 L6.8 33.2 L9.2 32.4 Z" {...f} />
+          <Path d="M22 5 L24.5 13.5 L33 16 L24.5 18.5 L22 27 L19.5 18.5 L11 16 L19.5 13.5 Z" {...tint('#FFD24A')} />
+          <Path d="M34 24 L35.2 27.5 L38.7 28.7 L35.2 30 L34 33.5 L32.8 30 L29.3 28.7 L32.8 27.5 Z" {...tint('#FFE08A')} />
+          <Path d="M10 30 L10.8 32.4 L13.2 33.2 L10.8 34 L10 36.4 L9.2 34 L6.8 33.2 L9.2 32.4 Z" {...tint('#FFE08A')} />
         </G>
       );
 
@@ -869,27 +878,27 @@ function renderGlyph(kind: string, stroke: string) {
       return (
         <G>
           {/* Bars (filled) */}
-          <Rect x={9} y={24} width={6} height={12} rx={1.5} {...f} />
-          <Rect x={19} y={16} width={6} height={20} rx={1.5} {...f} />
-          <Rect x={29} y={9} width={6} height={27} rx={1.5} {...f} />
+          <Rect x={9} y={24} width={6} height={12} rx={1.5} {...tint('#5B8FB9')} />
+          <Rect x={19} y={16} width={6} height={20} rx={1.5} {...tint('#FFD24A')} />
+          <Rect x={29} y={9} width={6} height={27} rx={1.5} {...tint('#3E8B68')} />
           {/* Trend arrow */}
-          <Path d="M9 22 L17 16 L23 18 L33 8" stroke={stroke} strokeWidth={2.6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          <Path d="M28 8 H33 V13" stroke={stroke} strokeWidth={2.6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <Path d="M9 22 L17 16 L23 18 L33 8" stroke="#E54B5C" strokeWidth={2.6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <Path d="M28 8 H33 V13" stroke="#E54B5C" strokeWidth={2.6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
         </G>
       );
 
     case 'wallet':
       return (
         <G>
-          <Rect x={6} y={11} width={32} height={24} rx={3.5} {...f} />
+          <Rect x={6} y={11} width={32} height={24} rx={3.5} {...tint('#8B5A3C')} />
           {/* Flap */}
           <Path d="M6 16 H38" stroke="#2A2320" strokeWidth={1.5} opacity={0.4} />
           {/* Coin slot */}
-          <Path d="M28 22 H40 V28 H28 Q24 28 24 25 Q24 22 28 22 Z" {...f} />
+          <Path d="M28 22 H40 V28 H28 Q24 28 24 25 Q24 22 28 22 Z" {...tint('#A06B3F')} />
           <Circle cx={32} cy={25} r={1.6} fill="#2A2320" stroke="none" />
           {/* Cat ears */}
-          <Path d="M14 11 L13 7 L17 9 Z" {...f} />
-          <Path d="M30 11 L31 7 L27 9 Z" {...f} />
+          <Path d="M14 11 L13 7 L17 9 Z" {...tint('#8B5A3C')} />
+          <Path d="M30 11 L31 7 L27 9 Z" {...tint('#8B5A3C')} />
         </G>
       );
 
@@ -911,33 +920,33 @@ function renderGlyph(kind: string, stroke: string) {
     case 'storefront':
       return (
         <G>
-          {/* Awning */}
-          <Path d="M5 13 L8 7 H36 L39 13 V17 Q39 20 36 20 Q33 20 32 17 Q31 20 28 20 Q25 20 24 17 Q23 20 20 20 Q17 20 16 17 Q15 20 12 20 Q9 20 8 17 Q7 20 5 17 Z" {...f} />
+          {/* Awning (red striped) */}
+          <Path d="M5 13 L8 7 H36 L39 13 V17 Q39 20 36 20 Q33 20 32 17 Q31 20 28 20 Q25 20 24 17 Q23 20 20 20 Q17 20 16 17 Q15 20 12 20 Q9 20 8 17 Q7 20 5 17 Z" {...tint('#E54B5C')} />
           {/* Body */}
-          <Path d="M8 20 V36 H36 V20" stroke={stroke} strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <Path d="M8 20 V36 H36 V20" stroke="#2A2320" strokeWidth={2.4} fill="none" strokeLinecap="round" />
           {/* Door */}
-          <Rect x={18} y={24} width={8} height={12} rx={0.6} {...f} />
+          <Rect x={18} y={24} width={8} height={12} rx={0.6} {...tint('#A06B3F')} />
           {/* Windows */}
-          <Rect x={11} y={24} width={4} height={5} rx={0.6} {...f} />
-          <Rect x={29} y={24} width={4} height={5} rx={0.6} {...f} />
+          <Rect x={11} y={24} width={4} height={5} rx={0.6} {...tint('#5B8FB9')} />
+          <Rect x={29} y={24} width={4} height={5} rx={0.6} {...tint('#5B8FB9')} />
         </G>
       );
 
     case 'trending-up':
       return (
         <G>
-          <Path d="M5 32 L17 20 L23 26 L36 12" stroke={stroke} strokeWidth={3.2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          <Path d="M28 12 H38 V22" stroke={stroke} strokeWidth={3.2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          <Circle cx={5} cy={32} r={2} {...f} />
-          <Circle cx={17} cy={20} r={1.6} {...f} />
-          <Circle cx={23} cy={26} r={1.6} {...f} />
+          <Path d="M5 32 L17 20 L23 26 L36 12" stroke="#3E8B68" strokeWidth={3.2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <Path d="M28 12 H38 V22" stroke="#3E8B68" strokeWidth={3.2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <Circle cx={5} cy={32} r={2} {...tint('#3E8B68')} />
+          <Circle cx={17} cy={20} r={1.6} {...tint('#3E8B68')} />
+          <Circle cx={23} cy={26} r={1.6} {...tint('#3E8B68')} />
         </G>
       );
 
     case 'cash':
       return (
         <G>
-          <Rect x={4} y={11} width={36} height={22} rx={2.5} {...f} />
+          <Rect x={4} y={11} width={36} height={22} rx={2.5} {...tint('#3E8B68')} />
           {/* Inner border */}
           <Rect x={7} y={14} width={30} height={16} rx={1.5} fill="none" stroke="#2A2320" strokeWidth={1.2} opacity={0.35} />
           {/* Center coin face */}
@@ -955,14 +964,14 @@ function renderGlyph(kind: string, stroke: string) {
       return (
         <G>
           {/* Pie / donut */}
-          <Circle cx={16} cy={17} r={9} {...f} />
+          <Circle cx={16} cy={17} r={9} {...tint('#5B8FB9')} />
           <Path d="M16 8 V17 H25" stroke="#2A2320" strokeWidth={2.4} fill="none" strokeLinecap="round" />
-          <Path d="M16 17 L24 13 A9 9 0 0 0 16 8 Z" fill="#2A2320" opacity={0.45} stroke="none" />
+          <Path d="M16 17 L24 13 A9 9 0 0 0 16 8 Z" fill="#E87A3D" stroke="#2A2320" strokeWidth={1} />
           {/* Bars */}
-          <Rect x={6} y={30} width={5} height={6} rx={1} {...f} />
-          <Rect x={14} y={28} width={5} height={8} rx={1} {...f} />
-          <Rect x={22} y={26} width={5} height={10} rx={1} {...f} />
-          <Rect x={30} y={24} width={5} height={12} rx={1} {...f} />
+          <Rect x={6} y={30} width={5} height={6} rx={1} {...tint('#3E8B68')} />
+          <Rect x={14} y={28} width={5} height={8} rx={1} {...tint('#FFD24A')} />
+          <Rect x={22} y={26} width={5} height={10} rx={1} {...tint('#E87A3D')} />
+          <Rect x={30} y={24} width={5} height={12} rx={1} {...tint('#E54B5C')} />
         </G>
       );
 
@@ -979,17 +988,17 @@ function renderGlyph(kind: string, stroke: string) {
     case 'trophy':
       return (
         <G>
-          <Path d="M14 8 H30 V18 Q30 24 22 24 Q14 24 14 18 Z" {...f} />
+          <Path d="M14 8 H30 V18 Q30 24 22 24 Q14 24 14 18 Z" {...tint('#E8B547')} />
           {/* Side handles */}
-          <Path d="M14 11 H10 Q9 11 9 12 V14 Q9 18 14 18" stroke={stroke} strokeWidth={2.4} fill="none" strokeLinecap="round" />
-          <Path d="M30 11 H34 Q35 11 35 12 V14 Q35 18 30 18" stroke={stroke} strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <Path d="M14 11 H10 Q9 11 9 12 V14 Q9 18 14 18" stroke="#E8B547" strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <Path d="M30 11 H34 Q35 11 35 12 V14 Q35 18 30 18" stroke="#E8B547" strokeWidth={2.4} fill="none" strokeLinecap="round" />
           {/* Stem + base */}
-          <Rect x={20} y={24} width={4} height={5} {...f} />
-          <Rect x={14} y={29} width={16} height={4} rx={1} {...f} />
-          <Rect x={12} y={33} width={20} height={3} rx={1} {...f} />
+          <Rect x={20} y={24} width={4} height={5} {...tint('#E8B547')} />
+          <Rect x={14} y={29} width={16} height={4} rx={1} {...tint('#E8B547')} />
+          <Rect x={12} y={33} width={20} height={3} rx={1} {...tint('#E8B547')} />
           {/* Star + ears */}
-          <Path d="M16 8 L15 4 L19 6 Z" {...f} />
-          <Path d="M28 8 L29 4 L25 6 Z" {...f} />
+          <Path d="M16 8 L15 4 L19 6 Z" {...tint('#E8B547')} />
+          <Path d="M28 8 L29 4 L25 6 Z" {...tint('#E8B547')} />
           <Path d="M22 14 l0.8 1.8 2 0.3 -1.4 1.3 0.3 2 -1.7 -1 -1.7 1 0.3 -2 -1.4 -1.3 2 -0.3 z" fill="#2A2320" stroke="none" />
         </G>
       );
@@ -1073,22 +1082,22 @@ function renderGlyph(kind: string, stroke: string) {
       return (
         <G>
           {/* 3 stacked coin layers (largest at bottom) */}
-          <Rect x={5} y={32} width={34} height={6} rx={3} {...f} />
-          <Rect x={9} y={25} width={26} height={6} rx={3} {...f} />
+          <Rect x={5} y={32} width={34} height={6} rx={3} {...tint('#E8B547')} />
+          <Rect x={9} y={25} width={26} height={6} rx={3} {...tint('#E8B547')} />
           {/* Top coin = cat head */}
-          <Rect x={13} y={18} width={18} height={6} rx={3} {...f} />
+          <Rect x={13} y={18} width={18} height={6} rx={3} {...tint('#E8B547')} />
           {/* Cat ears on top */}
-          <Path d="M16 18 L15 12 L19 16 Z" {...f} />
-          <Path d="M28 18 L29 12 L25 16 Z" {...f} />
+          <Path d="M16 18 L15 12 L19 16 Z" {...tint('#E8B547')} />
+          <Path d="M28 18 L29 12 L25 16 Z" {...tint('#E8B547')} />
           {/* Eyes on top coin */}
           <Circle cx={19} cy={21} r={0.7} fill="#2A2320" stroke="none" />
           <Circle cx={25} cy={21} r={0.7} fill="#2A2320" stroke="none" />
           {/* Edge highlight strokes */}
           <Path d="M9 35 H35 M13 28 H31" stroke="#2A2320" strokeWidth={0.9} opacity={0.4} strokeLinecap="round" />
           {/* Up arrow on side (growth indicator) */}
-          <Path d="M5 14 V8 M3 11 L5 8 L7 11" stroke={stroke} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          <Path d="M5 14 V8 M3 11 L5 8 L7 11" stroke="#3E8B68" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" fill="none" />
           {/* Sparkle */}
-          <Path d="M37 11 l0.4 1 1 0.4 -1 0.4 -0.4 1 -0.4 -1 -1 -0.4 1 -0.4 z" {...f} />
+          <Path d="M37 11 l0.4 1 1 0.4 -1 0.4 -0.4 1 -0.4 -1 -1 -0.4 1 -0.4 z" {...tint('#FFE08A')} />
         </G>
       );
 
@@ -1096,7 +1105,7 @@ function renderGlyph(kind: string, stroke: string) {
       return (
         <G>
           {/* Big coin */}
-          <Circle cx={22} cy={24} r={14} {...f} />
+          <Circle cx={22} cy={24} r={14} {...tint('#E8B547')} />
           {/* Inner darker ring (depth) */}
           <Circle cx={22} cy={24} r={11} fill="#2A2320" opacity={0.18} stroke="none" />
           <Circle cx={22} cy={24} r={11} fill="none" stroke="#2A2320" strokeWidth={1.1} opacity={0.45} />
@@ -1108,8 +1117,8 @@ function renderGlyph(kind: string, stroke: string) {
           <Circle cx={26} cy={23} r={1} fill="#2A2320" stroke="none" />
           <Path d="M20 27 q2 1.5 4 0" stroke="#2A2320" strokeWidth={1.4} fill="none" strokeLinecap="round" />
           {/* Sparkles */}
-          <Path d="M37 8 l0.7 1.8 1.8 0.7 -1.8 0.7 -0.7 1.8 -0.7 -1.8 -1.8 -0.7 1.8 -0.7 z" {...f} />
-          <Path d="M6 14 l0.4 1 1 0.4 -1 0.4 -0.4 1 -0.4 -1 -1 -0.4 1 -0.4 z" {...f} />
+          <Path d="M37 8 l0.7 1.8 1.8 0.7 -1.8 0.7 -0.7 1.8 -0.7 -1.8 -1.8 -0.7 1.8 -0.7 z" {...tint('#FFE08A')} />
+          <Path d="M6 14 l0.4 1 1 0.4 -1 0.4 -0.4 1 -0.4 -1 -1 -0.4 1 -0.4 z" {...tint('#FFE08A')} />
         </G>
       );
 
@@ -1119,17 +1128,17 @@ function renderGlyph(kind: string, stroke: string) {
           {/* Floating heart with cat ears */}
           <Path
             d="M22 16 C20 14 14 11 14 7 A3 3 0 0 1 22 5 A3 3 0 0 1 30 7 C30 11 24 14 22 16 Z"
-            {...f}
+            {...tint('#E54B5C')}
           />
-          <Path d="M14 8 L13 4 L17 6 Z" {...f} />
-          <Path d="M30 8 L31 4 L27 6 Z" {...f} />
+          <Path d="M14 8 L13 4 L17 6 Z" {...tint('#E54B5C')} />
+          <Path d="M30 8 L31 4 L27 6 Z" {...tint('#E54B5C')} />
           {/* Sparkles around heart */}
-          <Path d="M5 11 l0.5 1.2 1.2 0.5 -1.2 0.5 -0.5 1.2 -0.5 -1.2 -1.2 -0.5 1.2 -0.5 z" {...f} />
-          <Path d="M37 11 l0.5 1.2 1.2 0.5 -1.2 0.5 -0.5 1.2 -0.5 -1.2 -1.2 -0.5 1.2 -0.5 z" {...f} />
+          <Path d="M5 11 l0.5 1.2 1.2 0.5 -1.2 0.5 -0.5 1.2 -0.5 -1.2 -1.2 -0.5 1.2 -0.5 z" {...tint('#FFD24A')} />
+          <Path d="M37 11 l0.5 1.2 1.2 0.5 -1.2 0.5 -0.5 1.2 -0.5 -1.2 -1.2 -0.5 1.2 -0.5 z" {...tint('#FFD24A')} />
           {/* Offering bowl below */}
-          <Path d="M6 22 H38 Q38 30 32 34 Q26 37 22 37 Q18 37 12 34 Q6 30 6 22 Z" {...f} />
+          <Path d="M6 22 H38 Q38 30 32 34 Q26 37 22 37 Q18 37 12 34 Q6 30 6 22 Z" {...tint('#A06B3F')} />
           {/* Bowl base */}
-          <Rect x={14} y={37} width={16} height={2.4} rx={0.8} {...f} />
+          <Rect x={14} y={37} width={16} height={2.4} rx={0.8} {...tint('#A06B3F')} />
         </G>
       );
 
@@ -1297,9 +1306,9 @@ function renderGlyph(kind: string, stroke: string) {
     case 'pricetag':
       return (
         <G>
-          <Path d="M6 10 H26 L38 22 L26 34 H6 Z" {...f} />
+          <Path d="M6 10 H26 L38 22 L26 34 H6 Z" {...tint('#E87A3D')} />
           <Circle cx={28} cy={22} r={2.4} fill="#2A2320" stroke="none" />
-          <Circle cx={28} cy={22} r={0.8} fill={stroke} stroke="none" />
+          <Circle cx={28} cy={22} r={0.8} fill="#FFD24A" stroke="none" />
           <PawStamp x={15} y={26} s={0.6} color="#2A2320" />
         </G>
       );
@@ -1307,7 +1316,7 @@ function renderGlyph(kind: string, stroke: string) {
     case 'star':
       return (
         <G>
-          <Path d="M22 4 L27.5 15.2 L40 17 L31 26 L33.2 38.5 L22 32.6 L10.8 38.5 L13 26 L4 17 L16.5 15.2 Z" {...f} />
+          <Path d="M22 4 L27.5 15.2 L40 17 L31 26 L33.2 38.5 L22 32.6 L10.8 38.5 L13 26 L4 17 L16.5 15.2 Z" {...tint('#FFD24A')} />
           {/* Cat face inside */}
           <Circle cx={19} cy={20} r={0.9} fill="#2A2320" stroke="none" />
           <Circle cx={25} cy={20} r={0.9} fill="#2A2320" stroke="none" />
@@ -1320,10 +1329,10 @@ function renderGlyph(kind: string, stroke: string) {
       return (
         <G>
           {/* Wrench */}
-          <Path d="M28 8 Q34 8 34 14 Q34 18 30 19 L18 31 Q15 34 12 31 Q9 28 12 25 L24 13 Q23 9 28 8 Z" {...f} />
+          <Path d="M28 8 Q34 8 34 14 Q34 18 30 19 L18 31 Q15 34 12 31 Q9 28 12 25 L24 13 Q23 9 28 8 Z" {...tint('#E54B5C')} />
           <Circle cx={29} cy={13} r={1.3} fill="#2A2320" stroke="none" />
           {/* Spark */}
-          <Path d="M36 22 l1 2 2 1 -2 1 -1 2 -1 -2 -2 -1 2 -1 z" {...f} />
+          <Path d="M36 22 l1 2 2 1 -2 1 -1 2 -1 -2 -2 -1 2 -1 z" {...tint('#FFD24A')} />
         </G>
       );
 
@@ -1332,7 +1341,7 @@ function renderGlyph(kind: string, stroke: string) {
         <G>
           <Path
             d="M5 28 V25 L9 18 Q11 16 14 16 H30 Q33 16 35 18 L39 25 V28 Q39 31 36 31 Q34 31 33 30 V32 H29 V30 H15 V32 H11 V30 Q10 31 8 31 Q5 31 5 28 Z"
-            {...f}
+            {...tint('#E54B5C')}
           />
           {/* Windshield */}
           <Path d="M13 21 L16 16 H28 L31 21 Z" fill="#2A2320" opacity={0.45} stroke="none" />
