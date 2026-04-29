@@ -1,4 +1,75 @@
-import { THAI_MONTHS, THAI_MONTHS_FULL } from '@/lib/utils/format';
+# PeriodSelector Calendar Filter — Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement task-by-task. Steps use `- [ ]` checkbox syntax for tracking.
+
+**Goal:** Replace the tabs-based content of `PeriodSelector` modal with a single-pane calendar grid plus a horizontal scroll row of 6 preset shortcut buttons, while keeping the public component API identical.
+
+**Architecture:** All work lives inside `components/ui/PeriodSelector.tsx` (rewrite of modal content) plus one helper `getMonthGrid()` added to `lib/utils/period.ts`. No new dependencies. Calendar grid is composed from `View` / `Pressable` cells with NativeWind classes; range selection uses two `Date | null` state values; presets call existing `getCurrentPeriod(type)` and close the modal immediately.
+
+**Tech Stack:** React Native 0.81 / React 19 / Expo SDK 54 / NativeWind v4 / TypeScript / `expo-haptics` / `@expo/vector-icons` (already used).
+
+**Special instructions for this run:**
+- The project has **no automated test runner** for RN components, so TDD steps are replaced with manual "render-check" steps.
+- The user has explicitly requested **no auto git commits** — all commit steps are intentionally omitted.
+
+**Spec:** `docs/superpowers/specs/2026-04-29-period-selector-calendar-design.md`
+
+---
+
+## File Structure
+
+| File | Change kind | Purpose |
+|---|---|---|
+| `lib/utils/period.ts` | Modify (append) | Add `getMonthGrid(viewMonth: Date): Date[]` returning 42 contiguous days (Mon-start) for the month containing `viewMonth` |
+| `components/ui/PeriodSelector.tsx` | Rewrite content | Modal becomes preset row + month-nav + 6×7 grid + apply button. Trigger chip stays the same |
+
+Files **not touched:** `types/index.ts`, `lib/utils/format.ts`, `app/(tabs)/index.tsx`, `app/(tabs)/analytics.tsx`, `package.json`.
+
+---
+
+## Task 1 — Add `getMonthGrid` helper
+
+**Files:**
+- Modify: `lib/utils/period.ts` (append at end of file)
+
+- [ ] **Step 1: Append helper to `lib/utils/period.ts`**
+
+```ts
+/**
+ * Return 42 dates (6 weeks × 7 days) starting from the Monday of the week that
+ * contains the 1st day of the month of `viewMonth`. Used to render the calendar grid.
+ */
+export function getMonthGrid(viewMonth: Date): Date[] {
+  const first = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
+  const day = first.getDay();
+  const diff = day === 0 ? -6 : 1 - day; // shift to Monday-start
+  const start = new Date(first);
+  start.setDate(first.getDate() + diff);
+  start.setHours(0, 0, 0, 0);
+  const grid: Date[] = [];
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    grid.push(d);
+  }
+  return grid;
+}
+```
+
+- [ ] **Step 2: Sanity check via repl-style assertions (manual review)**
+
+Read the diff and verify: for `new Date(2026, 3, 15)` (Apr 15, 2026 — Wed), the function should return 42 dates beginning with Mon Mar 30, 2026 and ending Sun May 10, 2026. You can verify by visual inspection of the implementation against this example.
+
+---
+
+## Task 2 — Rewrite `PeriodSelector.tsx`
+
+**Files:**
+- Modify (full rewrite of file body): `components/ui/PeriodSelector.tsx`
+
+- [ ] **Step 1: Replace the entire file with the new implementation**
+
+```tsx
 import {
   canShiftPeriod,
   createCustomPeriod,
@@ -8,6 +79,7 @@ import {
   getPeriodRange,
   shiftPeriod,
 } from '@/lib/utils/period';
+import { THAI_MONTHS_FULL } from '@/lib/utils/format';
 import { useIsDarkTheme } from '@/lib/utils/theme';
 import type { Period, PeriodType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,20 +93,14 @@ interface Props {
   className?: string;
 }
 
-type PresetType = Extract<
-  PeriodType,
-  'week' | 'month' | '2months' | '3months' | '4months' | '6months' | 'year' | '2years' | 'all'
->;
+type PresetType = Extract<PeriodType, 'week' | 'month' | '3months' | '6months' | 'year' | 'all'>;
 
 const PRESETS: { type: PresetType; label: string }[] = [
   { type: 'week', label: 'สัปดาห์นี้' },
   { type: 'month', label: 'เดือนนี้' },
-  { type: '2months', label: '2 เดือน' },
   { type: '3months', label: '3 เดือน' },
-  { type: '4months', label: '4 เดือน' },
   { type: '6months', label: '6 เดือน' },
   { type: 'year', label: '1 ปี' },
-  { type: '2years', label: '2 ปี' },
   { type: 'all', label: 'ทั้งหมด' },
 ];
 
@@ -51,10 +117,6 @@ const sameDay = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 const sameMonth = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
-const formatShortThai = (d: Date) => {
-  const yy = String((d.getFullYear() + 543) % 100).padStart(2, '0');
-  return `${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${yy}`;
-};
 
 export function PeriodSelector({ period, onChange, className }: Props) {
   const [open, setOpen] = useState(false);
@@ -62,10 +124,12 @@ export function PeriodSelector({ period, onChange, className }: Props) {
   const chevronActive = isDark ? '#A39685' : '#6B5F52';
   const chevronDisabled = isDark ? '#4A3D30' : '#D3CBC3';
 
-  const [viewMonth, setViewMonth] = useState<Date>(() => {
+  const initialRange = useMemo(() => {
     const r = getPeriodRange(period);
-    return stripTime(new Date(r.start));
-  });
+    return { start: stripTime(new Date(r.start)), end: stripTime(new Date(r.end)) };
+  }, [period]);
+
+  const [viewMonth, setViewMonth] = useState<Date>(() => initialRange.start);
   const [pendingStart, setPendingStart] = useState<Date | null>(null);
   const [pendingEnd, setPendingEnd] = useState<Date | null>(null);
 
@@ -91,7 +155,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
   };
 
   const handleTapDay = (d: Date) => {
-    if (!sameMonth(d, viewMonth)) return;
+    if (!sameMonth(d, viewMonth)) return; // ignore taps on faded out-of-month cells
     Haptics.selectionAsync();
     if (pendingStart === null) {
       setPendingStart(d);
@@ -107,6 +171,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
       }
       return;
     }
+    // both already set OR start === end: start a fresh selection
     setPendingStart(d);
     setPendingEnd(null);
   };
@@ -120,53 +185,11 @@ export function PeriodSelector({ period, onChange, className }: Props) {
     setOpen(false);
   };
 
-  const handleReset = () => {
-    Haptics.selectionAsync();
-    setPendingStart(null);
-    setPendingEnd(null);
-  };
-
-  const handleToday = () => {
-    Haptics.selectionAsync();
-    const today = stripTime(new Date());
-    setViewMonth(new Date(today.getFullYear(), today.getMonth(), 1));
-    if (pendingStart === null) {
-      // No start yet — make today the (single-day) range
-      setPendingStart(today);
-      setPendingEnd(today);
-      return;
-    }
-    // Start exists — set today as the end (swap if today is before start)
-    if (today < pendingStart) {
-      setPendingEnd(pendingStart);
-      setPendingStart(today);
-    } else {
-      setPendingEnd(today);
-    }
-  };
-
-  const selectionStep: 'start' | 'end' | 'done' =
-    pendingStart === null ? 'start' : pendingEnd === null ? 'end' : 'done';
-
-  const stepColor =
-    selectionStep === 'start'
-      ? isDark ? '#A39685' : '#6B5F52'
-      : selectionStep === 'end'
-      ? '#E87A3D'
-      : isDark ? '#F5EFE7' : '#2B2118';
-
-  const stepLabel = (() => {
-    if (selectionStep === 'start') return 'เลือกวันที่เริ่มต้น';
-    if (selectionStep === 'end') {
-      return `เริ่ม ${formatShortThai(pendingStart!)} → เลือกวันที่สุดท้าย`;
-    }
-    return `${formatShortThai(pendingStart!)} → ${formatShortThai(pendingEnd!)}`;
-  })();
-
   const canShift = canShiftPeriod(period);
 
   return (
     <View className={className}>
+      {/* Trigger chip — unchanged */}
       <View className="flex-row items-center justify-between rounded-full bg-card border border-border">
         <Pressable
           onPress={() => { if (canShift) { Haptics.selectionAsync(); onChange(shiftPeriod(period, -1)); } }}
@@ -203,6 +226,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
             onPress={(e) => e.stopPropagation()}
             className="w-11/12 max-w-md bg-card rounded-2xl p-4 border border-border"
           >
+            {/* Header */}
             <View className="flex-row items-center justify-between mb-3">
               <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }} className="text-foreground">
                 เลือกช่วงเวลา
@@ -212,6 +236,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
               </Pressable>
             </View>
 
+            {/* Preset row */}
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -244,76 +269,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
               })}
             </ScrollView>
 
-            <View
-              className="flex-row items-center justify-between rounded-xl px-3 py-2 mb-3 border"
-              style={{
-                borderColor: selectionStep === 'end' ? '#E87A3D' : isDark ? '#4A3D30' : '#E5DDD3',
-                backgroundColor:
-                  selectionStep === 'end'
-                    ? isDark
-                      ? 'rgba(232,122,61,0.12)'
-                      : 'rgba(232,122,61,0.08)'
-                    : 'transparent',
-              }}
-            >
-              <Text
-                numberOfLines={1}
-                style={{
-                  fontFamily: 'IBMPlexSansThai_600SemiBold',
-                  fontSize: 11,
-                  color: stepColor,
-                  flex: 1,
-                  marginRight: 8,
-                }}
-              >
-                {stepLabel}
-              </Text>
-              <Pressable
-                onPress={handleToday}
-                hitSlop={6}
-                className="flex-row items-center px-2 py-1 mr-1 border border-border rounded-lg"
-              >
-                <Ionicons
-                  name="today-outline"
-                  size={14}
-                  color="#E87A3D"
-                  style={{ marginRight: 4 }}
-                />
-                <Text
-                  style={{
-                    fontFamily: 'IBMPlexSansThai_600SemiBold',
-                    fontSize: 12,
-                    color: '#E87A3D',
-                  }}
-                >
-                  วันนี้
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={handleReset}
-                disabled={pendingStart === null}
-                hitSlop={6}
-                className="flex-row items-center px-2 py-1 border border-border rounded-lg"
-                style={{ opacity: pendingStart === null ? 0.4 : 1 }}
-              >
-                <Ionicons
-                  name="refresh"
-                  size={14}
-                  color={isDark ? '#A39685' : '#6B5F52'}
-                  style={{ marginRight: 4 }}
-                />
-                <Text
-                  style={{
-                    fontFamily: 'IBMPlexSansThai_600SemiBold',
-                    fontSize: 12,
-                    color: isDark ? '#A39685' : '#6B5F52',
-                  }}
-                >
-                  ล้าง
-                </Text>
-              </Pressable>
-            </View>
-
+            {/* Month nav */}
             <View className="flex-row items-center justify-between mb-2">
               <Pressable onPress={() => handleShiftMonth(-1)} className="p-2">
                 <Ionicons name="chevron-back" size={20} color={chevronActive} />
@@ -326,6 +282,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
               </Pressable>
             </View>
 
+            {/* Weekday header */}
             <View className="flex-row mb-1">
               {WEEKDAYS.map((w) => (
                 <View key={w} className="flex-1 items-center py-1">
@@ -339,6 +296,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
               ))}
             </View>
 
+            {/* Calendar grid */}
             <CalendarGrid
               viewMonth={viewMonth}
               pendingStart={pendingStart}
@@ -347,6 +305,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
               isDark={isDark}
             />
 
+            {/* Apply button */}
             <Pressable
               onPress={handleApply}
               disabled={pendingStart === null}
@@ -398,33 +357,34 @@ function CalendarGrid({ viewMonth, pendingStart, pendingEnd, onTapDay, isDark }:
               rangeStart !== null && rangeEnd !== null && d > rangeStart && d < rangeEnd;
             const isToday = sameDay(d, today);
 
+            // background
             let bg: string | undefined;
             if (isStart || isEnd) bg = '#E87A3D';
             else if (inRange) bg = isDark ? 'rgba(232,122,61,0.25)' : 'rgba(232,122,61,0.18)';
 
+            // text color
             let textColor: string;
             if (isStart || isEnd) textColor = '#fff';
             else if (!inMonth) textColor = isDark ? '#4A3D30' : '#C8BFB5';
             else textColor = isDark ? '#F5EFE7' : '#2B2118';
 
+            // corner radii: round endpoints, square in-between for visual joining
             const isSingleDay = isStart && isEnd;
-            const radiusStyle = isSingleDay
-              ? { borderRadius: 999 }
-              : isStart
-              ? {
-                  borderTopLeftRadius: 999,
-                  borderBottomLeftRadius: 999,
-                  borderTopRightRadius: 0,
-                  borderBottomRightRadius: 0,
-                }
-              : isEnd
-              ? {
-                  borderTopRightRadius: 999,
-                  borderBottomRightRadius: 999,
-                  borderTopLeftRadius: 0,
-                  borderBottomLeftRadius: 0,
-                }
-              : { borderRadius: 0 };
+            const radius =
+              isSingleDay ? 999 :
+              isStart ? { topLeft: 999, bottomLeft: 999, topRight: 0, bottomRight: 0 } :
+              isEnd ? { topRight: 999, bottomRight: 999, topLeft: 0, bottomLeft: 0 } :
+              0;
+
+            const radiusStyle =
+              typeof radius === 'number'
+                ? { borderRadius: radius }
+                : {
+                    borderTopLeftRadius: radius.topLeft,
+                    borderBottomLeftRadius: radius.bottomLeft,
+                    borderTopRightRadius: radius.topRight,
+                    borderBottomRightRadius: radius.bottomRight,
+                  };
 
             return (
               <Pressable
@@ -442,10 +402,9 @@ function CalendarGrid({ viewMonth, pendingStart, pendingEnd, onTapDay, isDark }:
               >
                 <Text
                   style={{
-                    fontFamily:
-                      isStart || isEnd || isToday
-                        ? 'IBMPlexSansThai_700Bold'
-                        : 'IBMPlexSansThai_500Medium',
+                    fontFamily: isStart || isEnd || isToday
+                      ? 'IBMPlexSansThai_700Bold'
+                      : 'IBMPlexSansThai_500Medium',
                     fontSize: 14,
                     color: textColor,
                   }}
@@ -460,3 +419,55 @@ function CalendarGrid({ viewMonth, pendingStart, pendingEnd, onTapDay, isDark }:
     </View>
   );
 }
+```
+
+- [ ] **Step 2: Verify TypeScript compiles**
+
+Run: `npx tsc --noEmit`
+Expected: no errors related to `components/ui/PeriodSelector.tsx` or `lib/utils/period.ts`. Pre-existing errors elsewhere are out of scope.
+
+- [ ] **Step 3: Manual smoke checks (note in chat for the user to run)**
+
+The dev server must be started by the user (`npx expo start`). After it boots, ask the user to verify the following on the home tab and analytics tab:
+
+1. Trigger chip shows current period label as before; chevron-back / chevron-forward still shift weeks/months.
+2. Tap chip → modal opens. Preset row scrolls horizontally; current `period.type` chip is highlighted in primary.
+3. Tap any preset → label in chip updates and modal closes immediately.
+4. Re-open modal — month nav `< >` shifts the calendar grid only (does not change the highlighted range).
+5. Tap two dates → first becomes start (rounded left corner, primary background), second becomes end (rounded right corner). Days between have a faint primary tint.
+6. Tap a date earlier than current start → start swaps; old start becomes end.
+7. Tap a third date after both endpoints are set → selection resets to that date as new start.
+8. Out-of-month (faded) cells do not respond to taps.
+9. Apply button is disabled (greyed) when no start picked; enabled once a start exists. Tapping Apply with only start → range applied as single day.
+10. Today's date has a primary outline when not part of the active range.
+11. Light + dark theme both render legibly.
+
+---
+
+## Self-Review
+
+**1. Spec coverage:**
+
+| Spec section | Implemented in |
+|---|---|
+| Public API unchanged | Task 2 — Props interface and trigger chip JSX kept verbatim |
+| Modal layout (header / preset / month-nav / weekday / grid / apply) | Task 2 — `<Modal>` body |
+| State (`viewMonth`, `pendingStart`, `pendingEnd`) | Task 2 — `useState` calls |
+| Initial state derivation from `getPeriodRange` | Task 2 — `handleOpen` |
+| Preset behavior (apply + close) | Task 2 — `handlePickPreset` |
+| Tap day logic table (5 cases) | Task 2 — `handleTapDay` |
+| Day cell states (start/end/in-range/today/out-of-month/normal) | Task 2 — `CalendarGrid` |
+| Apply button (disabled / single-day fallback) | Task 2 — `handleApply` + button JSX |
+| `getMonthGrid` helper added | Task 1 |
+| Removed imports (`DateTimePicker`, `Platform`, `listRecentAnchors`, `periodsEqual`) | Task 2 — new import block |
+| Theming via NativeWind tokens | Task 2 — `bg-card`, `border-border`, `text-foreground`, etc. |
+
+All sections covered.
+
+**2. Placeholder scan:** No "TBD", no "TODO", no vague handler stubs — every step contains complete code.
+
+**3. Type consistency:** `PresetType` derived from `PeriodType`; `Date | null` used consistently; `getMonthGrid` signature matches helper definition; `createCustomPeriod(start, end)` arg order matches existing util.
+
+**Note on TDD departure:** The project ships no test runner for components, and the user explicitly asked to write code now. The plan substitutes the failing-test step with a manual verification checklist that mirrors each behavior the unit tests would cover. If a test runner is introduced later, those checklist items map 1:1 to test cases.
+
+**Note on commit steps:** Intentionally omitted per user instruction "ไม่ต้อง commit".

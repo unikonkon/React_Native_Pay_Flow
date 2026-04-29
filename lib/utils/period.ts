@@ -26,8 +26,16 @@ export function getCurrentPeriod(type: PeriodType): Period {
       return { type, anchor: toISO(mondayOf(now)) };
     case 'month':
       return { type, anchor: toISO(firstOfMonth(now)) };
+    case '2months': {
+      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      return { type, anchor: toISO(start) };
+    }
     case '3months': {
       const start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+      return { type, anchor: toISO(start) };
+    }
+    case '4months': {
+      const start = new Date(now.getFullYear(), now.getMonth() - 3, 1);
       return { type, anchor: toISO(start) };
     }
     case '6months': {
@@ -36,6 +44,8 @@ export function getCurrentPeriod(type: PeriodType): Period {
     }
     case 'year':
       return { type, anchor: `${now.getFullYear()}-01-01` };
+    case '2years':
+      return { type, anchor: `${now.getFullYear() - 1}-01-01` };
     case 'all':
       return { type, anchor: ALL_START };
     case 'custom':
@@ -59,8 +69,16 @@ export function getPeriodRange(p: Period): { start: string; end: string } {
       const end = new Date(a.getFullYear(), a.getMonth() + 1, 0);
       return { start: toISO(a), end: toISO(end) };
     }
+    case '2months': {
+      const end = new Date(a.getFullYear(), a.getMonth() + 2, 0);
+      return { start: toISO(a), end: toISO(end) };
+    }
     case '3months': {
       const end = new Date(a.getFullYear(), a.getMonth() + 3, 0);
+      return { start: toISO(a), end: toISO(end) };
+    }
+    case '4months': {
+      const end = new Date(a.getFullYear(), a.getMonth() + 4, 0);
       return { start: toISO(a), end: toISO(end) };
     }
     case '6months': {
@@ -69,6 +87,8 @@ export function getPeriodRange(p: Period): { start: string; end: string } {
     }
     case 'year':
       return { start: `${a.getFullYear()}-01-01`, end: `${a.getFullYear()}-12-31` };
+    case '2years':
+      return { start: `${a.getFullYear()}-01-01`, end: `${a.getFullYear() + 1}-12-31` };
     case 'all':
       return { start: ALL_START, end: toISO(new Date()) };
     case 'custom':
@@ -91,9 +111,17 @@ export function shiftPeriod(p: Period, dir: -1 | 1): Period {
       const n = new Date(a.getFullYear(), a.getMonth() + dir, 1);
       return { type: 'month', anchor: toISO(n) };
     }
+    case '2months': {
+      const n = new Date(a.getFullYear(), a.getMonth() + 2 * dir, 1);
+      return { type: '2months', anchor: toISO(n) };
+    }
     case '3months': {
       const n = new Date(a.getFullYear(), a.getMonth() + 3 * dir, 1);
       return { type: '3months', anchor: toISO(n) };
+    }
+    case '4months': {
+      const n = new Date(a.getFullYear(), a.getMonth() + 4 * dir, 1);
+      return { type: '4months', anchor: toISO(n) };
     }
     case '6months': {
       const n = new Date(a.getFullYear(), a.getMonth() + 6 * dir, 1);
@@ -101,6 +129,8 @@ export function shiftPeriod(p: Period, dir: -1 | 1): Period {
     }
     case 'year':
       return { type: 'year', anchor: `${a.getFullYear() + dir}-01-01` };
+    case '2years':
+      return { type: '2years', anchor: `${a.getFullYear() + 2 * dir}-01-01` };
     case 'all':
     case 'custom':
       return p;
@@ -116,7 +146,9 @@ export function formatPeriodLabel(p: Period): string {
       const a = new Date(p.anchor);
       return `${THAI_MONTHS_FULL[a.getMonth()]} ${a.getFullYear() + 543}`;
     }
+    case '2months':
     case '3months':
+    case '4months':
     case '6months': {
       const s = new Date(start);
       const e = new Date(end);
@@ -124,6 +156,11 @@ export function formatPeriodLabel(p: Period): string {
     }
     case 'year':
       return `ปี ${new Date(p.anchor).getFullYear() + 543}`;
+    case '2years': {
+      const s = new Date(start);
+      const e = new Date(end);
+      return `ปี ${s.getFullYear() + 543} - ${e.getFullYear() + 543}`;
+    }
     case 'all':
       return 'ทั้งหมด';
     case 'custom': {
@@ -146,6 +183,26 @@ export function listRecentAnchors(type: PeriodType, count: number): Period[] {
 
 export function periodsEqual(a: Period, b: Period): boolean {
   return a.type === b.type && a.anchor === b.anchor;
+}
+
+/**
+ * Return 42 dates (6 weeks × 7 days) starting from the Monday of the week that
+ * contains the 1st day of the month of `viewMonth`. Used to render the calendar grid.
+ */
+export function getMonthGrid(viewMonth: Date): Date[] {
+  const first = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
+  const day = first.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  const start = new Date(first);
+  start.setDate(first.getDate() + diff);
+  start.setHours(0, 0, 0, 0);
+  const grid: Date[] = [];
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    grid.push(d);
+  }
+  return grid;
 }
 
 export function getBarChartBuckets(
@@ -179,16 +236,13 @@ export function getBarChartBuckets(
       }
       return buckets;
     }
-    case '3months': {
-      for (let i = 0; i < 3; i++) {
-        const s = new Date(a.getFullYear(), a.getMonth() + i, 1);
-        const e = new Date(a.getFullYear(), a.getMonth() + i + 1, 0);
-        buckets.push({ start: toISO(s), end: toISO(e), label: THAI_MONTHS[s.getMonth()] });
-      }
-      return buckets;
-    }
+    case '2months':
+    case '3months':
+    case '4months':
     case '6months': {
-      for (let i = 0; i < 6; i++) {
+      const monthCount =
+        p.type === '2months' ? 2 : p.type === '3months' ? 3 : p.type === '4months' ? 4 : 6;
+      for (let i = 0; i < monthCount; i++) {
         const s = new Date(a.getFullYear(), a.getMonth() + i, 1);
         const e = new Date(a.getFullYear(), a.getMonth() + i + 1, 0);
         buckets.push({ start: toISO(s), end: toISO(e), label: THAI_MONTHS[s.getMonth()] });
@@ -200,6 +254,19 @@ export function getBarChartBuckets(
         const s = new Date(a.getFullYear(), i, 1);
         const e = new Date(a.getFullYear(), i + 1, 0);
         buckets.push({ start: toISO(s), end: toISO(e), label: THAI_MONTHS[i] });
+      }
+      return buckets;
+    }
+    case '2years': {
+      // 24 months across 2 years — show every other month label to keep the axis readable
+      for (let i = 0; i < 24; i++) {
+        const s = new Date(a.getFullYear(), a.getMonth() + i, 1);
+        const e = new Date(a.getFullYear(), a.getMonth() + i + 1, 0);
+        const label =
+          i % 2 === 0
+            ? `${THAI_MONTHS[s.getMonth()]} ${String((s.getFullYear() + 543) % 100).padStart(2, '0')}`
+            : '';
+        buckets.push({ start: toISO(s), end: toISO(e), label });
       }
       return buckets;
     }
