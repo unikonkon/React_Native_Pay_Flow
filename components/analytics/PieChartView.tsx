@@ -1,6 +1,6 @@
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { formatCurrency } from '@/lib/utils/format';
 import type { Category, CategorySummary, Period } from '@/types';
-import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
@@ -326,7 +326,38 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
                 strokeColor={color}
               />
               <View style={{ flex: 1 }}>
-                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, marginBottom: 6 }} className="text-foreground">{item.category?.name ?? 'อื่น ๆ'}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                  {viewType === 'all' && item.category && (
+                    <View
+                      style={{
+                        paddingHorizontal: 6,
+                        paddingVertical: 1,
+                        borderRadius: 6,
+                        backgroundColor: item.category.type === 'income' ? '#E3F1EA' : '#FBE5E1',
+                        borderWidth: 1,
+                        borderColor: item.category.type === 'income' ? '#3E8B68' : '#C65A4E',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: 'IBMPlexSansThai_700Bold',
+                          fontSize: 10,
+                          color: item.category.type === 'income' ? '#3E8B68' : '#C65A4E',
+                          lineHeight: 14,
+                        }}
+                      >
+                        {item.category.type === 'income' ? 'รับ' : 'จ่าย'}
+                      </Text>
+                    </View>
+                  )}
+                  <Text
+                    numberOfLines={1}
+                    style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, flexShrink: 1 }}
+                    className="text-foreground"
+                  >
+                    {item.category?.name ?? 'อื่น ๆ'}
+                  </Text>
+                </View>
                 {/* Progress bar */}
                 <View className="bg-secondary" style={{ height: 4, borderRadius: 999, overflow: 'hidden' }}>
                   <View style={{ width: `${Math.min(item.percentage, 100)}%`, height: '100%', backgroundColor: color, borderRadius: 999 }} />
