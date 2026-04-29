@@ -1,3 +1,4 @@
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { getDb, getTransactionsByRange } from '@/lib/stores/db';
 import { formatCurrency, formatDateThai } from '@/lib/utils/format';
@@ -389,11 +390,13 @@ function CategoryCompareRow({ row, isFirst, labelA, labelB }: { row: CompareRow;
         style={({ pressed }) => ({ paddingHorizontal: 16, paddingVertical: 12, opacity: pressed ? 0.7 : 1 })}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-          <View
-            className="rounded-full items-center justify-center"
-            style={{ width: 32, height: 32, backgroundColor: catColor + '22', marginRight: 10 }}
-          >
-            <Ionicons name={catIcon} size={14} color={catColor} />
+          <View style={{ marginRight: 10 }}>
+            <CatCategoryIcon
+              kind={catIcon}
+              size={32}
+              bg={catColor + '22'}
+              strokeColor={catColor}
+            />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground" numberOfLines={1}>{catName}</Text>

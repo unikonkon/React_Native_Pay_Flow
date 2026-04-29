@@ -1,3 +1,4 @@
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { formatCurrency } from '@/lib/utils/format';
 import { getPeriodRange } from '@/lib/utils/period';
@@ -189,11 +190,13 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
                         })}
                       >
                         <View className="px-4 py-2 flex-row items-center">
-                          <View
-                            className="rounded-full items-center justify-center"
-                            style={{ width: 36, height: 36, backgroundColor: catColor + '20', marginRight: 12 }}
-                          >
-                            <Ionicons name={catIcon} size={16} color={catColor} />
+                          <View style={{ marginRight: 12 }}>
+                            <CatCategoryIcon
+                              kind={catIcon}
+                              size={36}
+                              bg={catColor + '20'}
+                              strokeColor={catColor}
+                            />
                           </View>
                           <View style={{ flex: 1 }}>
                             <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground" numberOfLines={1}>
