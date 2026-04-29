@@ -92,7 +92,7 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
     <Modal visible={visible} animationType="fade" onRequestClose={onClose}>
       <View className="flex-1 bg-background">
         {/* Header */}
-        <View style={{ paddingTop: 56, paddingBottom: 12, paddingHorizontal: 16, backgroundColor: themeColor + '15' }}>
+        <View style={{ paddingTop: 56, paddingBottom: 8, paddingHorizontal: 16, backgroundColor: themeColor + '15' }}>
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center flex-1">
               <View
@@ -102,8 +102,8 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
                 <Ionicons name={themeIcon} size={18} color={themeColor} />
               </View>
               <View className="ml-3 flex-1">
-                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }} className="text-foreground">{themeTitle}</Text>
-                <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">
+                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16 }} className="text-foreground">{themeTitle}</Text>
+                <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">
                   {isSplit ? `${transactions.length} รายการ` : `${formatCurrency(totalAmount)} บาท · ${transactions.length} รายการ`}
                 </Text>
               </View>

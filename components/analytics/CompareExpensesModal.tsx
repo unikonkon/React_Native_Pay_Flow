@@ -177,7 +177,7 @@ export function CompareExpensesModal({ visible, onClose, walletId }: Props) {
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-background">
         {/* Header */}
-        <View className="bg-accent" style={{ paddingTop: 56, paddingBottom: 12, paddingHorizontal: 16 }}>
+        <View className="bg-accent" style={{ paddingTop: 56, paddingBottom: 8, paddingHorizontal: 16 }}>
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center flex-1">
               <View
@@ -187,7 +187,7 @@ export function CompareExpensesModal({ visible, onClose, walletId }: Props) {
                 <Ionicons name="swap-horizontal" size={20} color="#E87A3D" />
               </View>
               <View className="ml-3 flex-1">
-                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }} className="text-foreground">เทียบรายจ่าย</Text>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16 }} className="text-foreground">เทียบรายจ่าย</Text>
                 <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">เปรียบเทียบเดือนต่อเดือน</Text>
               </View>
             </View>
@@ -489,40 +489,135 @@ function MonthPickerModal({ visible, title, options, selected, onSelect, onClose
   onSelect: (m: MonthKey) => void;
   onClose: () => void;
 }) {
+  const years = useMemo(
+    () => Array.from(new Set(options.map(o => o.year))).sort((a, b) => b - a),
+    [options],
+  );
+  const validKeys = useMemo(() => new Set(options.map(o => monthKeyStr(o))), [options]);
+
+  const [tempYear, setTempYear] = useState(selected.year);
+
+  useEffect(() => {
+    if (visible) setTempYear(selected.year);
+  }, [visible, selected.year]);
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable onPress={onClose} className="flex-1 bg-black/40 items-center justify-center">
         <Pressable
           onPress={(e) => e.stopPropagation()}
           className="w-11/12 max-w-md bg-card rounded-2xl p-4 border border-border"
-          style={{ maxHeight: '75%' }}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 17 }} className="text-foreground">{title}</Text>
+          {/* Header */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 17 }} className="text-foreground">{title}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                {options.length > 0 && (
+                  <Pressable
+                    onPress={() => { Haptics.selectionAsync(); onSelect(options[0]); }}
+                    hitSlop={6}
+                    style={({ pressed }) => ({
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
+                      borderRadius: 999,
+                      backgroundColor: pressed ? '#E87A3D33' : '#E87A3D18',
+                    })}
+                    accessibilityRole="button"
+                    accessibilityLabel="ไปเดือนล่าสุด"
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }} className="rounded-full border border-border px-2 py-1">
+                      <Ionicons name="time-outline" size={13} color="#E87A3D" />
+                      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#E87A3D' }}>
+                        เดือนล่าสุด
+                      </Text>
+                    </View>
+                  </Pressable>
+                )}
+              </View>
+            </View>
+
             <Pressable onPress={onClose} className="p-1">
               <Ionicons name="close" size={22} color="#6B5F52" />
             </Pressable>
           </View>
-          <ScrollView>
-            {options.map((m) => {
-              const isSelected = m.year === selected.year && m.month === selected.month;
+
+          {/* Year chips */}
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, marginBottom: 6 }} className="text-muted-foreground">ปี</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingRight: 8, gap: 8 }}
+            style={{ marginBottom: 14 }}
+          >
+            {years.map((y) => {
+              const isActive = y === tempYear;
               return (
                 <Pressable
-                  key={monthKeyStr(m)}
-                  onPress={() => onSelect(m)}
-                  className={`px-4 py-3 rounded-xl mb-1.5 flex-row items-center justify-between ${isSelected ? 'bg-primary' : 'bg-background border border-border'}`}
+                  key={y}
+                  onPress={() => { Haptics.selectionAsync(); setTempYear(y); }}
+                  style={{
+                    paddingHorizontal: 14,
+                    paddingVertical: 8,
+                    borderRadius: 999,
+                    backgroundColor: isActive ? '#E87A3D' : 'transparent',
+                    borderWidth: 1,
+                    borderColor: isActive ? '#E87A3D' : '#E5DDD3',
+                  }}
                 >
                   <Text
-                    className={isSelected ? 'text-primary-foreground' : 'text-foreground'}
-                    style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }}
+                    style={{
+                      fontFamily: 'IBMPlexSansThai_600SemiBold',
+                      fontSize: 13,
+                      color: isActive ? '#fff' : '#2B2118',
+                    }}
                   >
-                    {monthLabel(m, true)}
+                    {y + 543}
                   </Text>
-                  {isSelected && <Ionicons name="checkmark" size={18} color="white" />}
                 </Pressable>
               );
             })}
           </ScrollView>
+
+          {/* Month grid 3 × 4 */}
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, marginBottom: 6 }} className="text-muted-foreground">เดือน</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            {Array.from({ length: 12 }, (_, m) => {
+              const isSelected = tempYear === selected.year && m === selected.month;
+              const key: MonthKey = { year: tempYear, month: m };
+              const enabled = validKeys.has(monthKeyStr(key));
+              return (
+                <View key={m} style={{ width: '33.333%', padding: 4 }}>
+                  <Pressable
+                    onPress={() => { if (enabled) onSelect(key); }}
+                    disabled={!enabled}
+                    style={({ pressed }) => ({
+                      paddingVertical: 14,
+                      borderRadius: 14,
+                      alignItems: 'center',
+                      borderWidth: 1.5,
+                      borderColor: isSelected ? '#E87A3D' : enabled ? '#E5DDD3' : '#F0EAE2',
+                      backgroundColor: isSelected ? '#E87A3D' : 'transparent',
+                      opacity: !enabled ? 0.4 : pressed ? 0.7 : 1,
+                    })}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: 'IBMPlexSansThai_600SemiBold',
+                        fontSize: 14,
+                        color: isSelected ? '#fff' : enabled ? '#2B2118' : '#A39685',
+                      }}
+                    >
+                      {THAI_MONTHS_FULL[m]}
+                    </Text>
+                  </Pressable>
+                </View>
+              );
+            })}
+          </View>
         </Pressable>
       </Pressable>
     </Modal>
