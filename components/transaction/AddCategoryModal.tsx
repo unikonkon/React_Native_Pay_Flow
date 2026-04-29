@@ -72,7 +72,7 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
           style={{ maxHeight: '89%' }}
         >
           <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-foreground font-bold text-lg" style={{ fontFamily: 'IBMPlexSansThai_700Bold' }}>
+            <Text className="text-foreground font-bold text-lg" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold' }}>
               เพิ่มหมวด{type === 'expense' ? 'รายจ่าย' : 'รายรับ'}
             </Text>
        

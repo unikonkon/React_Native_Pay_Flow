@@ -12,11 +12,13 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Easing } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AddTransactionScreen() {
   const sheetRef = useRef<BottomSheet>(null);
   const addTxSheetHeight = useSettingsStore(s => s.addTxSheetHeight);
   const snapPoints = useMemo(() => [`${addTxSheetHeight}%`], [addTxSheetHeight]);
+  const insets = useSafeAreaInsets();
 
   // Theme-aware sheet surface colors (match --background + --border from global.css)
   const currentTheme = useThemeStore(s => s.currentTheme);
@@ -70,6 +72,7 @@ export default function AddTransactionScreen() {
         ref={sheetRef}
         index={0}
         snapPoints={snapPoints}
+        topInset={insets.top}
         enableDynamicSizing={false}
         enableOverDrag={false}
         enablePanDownToClose

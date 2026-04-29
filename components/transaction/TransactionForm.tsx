@@ -22,6 +22,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CategoryGridModal } from './CategoryGridModal';
 import { CategorySettingsModal } from './CategorySettingsModal';
 
@@ -50,6 +51,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   const [topAnalyses, setTopAnalyses] = useState<Analysis[]>([]);
 
   const isEditMode = !!(editTransaction && editTransaction.id);
+  const insets = useSafeAreaInsets();
 
   const categories = useCategoryStore(s => s.categories);
   const wallets = useWalletStore(s => s.wallets);
@@ -444,7 +446,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
         </BottomSheetScrollView>
 
         {/* Bottom fixed section */}
-        <View style={{ flexShrink: 0, paddingBottom: 6 }}>
+        <View style={{ flexShrink: 0, paddingBottom: Math.max(6, insets.bottom) }}>
           {/* Frequent pills */}
           {showFrequentPills && topAnalyses.length > 0 && (
             <View style={{ paddingBottom: 6 }}>

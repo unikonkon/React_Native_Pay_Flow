@@ -13,7 +13,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Modal, Pressable, Text, View } from 'react-native';
 import DraggableFlatList, { ScaleDecorator, type RenderItemParams } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const WALLET_TYPES: { value: WalletType; label: string; icon: string }[] = [
   { value: 'cash', label: 'เงินสด', icon: 'cash-outline' },
@@ -42,6 +42,7 @@ export default function WalletsScreen() {
   const sheetPrimary = swatch?.primary ?? '#E87A3D';
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['60%'], []);
+  const insets = useSafeAreaInsets();
 
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null);
   const [name, setName] = useState('');
@@ -342,12 +343,13 @@ export default function WalletsScreen() {
           ref={bottomSheetRef}
           index={-1}
           snapPoints={snapPoints}
+          topInset={insets.top}
           enablePanDownToClose
           onClose={resetForm}
           backgroundStyle={{ backgroundColor: sheetBg }}
           handleIndicatorStyle={{ backgroundColor: sheetBorder, width: 36, height: 4 }}
         >
-          <BottomSheetScrollView contentContainerStyle={{ padding: 20 }}>
+          <BottomSheetScrollView contentContainerStyle={{ padding: 20, paddingBottom: 20 + insets.bottom }}>
             <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, textAlign: 'center', marginBottom: 16, color: sheetInk }}>
               {isEditing ? 'แก้ไขกระเป๋าเงิน' : 'เพิ่มกระเป๋าเงิน'}
             </Text>
