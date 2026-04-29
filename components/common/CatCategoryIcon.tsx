@@ -101,54 +101,161 @@ function FatCatFace({ stroke }: { stroke: string }) {
 
 function renderGlyph(kind: string, stroke: string) {
   const p = { ...STROKE_BASE, stroke };
-  // Solid filled style: same color, no stroke seams (used for primary silhouettes)
-  const f = { fill: stroke, stroke: 'none' as const };
+  // Solid filled style with a dark outline so silhouettes feel hand-drawn / "lined"
+  // The outline color (#2A2320, deep brown) contrasts against any category color.
+  const f = {
+    fill: stroke,
+    stroke: '#2A2320',
+    strokeWidth: 1.2,
+    strokeLinejoin: 'round' as const,
+    strokeLinecap: 'round' as const,
+  };
 
   switch (kind) {
     // ───────── EXPENSE ─────────
 
     case 'fast-food':
+      // Thai rice plate (จานข้าว) — plate + rice mound + meat + vegetable + sunny-side egg + cat ears
       return (
         <G>
-          {/* Burger top bun (filled, dome-shaped) */}
-          <Path
-            d="M9 19 Q9 12 22 12 Q35 12 35 19 Z"
-            {...f}
+          {/* Plate (side oval) */}
+          <Ellipse cx={22} cy={33} rx={17} ry={3.5} {...f} />
+          {/* Plate inner rim highlight (food surface) */}
+          <Ellipse
+            cx={22}
+            cy={32}
+            rx={15.2}
+            ry={2.5}
+            fill="#FFFFFF"
+            stroke="#2A2320"
+            strokeWidth={1}
           />
-          <Circle cx={16} cy={16} r={0.6} fill={stroke === '#FFFFFF' ? '#E87A3D' : stroke} />
-          <Circle cx={22} cy={14.5} r={0.6} fill={stroke === '#FFFFFF' ? '#E87A3D' : stroke} />
-          <Circle cx={28} cy={16} r={0.6} fill={stroke === '#FFFFFF' ? '#E87A3D' : stroke} />
-          {/* Filling layer */}
-          <Path d="M8 21 Q22 17 36 21 L36 22 Q22 26 8 22 Z" {...f} />
-          {/* Patty */}
-          <Path d="M8 23 H36 V26 H8 Z" {...f} />
-          {/* Bottom bun */}
-          <Path d="M9 26 Q22 32 35 26 L33 30 Q22 34 11 30 Z" {...f} />
-          {/* Cat ears on top */}
-          <Path d="M14 13 L13 9 L17 11 Z" {...f} />
-          <Path d="M30 13 L31 9 L27 11 Z" {...f} />
+
+          {/* Rice mound on left half */}
+          <Path
+            d="M6 31 Q6 18 16 18 Q24 18 24 31 Z"
+            fill="#FFFFFF"
+            stroke="#2A2320"
+            strokeWidth={1.4}
+            strokeLinejoin="round"
+          />
+          {/* Rice grain texture dots */}
+          <Circle cx={11} cy={25} r={0.55} fill="#2A2320" opacity={0.55} />
+          <Circle cx={14} cy={22} r={0.55} fill="#2A2320" opacity={0.55} />
+          <Circle cx={18} cy={24} r={0.55} fill="#2A2320" opacity={0.55} />
+          <Circle cx={20} cy={28} r={0.55} fill="#2A2320" opacity={0.55} />
+          <Circle cx={13} cy={28.5} r={0.5} fill="#2A2320" opacity={0.5} />
+          <Circle cx={9} cy={28} r={0.5} fill="#2A2320" opacity={0.5} />
+
+          {/* Stir-fry meat / chicken pieces on right */}
+          <Path
+            d="M24 30 Q24 24 28 24 Q32 24 33 27 Q34 30 31 31 Q27 32 24 30 Z"
+            fill="#C97A4E"
+            stroke="#2A2320"
+            strokeWidth={1.2}
+            strokeLinejoin="round"
+          />
+          {/* Meat highlight — small lighter accent */}
+          <Path
+            d="M27 26 Q29 25 31 26"
+            stroke="#FFFFFF"
+            strokeWidth={0.9}
+            strokeLinecap="round"
+            fill="none"
+            opacity={0.7}
+          />
+
+          {/* Broccoli florets (vegetable) — top right */}
+          <Circle cx={29} cy={22} r={1.6} fill="#6BA87A" stroke="#2A2320" strokeWidth={1} />
+          <Circle cx={32} cy={20.5} r={1.3} fill="#6BA87A" stroke="#2A2320" strokeWidth={0.9} />
+          <Circle cx={32.5} cy={23} r={1.2} fill="#6BA87A" stroke="#2A2320" strokeWidth={0.9} />
+          {/* Broccoli stem */}
+          <Path d="M30 24 V25.5" stroke="#5A8A66" strokeWidth={1.1} strokeLinecap="round" />
+
+          {/* Sunny-side egg on top of rice */}
+          <Ellipse cx={15} cy={21} rx={3.2} ry={2} fill="#FFFFFF" stroke="#2A2320" strokeWidth={1.2} />
+          <Circle cx={15} cy={21} r={1.2} fill="#FFD27A" stroke="#2A2320" strokeWidth={0.8} />
+
+          {/* Cat ears poking out from the rice mound */}
+          <Path d="M11 19 L10 13 L15 15 Z" {...f} />
+          <Path d="M21 19 L22 13 L17 15 Z" {...f} />
+
+          {/* Steam wisps above the plate */}
+          <Path
+            d="M19 14 q-1 -2 0 -4 q1 -2 0 -4"
+            stroke="#2A2320"
+            strokeWidth={1}
+            strokeLinecap="round"
+            fill="none"
+            opacity={0.45}
+          />
+          <Path
+            d="M27 14 q1 -2 0 -4 q-1 -2 0 -4"
+            stroke="#2A2320"
+            strokeWidth={1}
+            strokeLinecap="round"
+            fill="none"
+            opacity={0.45}
+          />
         </G>
       );
 
     case 'cafe':
+      // Tall iced-coffee glass (แก้วกาแฟเย็น) — glass + coffee + ice cubes + straw + cat ears
       return (
         <G>
-          {/* Cup body filled */}
+          {/* Glass silhouette (slightly tapered, tall) */}
           <Path
-            d="M11 17 H29 V26 Q29 33 22 33 Q15 33 15 28 Q11 27 11 22 Z"
+            d="M12 14 H32 L30 36 Q30 38 28 38 H16 Q14 38 14 36 Z"
             {...f}
           />
-          {/* Handle */}
-          <Path d="M29 19 Q34 19 34 23 Q34 27 29 27" stroke={stroke} strokeWidth={2.4} fill="none" strokeLinecap="round" />
-          {/* Cat ears on rim */}
-          <Path d="M13 17 L12 11 L17 14 Z" {...f} />
-          <Path d="M27 17 L28 11 L23 14 Z" {...f} />
-          {/* Steam */}
-          <Path d="M16 9 q1 1.5 0 3 M22 8 q1 1.5 0 3 M28 9 q1 1.5 0 3" {...p} />
-          {/* Cat face on cup (negative space using bg color via opacity) */}
-          <Circle cx={19} cy={24} r={0.9} fill="#2A2320" />
-          <Circle cx={25} cy={24} r={0.9} fill="#2A2320" />
-          <Path d="M21 27 q1 1 2 0" stroke="#2A2320" strokeWidth={1} fill="none" strokeLinecap="round" />
+          {/* Glass inner (white — gives a "see-through" feel) */}
+          <Path
+            d="M14 16 H30 L28.4 34.6 Q28.4 35.8 27 35.8 H17 Q15.6 35.8 15.6 34.6 Z"
+            fill="#FFFFFF"
+            stroke="#2A2320"
+            strokeWidth={1}
+            strokeLinejoin="round"
+          />
+          {/* Coffee fill (brown liquid) */}
+          <Path
+            d="M16 22 H28 L27.5 34 Q27.5 34.8 26.5 34.8 H17.5 Q16.5 34.8 16.5 34 Z"
+            fill="#7B4F2C"
+            stroke="#2A2320"
+            strokeWidth={0.9}
+            strokeLinejoin="round"
+          />
+          {/* Ice cubes on top of coffee */}
+          <Path d="M17 18 H21 V22 H17 Z" fill="#E0EAF2" stroke="#2A2320" strokeWidth={0.9} />
+          <Path d="M22 19 H25.5 V22 H22 Z" fill="#E0EAF2" stroke="#2A2320" strokeWidth={0.9} />
+          <Path d="M26 18.5 H28.5 V21 H26 Z" fill="#E0EAF2" stroke="#2A2320" strokeWidth={0.85} />
+          {/* Ice highlight glints */}
+          <Path d="M18 19 L19 19" stroke="#FFFFFF" strokeWidth={0.8} opacity={0.9} strokeLinecap="round" />
+          <Path d="M22.7 20 L23.6 20" stroke="#FFFFFF" strokeWidth={0.7} opacity={0.85} strokeLinecap="round" />
+
+          {/* Straw — diagonal, poking out the top */}
+          <Path
+            d="M26 13 L29 5"
+            stroke="#E87A3D"
+            strokeWidth={2.6}
+            strokeLinecap="round"
+          />
+          {/* Straw stripe accent */}
+          <Path
+            d="M27.2 9 L27.7 10.4"
+            stroke="#FFFFFF"
+            strokeWidth={0.8}
+            strokeLinecap="round"
+          />
+
+          {/* Cat face printed on the glass below ice */}
+          <Circle cx={20} cy={28} r={0.9} fill="#2A2320" />
+          <Circle cx={24} cy={28} r={0.9} fill="#2A2320" />
+          <Path d="M21 30.5 q1 1 2 0" stroke="#2A2320" strokeWidth={1} fill="none" strokeLinecap="round" />
+
+          {/* Cat ears on glass rim */}
+          <Path d="M14 14 L13 8 L18 11 Z" {...f} />
+          <Path d="M22 14 L23 8 L18 11 Z" {...f} />
         </G>
       );
 
@@ -318,13 +425,61 @@ function renderGlyph(kind: string, stroke: string) {
       );
 
     case 'shirt':
+      // Button-up shirt — collar + V-neck + buttons + pocket + sleeve seams
       return (
         <G>
+          {/* Shirt body silhouette */}
           <Path
             d="M9 13 L16 8 L18 11 Q22 13 26 11 L28 8 L35 13 L33 19 Q31 19 30 18 V35 Q30 36 29 36 H15 Q14 36 14 35 V18 Q13 19 11 19 Z"
             {...f}
           />
-          <PawStamp x={22} y={26} s={0.6} color="#2A2320" />
+          {/* V-neck cutout */}
+          <Path
+            d="M18 11 Q22 13 26 11 L24 17 Q22 18 20 17 Z"
+            fill="#FFFFFF"
+            stroke="#2A2320"
+            strokeWidth={1.1}
+            strokeLinejoin="round"
+          />
+          {/* Collar fold lines (from V down toward shoulders) */}
+          <Path d="M18 11 L20.5 17" stroke="#2A2320" strokeWidth={1} strokeLinecap="round" fill="none" />
+          <Path d="M26 11 L23.5 17" stroke="#2A2320" strokeWidth={1} strokeLinecap="round" fill="none" />
+
+          {/* Center seam from V-neck to hem */}
+          <Path d="M22 18 V35" stroke="#2A2320" strokeWidth={0.9} opacity={0.45} strokeLinecap="round" />
+
+          {/* Buttons down the center */}
+          <Circle cx={22} cy={21} r={0.75} fill="#FFFFFF" stroke="#2A2320" strokeWidth={0.8} />
+          <Circle cx={22} cy={26} r={0.75} fill="#FFFFFF" stroke="#2A2320" strokeWidth={0.8} />
+          <Circle cx={22} cy={31} r={0.75} fill="#FFFFFF" stroke="#2A2320" strokeWidth={0.8} />
+
+          {/* Shoulder/sleeve seam lines */}
+          <Path d="M14 18 L14 26" stroke="#2A2320" strokeWidth={0.9} opacity={0.4} strokeLinecap="round" />
+          <Path d="M30 18 L30 26" stroke="#2A2320" strokeWidth={0.9} opacity={0.4} strokeLinecap="round" />
+
+          {/* Chest pocket (left side) */}
+          <Path
+            d="M16 22 H20 V26 H16 Z"
+            fill="none"
+            stroke="#2A2320"
+            strokeWidth={1}
+            strokeLinejoin="round"
+          />
+          {/* Pocket flap top stitch */}
+          <Path d="M16 22 H20" stroke="#2A2320" strokeWidth={0.9} strokeLinecap="round" />
+
+          {/* Hem stitching */}
+          <Path
+            d="M14.5 34 H29.5"
+            stroke="#2A2320"
+            strokeWidth={0.7}
+            opacity={0.4}
+            strokeLinecap="round"
+            strokeDasharray="1 1.4"
+          />
+
+          {/* Cat paw stamp on shirt (lower right) */}
+          <PawStamp x={27} y={30} s={0.55} color="#2A2320" />
         </G>
       );
 
@@ -1282,6 +1437,6 @@ export const CAT_CATEGORY_ICON_KEYS = [
 // flame, water — solid silhouette มี core สีส้มเปล่งออก
 // bag, phone, tv, laptop, star, film — มีหน้าแมวยิ้มอยู่บน "จอ/หน้า"
 
-// ✅ โดดเด่น — solid fill + ขนาดใหญ่ขึ้น เห็นจากระยะไกลได้ชัด
-// ✅ ดูง่าย — ลด stroke noise, ใช้ silhouette ที่ระบุได้ทันทีแม้ size 24-28px
-// ✅ ธีมแมวส้มอ้วน — หู/หนวด/อุ้งเท้า/หน้าแมวกระจายทุก icon 
+// โดดเด่น — solid fill + ขนาดใหญ่ขึ้น เห็นจากระยะไกลได้ชัด
+//  ดูง่าย — ลด stroke noise, ใช้ silhouette ที่ระบุได้ทันทีแม้ size 24-28px
+//  ธีมแมวส้มอ้วน — หู/หนวด/อุ้งเท้า/หน้าแมวกระจายทุก icon 

@@ -79,7 +79,7 @@ export default function AnalyticsScreen() {
         </View>
 
         {/* Period selector + expense/income toggle */}
-        <View style={{ paddingHorizontal: 18, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <View style={{ paddingHorizontal: 8, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 2 }}>
           <View style={{ flex: 1 }}>
             <PeriodSelector
               period={currentPeriod}
@@ -100,7 +100,7 @@ export default function AnalyticsScreen() {
                   key={key}
                   onPress={() => { Haptics.selectionAsync(); setViewType(key); }}
                   style={{ backgroundColor: active ? accent : 'transparent' }}
-                  className="px-3 py-1.5 rounded-full"
+                  className="px-3 py-2 rounded-full"
                 >
                   <Text style={{
                     fontFamily: 'IBMPlexSansThai_600SemiBold',

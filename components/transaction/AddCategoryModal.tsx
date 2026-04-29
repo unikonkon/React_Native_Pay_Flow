@@ -72,9 +72,10 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
           style={{ maxHeight: '90%' }}
         >
           <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-foreground font-bold text-lg" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>
+            <Text className="text-foreground font-bold text-lg" style={{ fontFamily: 'IBMPlexSansThai_700Bold' }}>
               เพิ่มหมวด{type === 'expense' ? 'รายจ่าย' : 'รายรับ'}
             </Text>
+       
             <Pressable onPress={onClose} className="p-1">
               <Ionicons name="close" size={22} color="#6B5F52" />
             </Pressable>

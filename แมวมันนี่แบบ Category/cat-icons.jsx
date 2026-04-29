@@ -1,0 +1,787 @@
+// Cat-themed category icon glyphs — HTML SVG version (adapted from react-native-svg source)
+// Visual language: solid silhouettes, chunky cat ears, paw stamps, whisker dots
+
+const DARK = '#2A2320';
+const ORANGE = '#E87A3D';
+
+function PawStamp({ x, y, s = 1, color }) {
+  return (
+    <g transform={`translate(${x} ${y}) scale(${s})`} fill={color} stroke="none">
+      <ellipse cx={-2.4} cy={-1.6} rx={0.9} ry={1.2} />
+      <ellipse cx={0} cy={-2.6} rx={0.9} ry={1.2} />
+      <ellipse cx={2.4} cy={-1.6} rx={0.9} ry={1.2} />
+      <ellipse cx={-3.4} cy={1.2} rx={0.8} ry={1} />
+      <path d="M-2 0.5c-1.6 0-2.6 1.2-2.6 2.6 0 1.6 1.4 2.6 3.4 2.6h3c2 0 3.4-1 3.4-2.6 0-1.4-1-2.6-2.6-2.6z" />
+    </g>
+  );
+}
+
+function FatCatFace({ stroke }) {
+  return (
+    <g>
+      <path d="M11 16 L10 8 L17 13 Z" fill={stroke} />
+      <path d="M33 16 L34 8 L27 13 Z" fill={stroke} />
+      <path d="M22 12 C32 12 36 18 36 26 C36 33 30 38 22 38 C14 38 8 33 8 26 C8 18 12 12 22 12 Z" fill={stroke} />
+      <ellipse cx={17} cy={24} rx={1.5} ry={2} fill={DARK} />
+      <ellipse cx={27} cy={24} rx={1.5} ry={2} fill={DARK} />
+      <circle cx={17.5} cy={23.4} r={0.5} fill={stroke} />
+      <circle cx={27.5} cy={23.4} r={0.5} fill={stroke} />
+      <circle cx={13.5} cy={28} r={1.5} fill={ORANGE} opacity={0.55} />
+      <circle cx={30.5} cy={28} r={1.5} fill={ORANGE} opacity={0.55} />
+      <path d="M22 27 l-1 1.2 h2 z" fill={ORANGE} />
+      <path d="M22 28.4 q-1.5 2 -3 1.2 M22 28.4 q1.5 2 3 1.2" stroke={DARK} strokeWidth={1.2} strokeLinecap="round" fill="none" />
+      <path d="M9 26 h4 M10 28.5 h3 M35 26 h-4 M34 28.5 h-3" stroke={DARK} strokeWidth={0.8} strokeLinecap="round" opacity={0.7} />
+    </g>
+  );
+}
+
+function renderGlyph(kind, stroke) {
+  const f = { fill: stroke, stroke: 'none' };
+  const p = { stroke, strokeWidth: 2.4, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' };
+  switch (kind) {
+    case 'fast-food':
+      return (
+        <g>
+          <path d="M9 19 Q9 12 22 12 Q35 12 35 19 Z" {...f} />
+          <circle cx={16} cy={16} r={0.7} fill={DARK} />
+          <circle cx={22} cy={14.5} r={0.7} fill={DARK} />
+          <circle cx={28} cy={16} r={0.7} fill={DARK} />
+          <path d="M8 21 Q22 17 36 21 L36 22 Q22 26 8 22 Z" {...f} />
+          <path d="M8 23 H36 V26 H8 Z" {...f} />
+          <path d="M9 26 Q22 32 35 26 L33 30 Q22 34 11 30 Z" {...f} />
+          <path d="M14 13 L13 9 L17 11 Z" {...f} />
+          <path d="M30 13 L31 9 L27 11 Z" {...f} />
+        </g>
+      );
+    case 'cafe':
+      return (
+        <g>
+          <path d="M11 17 H29 V26 Q29 33 22 33 Q15 33 15 28 Q11 27 11 22 Z" {...f} />
+          <path d="M29 19 Q34 19 34 23 Q34 27 29 27" stroke={stroke} strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <path d="M13 17 L12 11 L17 14 Z" {...f} />
+          <path d="M27 17 L28 11 L23 14 Z" {...f} />
+          <path d="M16 9 q1 1.5 0 3 M22 8 q1 1.5 0 3 M28 9 q1 1.5 0 3" {...p} />
+          <circle cx={19} cy={24} r={0.9} fill={DARK} />
+          <circle cx={25} cy={24} r={0.9} fill={DARK} />
+          <path d="M21 27 q1 1 2 0" stroke={DARK} strokeWidth={1} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'car':
+      return (
+        <g>
+          <path d="M7 27 Q7 22 9 19 L13 14 Q15 12 18 12 H26 Q29 12 31 14 L35 19 Q37 22 37 27 V31 Q37 33 35 33 H9 Q7 33 7 31 Z" {...f} />
+          <path d="M14 16 H21 L23 21 H12 Z" fill={DARK} opacity={0.4} />
+          <path d="M23 16 H28 L31 21 H25 Z" fill={DARK} opacity={0.4} />
+          <circle cx={13} cy={33} r={3.2} fill={DARK} />
+          <circle cx={31} cy={33} r={3.2} fill={DARK} />
+          <circle cx={13} cy={33} r={1.2} fill={stroke} />
+          <circle cx={31} cy={33} r={1.2} fill={stroke} />
+          <path d="M16 12 L15 8 L19 10 Z" {...f} />
+          <path d="M28 12 L29 8 L25 10 Z" {...f} />
+        </g>
+      );
+    case 'flame':
+      return (
+        <g>
+          <path d="M22 7 C25 12 31 14 31 22 C31 28 27 33 22 33 C17 33 13 28 13 22 C13 18 16 16 18 13 C19 15 21 16 22 14 C22 12 22 9 22 7 Z" {...f} />
+          <path d="M22 18 C23 21 26 22 26 26 C26 28 24 30 22 30 C20 30 18 28 18 26 C18 24 19 23 21 22 C21 21 22 19 22 18 Z" fill={ORANGE} />
+          <path d="M22 6 L20 3 L23 4 Z" {...f} />
+        </g>
+      );
+    case 'bus':
+      return (
+        <g>
+          <rect x={8} y={9} width={28} height={22} rx={4} {...f} />
+          <rect x={11} y={12} width={6} height={6} rx={1} fill={DARK} opacity={0.45} />
+          <rect x={19} y={12} width={6} height={6} rx={1} fill={DARK} opacity={0.45} />
+          <rect x={27} y={12} width={6} height={6} rx={1} fill={DARK} opacity={0.45} />
+          <circle cx={12} cy={26} r={1.1} fill={DARK} />
+          <circle cx={32} cy={26} r={1.1} fill={DARK} />
+          <circle cx={14} cy={33} r={2.4} fill={DARK} />
+          <circle cx={30} cy={33} r={2.4} fill={DARK} />
+          <path d="M14 9 L13 5 L17 7 Z" {...f} />
+          <path d="M30 9 L31 5 L27 7 Z" {...f} />
+        </g>
+      );
+    case 'home':
+      return (
+        <g>
+          <path d="M22 8 L37 21 V35 Q37 36 36 36 H8 Q7 36 7 35 V21 Z" {...f} />
+          <rect x={19} y={26} width={6} height={10} rx={1} fill={DARK} opacity={0.45} />
+          <circle cx={23} cy={31} r={0.5} fill={stroke} />
+          <rect x={11} y={24} width={5} height={5} rx={0.6} fill={DARK} opacity={0.4} />
+          <rect x={28} y={24} width={5} height={5} rx={0.6} fill={DARK} opacity={0.4} />
+          <path d="M16 16 L15 11 L20 13 Z" {...f} />
+          <path d="M28 16 L29 11 L24 13 Z" {...f} />
+        </g>
+      );
+    case 'bulb':
+      return (
+        <g>
+          <path d="M22 7 C29 7 32 12 32 17 C32 21 29 23 28 26 V29 H16 V26 C15 23 12 21 12 17 C12 12 15 7 22 7 Z" {...f} />
+          <rect x={16} y={29} width={12} height={3} rx={1} {...f} />
+          <rect x={17} y={32} width={10} height={2.5} rx={1} {...f} />
+          <path d="M19 35 H25" stroke={stroke} strokeWidth={1.6} strokeLinecap="round" />
+          <circle cx={19} cy={17} r={1} fill={DARK} />
+          <circle cx={25} cy={17} r={1} fill={DARK} />
+          <path d="M20.5 21 q1.5 1.5 3 0" stroke={DARK} strokeWidth={1.1} strokeLinecap="round" fill="none" />
+          <path d="M8 11 l1 1 M36 11 l-1 1 M8 22 l1 -1 M36 22 l-1 -1" {...p} />
+        </g>
+      );
+    case 'water':
+      return (
+        <g>
+          <path d="M22 6 C15 14 12 19 12 25 Q12 35 22 35 Q32 35 32 25 C32 19 29 14 22 6 Z" {...f} />
+          <path d="M16 22 Q15 27 18 30" stroke="#FFFFFF" strokeWidth={1.6} fill="none" opacity={0.5} strokeLinecap="round" />
+          <circle cx={19} cy={24} r={1} fill={DARK} />
+          <circle cx={25} cy={24} r={1} fill={DARK} />
+          <path d="M22 27 l-1 1 h2 z" fill={DARK} />
+        </g>
+      );
+    case 'wifi':
+      return (
+        <g>
+          <path d="M7 16 Q22 5 37 16" {...p} strokeWidth={3} />
+          <path d="M11 22 Q22 13 33 22" {...p} strokeWidth={3} />
+          <path d="M15 28 Q22 22 29 28" {...p} strokeWidth={3} />
+          <circle cx={22} cy={34} r={2.6} {...f} />
+          <path d="M19.5 32 L18.8 29.5 L21 31 Z" {...f} />
+          <path d="M24.5 32 L25.2 29.5 L23 31 Z" {...f} />
+        </g>
+      );
+    case 'phone-portrait':
+      return (
+        <g>
+          <rect x={12} y={6} width={20} height={32} rx={4} {...f} />
+          <rect x={14} y={11} width={16} height={20} rx={1} fill={DARK} opacity={0.4} />
+          <circle cx={22} cy={35} r={1} fill={DARK} />
+          <circle cx={18.5} cy={19} r={1} fill={stroke} />
+          <circle cx={25.5} cy={19} r={1} fill={stroke} />
+          <path d="M20 24 q2 2 4 0" stroke={stroke} strokeWidth={1.4} fill="none" strokeLinecap="round" />
+          <path d="M16 7 L15 3 L19 5 Z" {...f} />
+          <path d="M28 7 L29 3 L25 5 Z" {...f} />
+        </g>
+      );
+    case 'basket':
+      return (
+        <g>
+          <path d="M8 17 H36 L33 35 Q33 36 32 36 H12 Q11 36 11 35 Z" {...f} />
+          <path d="M14 17 L18 9 L21 9" {...p} strokeWidth={2.6} />
+          <path d="M30 17 L26 9 L23 9" {...p} strokeWidth={2.6} />
+          <path d="M16 22 V32 M22 22 V32 M28 22 V32" stroke={DARK} strokeWidth={1.5} opacity={0.35} strokeLinecap="round" />
+          <PawStamp x={22} y={28} s={0.55} color={DARK} />
+        </g>
+      );
+    case 'shirt':
+      return (
+        <g>
+          <path d="M9 13 L16 8 L18 11 Q22 13 26 11 L28 8 L35 13 L33 19 Q31 19 30 18 V35 Q30 36 29 36 H15 Q14 36 14 35 V18 Q13 19 11 19 Z" {...f} />
+          <PawStamp x={22} y={26} s={0.6} color={DARK} />
+        </g>
+      );
+    case 'bag':
+      return (
+        <g>
+          <path d="M11 14 H33 L31 35 Q31 36 30 36 H14 Q13 36 13 35 Z" {...f} />
+          <path d="M16 14 Q16 7 22 7 Q28 7 28 14" stroke={stroke} strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <circle cx={19} cy={23} r={1} fill={DARK} />
+          <circle cx={25} cy={23} r={1} fill={DARK} />
+          <path d="M21 27 q1 1 2 0" stroke={DARK} strokeWidth={1.2} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'medkit':
+      return (
+        <g>
+          <rect x={6} y={13} width={32} height={22} rx={4} {...f} />
+          <path d="M16 13 V9 Q16 8 17 8 H27 Q28 8 28 9 V13 Z" {...f} />
+          <rect x={20} y={17} width={4} height={14} rx={1} fill={DARK} />
+          <rect x={15} y={22} width={14} height={4} rx={1} fill={DARK} />
+          <PawStamp x={32} y={31} s={0.45} color={DARK} />
+        </g>
+      );
+    case 'barbell':
+      return (
+        <g>
+          <rect x={4} y={17} width={4} height={10} rx={1.4} {...f} />
+          <rect x={36} y={17} width={4} height={10} rx={1.4} {...f} />
+          <rect x={8} y={19} width={4} height={6} rx={1} {...f} />
+          <rect x={32} y={19} width={4} height={6} rx={1} {...f} />
+          <rect x={12} y={20} width={20} height={4} rx={1.5} {...f} />
+          <circle cx={20} cy={22} r={0.7} fill={DARK} />
+          <circle cx={24} cy={22} r={0.7} fill={DARK} />
+        </g>
+      );
+    case 'film':
+      return (
+        <g>
+          <rect x={6} y={9} width={32} height={26} rx={3} {...f} />
+          <rect x={9} y={12} width={3} height={3} rx={0.5} fill={DARK} />
+          <rect x={9} y={20} width={3} height={3} rx={0.5} fill={DARK} />
+          <rect x={9} y={28} width={3} height={3} rx={0.5} fill={DARK} />
+          <rect x={32} y={12} width={3} height={3} rx={0.5} fill={DARK} />
+          <rect x={32} y={20} width={3} height={3} rx={0.5} fill={DARK} />
+          <rect x={32} y={28} width={3} height={3} rx={0.5} fill={DARK} />
+          <circle cx={22} cy={22} r={6} fill={DARK} opacity={0.85} />
+          <circle cx={19.5} cy={21} r={1} fill={stroke} />
+          <circle cx={24.5} cy={21} r={1} fill={stroke} />
+          <path d="M20 24 q2 2 4 0" stroke={stroke} strokeWidth={1.2} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'game-controller':
+      return (
+        <g>
+          <path d="M11 16 H33 Q39 16 39 22 V27 Q39 31 35 31 Q33 31 32 30 L29 27 H15 L12 30 Q11 31 9 31 Q5 31 5 27 V22 Q5 16 11 16 Z" {...f} />
+          <rect x={11} y={22} width={2} height={6} rx={0.5} fill={DARK} />
+          <rect x={9} y={24} width={6} height={2} rx={0.5} fill={DARK} />
+          <circle cx={29} cy={22} r={1.2} fill={DARK} />
+          <circle cx={33} cy={25} r={1.2} fill={DARK} />
+          <path d="M14 16 L13 12 L17 14 Z" {...f} />
+          <path d="M30 16 L31 12 L27 14 Z" {...f} />
+        </g>
+      );
+    case 'tv':
+      return (
+        <g>
+          <rect x={6} y={11} width={32} height={22} rx={3} {...f} />
+          <rect x={9} y={14} width={26} height={16} rx={1.5} fill={DARK} opacity={0.4} />
+          <path d="M16 33 V36 H28 V33" stroke={stroke} strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <path d="M16 11 L14 6 L18 9 Z" {...f} />
+          <path d="M28 11 L30 6 L26 9 Z" {...f} />
+          <circle cx={18} cy={21} r={1} fill={stroke} />
+          <circle cx={26} cy={21} r={1} fill={stroke} />
+          <path d="M20 25 q2 1.5 4 0" stroke={stroke} strokeWidth={1.3} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'people':
+      return (
+        <g>
+          <path d="M11 17 L10 11 L15 13 Z" {...f} />
+          <path d="M21 17 L22 11 L17 13 Z" {...f} />
+          <circle cx={16} cy={18} r={6} {...f} />
+          <path d="M27 17 L26 11 L31 13 Z" {...f} />
+          <path d="M37 17 L38 11 L33 13 Z" {...f} />
+          <circle cx={32} cy={18} r={6} {...f} />
+          <path d="M7 36 Q7 26 16 26 Q25 26 25 36 Z" {...f} />
+          <path d="M19 36 Q19 26 28 26 Q37 26 37 36 Z" {...f} opacity={0.85} />
+          <circle cx={14} cy={18} r={0.7} fill={DARK} />
+          <circle cx={18} cy={18} r={0.7} fill={DARK} />
+          <circle cx={30} cy={18} r={0.7} fill={DARK} />
+          <circle cx={34} cy={18} r={0.7} fill={DARK} />
+        </g>
+      );
+    case 'heart':
+      return (
+        <g>
+          <path d="M22 35 C20 33 8 25 8 17 C8 12 12 9 16 9 Q19 9 22 12 Q25 9 28 9 C32 9 36 12 36 17 C36 25 24 33 22 35 Z" {...f} />
+          <path d="M14 12 L12 7 L17 9 Z" {...f} />
+          <path d="M30 12 L32 7 L27 9 Z" {...f} />
+          <path d="M17 18 q-1.5 -2 -3 0 q1.5 3 3 4 q1.5 -1 3 -4 q-1.5 -2 -3 0 z" fill={DARK} />
+          <path d="M27 18 q-1.5 -2 -3 0 q1.5 3 3 4 q1.5 -1 3 -4 q-1.5 -2 -3 0 z" fill={DARK} />
+          <path d="M20 25 q2 2 4 0" stroke={DARK} strokeWidth={1.4} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'wine':
+      return (
+        <g>
+          <path d="M13 8 H31 L30 17 Q30 23 22 24 Q14 23 14 17 Z" {...f} />
+          <path d="M15 13 H29 L28 17 Q28 21 22 22 Q16 21 16 17 Z" fill={ORANGE} opacity={0.7} />
+          <path d="M22 24 V34" stroke={stroke} strokeWidth={2.4} strokeLinecap="round" />
+          <rect x={15} y={34} width={14} height={2.6} rx={1.2} {...f} />
+          <path d="M16 8 L15 4 L19 6 Z" {...f} />
+          <path d="M28 8 L29 4 L25 6 Z" {...f} />
+        </g>
+      );
+    case 'gift':
+      return (
+        <g>
+          <rect x={6} y={18} width={32} height={18} rx={2.5} {...f} />
+          <rect x={4} y={14} width={36} height={6} rx={1.5} {...f} />
+          <rect x={20} y={14} width={4} height={22} fill={DARK} opacity={0.4} />
+          <path d="M22 14 Q16 8 18 6 Q22 6 22 14 Z" {...f} />
+          <path d="M22 14 Q28 8 26 6 Q22 6 22 14 Z" {...f} />
+          <path d="M18 8 L17 5 L20 7 Z" {...f} />
+          <path d="M26 8 L27 5 L24 7 Z" {...f} />
+        </g>
+      );
+    case 'school':
+      return (
+        <g>
+          <path d="M22 9 L4 17 L22 25 L40 17 Z" {...f} />
+          <path d="M11 21 V31 Q11 35 22 35 Q33 35 33 31 V21" stroke={stroke} strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <path d="M37 17 V25" stroke={stroke} strokeWidth={2.2} strokeLinecap="round" />
+          <circle cx={37} cy={27} r={1.4} {...f} />
+          <circle cx={19} cy={29} r={0.7} fill={DARK} />
+          <circle cx={25} cy={29} r={0.7} fill={DARK} />
+        </g>
+      );
+    case 'book':
+      return (
+        <g>
+          <path d="M8 9 Q15 7 22 9 Q29 7 36 9 V34 Q29 32 22 34 Q15 32 8 34 Z" {...f} />
+          <path d="M22 11 V34" stroke={DARK} strokeWidth={1.4} opacity={0.4} />
+          <PawStamp x={30} y={20} s={0.55} color={DARK} />
+          <PawStamp x={14} y={26} s={0.5} color={DARK} />
+        </g>
+      );
+    case 'airplane':
+      return (
+        <g>
+          <path d="M22 5 Q24 7 24 14 V18 L38 25 V28 L24 26 V32 L28 35 V37 L22 35 L16 37 V35 L20 32 V26 L6 28 V25 L20 18 V14 Q20 7 22 5 Z" {...f} />
+        </g>
+      );
+    case 'shield-checkmark':
+      return (
+        <g>
+          <path d="M22 6 L37 11 V21 Q37 31 22 38 Q7 31 7 21 V11 Z" {...f} />
+          <path d="M14 22 L20 28 L31 16" stroke={DARK} strokeWidth={2.6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M15 9 L14 5 L18 7 Z" {...f} />
+          <path d="M29 9 L30 5 L26 7 Z" {...f} />
+        </g>
+      );
+    case 'card':
+      return (
+        <g>
+          <rect x={4} y={11} width={36} height={24} rx={3.5} {...f} />
+          <rect x={4} y={16} width={36} height={4} fill={DARK} opacity={0.4} />
+          <rect x={9} y={24} width={7} height={5} rx={1} fill={DARK} opacity={0.55} />
+          <path d="M22 27 H32 M22 30 H30" stroke={DARK} strokeWidth={1.2} opacity={0.4} strokeLinecap="round" />
+        </g>
+      );
+    case 'business':
+      return (
+        <g>
+          <rect x={8} y={13} width={28} height={24} rx={2} {...f} />
+          <path d="M22 13 L18 7 H26 Z" {...f} />
+          <g fill={DARK} opacity={0.4}>
+            <rect x={12} y={18} width={4} height={4} rx={0.5} />
+            <rect x={20} y={18} width={4} height={4} rx={0.5} />
+            <rect x={28} y={18} width={4} height={4} rx={0.5} />
+            <rect x={12} y={25} width={4} height={4} rx={0.5} />
+            <rect x={28} y={25} width={4} height={4} rx={0.5} />
+            <rect x={12} y={32} width={4} height={4} rx={0.5} />
+            <rect x={28} y={32} width={4} height={4} rx={0.5} />
+          </g>
+          <path d="M20 30 H24 V37 H20 Z" fill={DARK} opacity={0.55} />
+        </g>
+      );
+    case 'paw':
+      return (
+        <g {...f}>
+          <ellipse cx={12} cy={14} rx={3.5} ry={4.5} />
+          <ellipse cx={32} cy={14} rx={3.5} ry={4.5} />
+          <ellipse cx={6} cy={24} rx={3} ry={3.8} />
+          <ellipse cx={38} cy={24} rx={3} ry={3.8} />
+          <path d="M14 38 C9 38 7 35 7 31 C7 26 12 22 17 22 H27 C32 22 37 26 37 31 C37 35 35 38 30 38 Z" />
+        </g>
+      );
+    case 'piggy-bank':
+      return (
+        <g>
+          <ellipse cx={22} cy={26} rx={15} ry={9.5} {...f} />
+          <path d="M14 19 L13 13 L18 16 Z" {...f} />
+          <path d="M30 19 L31 13 L26 16 Z" {...f} />
+          <rect x={19} y={17} width={6} height={1.6} rx={0.6} fill={DARK} />
+          <circle cx={29.5} cy={24} r={1} fill={DARK} />
+          <circle cx={36} cy={26} r={0.9} fill={DARK} />
+          <circle cx={32.5} cy={28} r={1.4} fill={ORANGE} opacity={0.55} />
+          <path d="M13 35 V38 M18 36 V38 M26 36 V38 M31 35 V38" stroke={stroke} strokeWidth={2.4} strokeLinecap="round" />
+          <path d="M7 24 q-3 -1 -3 -4 q0 -3 3 -3" stroke={stroke} strokeWidth={2.2} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'heart-hand':
+    case 'heart-circle':
+      return (
+        <g>
+          <path d="M22 22 C20 20 14 16 14 12 A3.5 3.5 0 0 1 22 10 A3.5 3.5 0 0 1 30 12 C30 16 24 20 22 22 Z" {...f} />
+          <path d="M6 28 Q11 28 14 32 L17 36 H27 L30 32 Q33 28 38 28 V31 Q34 31 32 33 L29 38 H15 L12 33 Q10 31 6 31 Z" {...f} />
+          <path d="M16 12 L14 8 L19 10 Z" {...f} />
+          <path d="M28 12 L30 8 L25 10 Z" {...f} />
+        </g>
+      );
+    case 'briefcase':
+      return (
+        <g>
+          <rect x={6} y={13} width={32} height={22} rx={3} {...f} />
+          <path d="M16 13 V9 Q16 7 18 7 H26 Q28 7 28 9 V13" stroke={stroke} strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <rect x={6} y={20} width={32} height={3.5} fill={DARK} opacity={0.4} />
+          <rect x={20} y={21} width={4} height={3.5} rx={0.5} fill={DARK} />
+          <path d="M14 13 L13 9 L17 11 Z" {...f} />
+          <path d="M30 13 L31 9 L27 11 Z" {...f} />
+        </g>
+      );
+    case 'sparkles':
+      return (
+        <g>
+          <path d="M22 5 L24.5 13.5 L33 16 L24.5 18.5 L22 27 L19.5 18.5 L11 16 L19.5 13.5 Z" {...f} />
+          <path d="M34 24 L35.2 27.5 L38.7 28.7 L35.2 30 L34 33.5 L32.8 30 L29.3 28.7 L32.8 27.5 Z" {...f} />
+          <path d="M10 30 L10.8 32.4 L13.2 33.2 L10.8 34 L10 36.4 L9.2 34 L6.8 33.2 L9.2 32.4 Z" {...f} />
+        </g>
+      );
+    case 'time':
+      return (
+        <g>
+          <circle cx={22} cy={24} r={13} {...f} />
+          <circle cx={22} cy={24} r={10.5} fill={DARK} opacity={0.25} />
+          <path d="M22 16 V24 L28 28" stroke={stroke} strokeWidth={2.6} fill="none" strokeLinecap="round" />
+          <circle cx={22} cy={24} r={1.2} fill={stroke} />
+          <path d="M13 14 L12 9 L17 12 Z" {...f} />
+          <path d="M31 14 L32 9 L27 12 Z" {...f} />
+        </g>
+      );
+    case 'stats-chart':
+      return (
+        <g>
+          <rect x={9} y={24} width={6} height={12} rx={1.5} {...f} />
+          <rect x={19} y={16} width={6} height={20} rx={1.5} {...f} />
+          <rect x={29} y={9} width={6} height={27} rx={1.5} {...f} />
+          <path d="M9 22 L17 16 L23 18 L33 8" stroke={stroke} strokeWidth={2.6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M28 8 H33 V13" stroke={stroke} strokeWidth={2.6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        </g>
+      );
+    case 'wallet':
+      return (
+        <g>
+          <rect x={6} y={11} width={32} height={24} rx={3.5} {...f} />
+          <path d="M28 22 H40 V28 H28 Q24 28 24 25 Q24 22 28 22 Z" {...f} />
+          <circle cx={32} cy={25} r={1.6} fill={DARK} />
+          <path d="M14 11 L13 7 L17 9 Z" {...f} />
+          <path d="M30 11 L31 7 L27 9 Z" {...f} />
+        </g>
+      );
+    case 'laptop':
+      return (
+        <g>
+          <path d="M9 9 H35 Q37 9 37 11 V28 H7 V11 Q7 9 9 9 Z" {...f} />
+          <rect x={10} y={12} width={24} height={13} rx={1} fill={DARK} opacity={0.4} />
+          <path d="M3 30 H41 L40 33 Q40 34 39 34 H5 Q4 34 4 33 Z" {...f} />
+          <circle cx={18} cy={17} r={1} fill={stroke} />
+          <circle cx={26} cy={17} r={1} fill={stroke} />
+          <path d="M20 21 q2 2 4 0" stroke={stroke} strokeWidth={1.4} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'storefront':
+      return (
+        <g>
+          <path d="M5 13 L8 7 H36 L39 13 V17 Q39 20 36 20 Q33 20 32 17 Q31 20 28 20 Q25 20 24 17 Q23 20 20 20 Q17 20 16 17 Q15 20 12 20 Q9 20 8 17 Q7 20 5 17 Z" {...f} />
+          <path d="M8 20 V36 H36 V20" stroke={stroke} strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <rect x={18} y={24} width={8} height={12} rx={0.6} {...f} />
+          <rect x={11} y={24} width={4} height={5} rx={0.6} {...f} />
+          <rect x={29} y={24} width={4} height={5} rx={0.6} {...f} />
+        </g>
+      );
+    case 'trending-up':
+      return (
+        <g>
+          <path d="M5 32 L17 20 L23 26 L36 12" stroke={stroke} strokeWidth={3.2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M28 12 H38 V22" stroke={stroke} strokeWidth={3.2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx={5} cy={32} r={2} {...f} />
+          <circle cx={17} cy={20} r={1.6} {...f} />
+          <circle cx={23} cy={26} r={1.6} {...f} />
+        </g>
+      );
+    case 'cash':
+      return (
+        <g>
+          <rect x={4} y={11} width={36} height={22} rx={2.5} {...f} />
+          <circle cx={22} cy={22} r={6} fill={DARK} opacity={0.2} />
+          <circle cx={22} cy={22} r={6} fill="none" stroke={DARK} strokeWidth={1.6} opacity={0.7} />
+          <circle cx={9} cy={22} r={1.4} fill={DARK} />
+          <circle cx={35} cy={22} r={1.4} fill={DARK} />
+          <circle cx={20} cy={22} r={0.6} fill={DARK} />
+          <circle cx={24} cy={22} r={0.6} fill={DARK} />
+          <path d="M21 25 q1 0.6 2 0" stroke={DARK} strokeWidth={0.9} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'analytics':
+      return (
+        <g>
+          <circle cx={16} cy={17} r={9} {...f} />
+          <path d="M16 8 V17 H25" stroke={DARK} strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <path d="M16 17 L24 13 A9 9 0 0 0 16 8 Z" fill={DARK} opacity={0.45} />
+          <rect x={6} y={30} width={5} height={6} rx={1} {...f} />
+          <rect x={14} y={28} width={5} height={8} rx={1} {...f} />
+          <rect x={22} y={26} width={5} height={10} rx={1} {...f} />
+          <rect x={30} y={24} width={5} height={12} rx={1} {...f} />
+        </g>
+      );
+    case 'receipt':
+      return (
+        <g>
+          <path d="M10 6 H34 V38 L31 36 L28 38 L25 36 L22 38 L19 36 L16 38 L13 36 L10 38 Z" {...f} />
+          <path d="M14 13 H30 M14 19 H30 M14 25 H26" stroke={DARK} strokeWidth={1.6} opacity={0.45} strokeLinecap="round" />
+          <PawStamp x={28} y={31} s={0.5} color={DARK} />
+        </g>
+      );
+    case 'trophy':
+      return (
+        <g>
+          <path d="M14 8 H30 V18 Q30 24 22 24 Q14 24 14 18 Z" {...f} />
+          <path d="M14 11 H10 Q9 11 9 12 V14 Q9 18 14 18" stroke={stroke} strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <path d="M30 11 H34 Q35 11 35 12 V14 Q35 18 30 18" stroke={stroke} strokeWidth={2.4} fill="none" strokeLinecap="round" />
+          <rect x={20} y={24} width={4} height={5} {...f} />
+          <rect x={14} y={29} width={16} height={4} rx={1} {...f} />
+          <rect x={12} y={33} width={20} height={3} rx={1} {...f} />
+          <path d="M16 8 L15 4 L19 6 Z" {...f} />
+          <path d="M28 8 L29 4 L25 6 Z" {...f} />
+          <path d="M22 14 l0.8 1.8 2 0.3 -1.4 1.3 0.3 2 -1.7 -1 -1.7 1 0.3 -2 -1.4 -1.3 2 -0.3 z" fill={DARK} />
+        </g>
+      );
+    case 'laundry':
+      return (
+        <g>
+          <rect x={7} y={8} width={30} height={32} rx={4} {...f} />
+          <path d="M7 14 H37" stroke={DARK} strokeWidth={1.4} opacity={0.45} strokeLinecap="round" />
+          <circle cx={11} cy={11} r={1} fill={DARK} />
+          <circle cx={15} cy={11} r={1} fill={DARK} />
+          <rect x={26} y={9.5} width={8} height={3} rx={0.6} fill={DARK} opacity={0.5} />
+          <circle cx={22} cy={26} r={9} fill={DARK} opacity={0.4} />
+          <circle cx={19} cy={23} r={1.4} {...f} />
+          <circle cx={25} cy={26} r={1.6} {...f} />
+          <circle cx={20} cy={29} r={1.2} {...f} />
+          <path d="M13 8 L12 4 L16 6 Z" {...f} />
+          <path d="M31 8 L32 4 L28 6 Z" {...f} />
+        </g>
+      );
+    case 'salary':
+      return (
+        <g>
+          <rect x={11} y={5} width={22} height={14} rx={1.5} fill="#3E8B68" />
+          <circle cx={22} cy={12} r={3.2} fill="#FFFFFF" />
+          <circle cx={22} cy={12} r={1.1} fill="#3E8B68" />
+          <path d="M15 5 L14 1 L18 3 Z" fill="#3E8B68" />
+          <path d="M29 5 L30 1 L26 3 Z" fill="#3E8B68" />
+          <path d="M6 17 H38 V36 Q38 37 37 37 H7 Q6 37 6 36 Z" {...f} />
+          <path d="M6 17 L22 28 L38 17" fill="none" stroke={DARK} strokeWidth={1.5} opacity={0.5} strokeLinecap="round" strokeLinejoin="round" />
+        </g>
+      );
+    case 'network':
+      return (
+        <g>
+          <path d="M22 22 L8 8 M22 22 L36 8 M22 22 L8 36 M22 22 L36 36" stroke={stroke} strokeWidth={2} strokeLinecap="round" opacity={0.85} fill="none" />
+          <circle cx={7} cy={7} r={3} {...f} />
+          <circle cx={37} cy={7} r={3} {...f} />
+          <circle cx={7} cy={37} r={3} {...f} />
+          <circle cx={37} cy={37} r={3} {...f} />
+          <circle cx={22} cy={22} r={7.5} {...f} />
+          <path d="M17 18 L16 13 L20 16 Z" {...f} />
+          <path d="M27 18 L28 13 L24 16 Z" {...f} />
+          <circle cx={19.5} cy={22} r={0.9} fill={DARK} />
+          <circle cx={24.5} cy={22} r={0.9} fill={DARK} />
+          <path d="M21 25 q1 1 2 0" stroke={DARK} strokeWidth={1.2} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'savings':
+      return (
+        <g>
+          <rect x={5} y={32} width={34} height={6} rx={3} {...f} />
+          <rect x={9} y={25} width={26} height={6} rx={3} {...f} />
+          <rect x={13} y={18} width={18} height={6} rx={3} {...f} />
+          <path d="M16 18 L15 12 L19 16 Z" {...f} />
+          <path d="M28 18 L29 12 L25 16 Z" {...f} />
+          <circle cx={19} cy={21} r={0.7} fill={DARK} />
+          <circle cx={25} cy={21} r={0.7} fill={DARK} />
+        </g>
+      );
+    case 'gold-coin':
+    case 'gold-bars':
+      return (
+        <g>
+          <circle cx={22} cy={24} r={14} {...f} />
+          <circle cx={22} cy={24} r={11} fill={DARK} opacity={0.18} />
+          <circle cx={22} cy={24} r={11} fill="none" stroke={DARK} strokeWidth={1.1} opacity={0.45} />
+          <path d="M15 19 L14 14 L18 17 Z" fill={DARK} opacity={0.55} />
+          <path d="M29 19 L30 14 L26 17 Z" fill={DARK} opacity={0.55} />
+          <circle cx={18} cy={23} r={1} fill={DARK} />
+          <circle cx={26} cy={23} r={1} fill={DARK} />
+          <path d="M20 27 q2 1.5 4 0" stroke={DARK} strokeWidth={1.4} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'donate':
+      return (
+        <g>
+          <path d="M22 16 C20 14 14 11 14 7 A3 3 0 0 1 22 5 A3 3 0 0 1 30 7 C30 11 24 14 22 16 Z" {...f} />
+          <path d="M14 8 L13 4 L17 6 Z" {...f} />
+          <path d="M30 8 L31 4 L27 6 Z" {...f} />
+          <path d="M6 22 H38 Q38 30 32 34 Q26 37 22 37 Q18 37 12 34 Q6 30 6 22 Z" {...f} />
+          <rect x={14} y={37} width={16} height={2.4} rx={0.8} {...f} />
+        </g>
+      );
+    case 'notebook':
+      return (
+        <g>
+          <rect x={8} y={6} width={28} height={32} rx={2} {...f} />
+          <circle cx={8} cy={11} r={1.6} fill={DARK} />
+          <circle cx={8} cy={17} r={1.6} fill={DARK} />
+          <circle cx={8} cy={23} r={1.6} fill={DARK} />
+          <circle cx={8} cy={29} r={1.6} fill={DARK} />
+          <circle cx={8} cy={35} r={1.6} fill={DARK} />
+          <rect x={13} y={11} width={20} height={3} rx={0.6} fill={DARK} opacity={0.45} />
+          <path d="M13 19 H30 M13 23 H30 M13 27 H26" stroke={DARK} strokeWidth={1.2} opacity={0.4} strokeLinecap="round" />
+          <PawStamp x={26} y={33} s={0.55} color={DARK} />
+        </g>
+      );
+    case 'beauty':
+      return (
+        <g>
+          <path d="M17 14 L17 6 L22 3 L27 6 L27 14 Z" fill={ORANGE} />
+          <rect x={15} y={14} width={14} height={5} rx={1} {...f} />
+          <rect x={14} y={19} width={16} height={21} rx={2} {...f} />
+          <path d="M22 33 C21 32 18.5 30.5 18.5 28.5 A1.5 1.5 0 0 1 22 28 A1.5 1.5 0 0 1 25.5 28.5 C25.5 30.5 23 32 22 33 Z" fill={ORANGE} />
+        </g>
+      );
+    case 'noodles':
+      return (
+        <g>
+          <path d="M14 5 q2 2 0 5" stroke={stroke} strokeWidth={2} fill="none" strokeLinecap="round" />
+          <path d="M22 3 q2 2 0 5" stroke={stroke} strokeWidth={2} fill="none" strokeLinecap="round" />
+          <path d="M30 5 q2 2 0 5" stroke={stroke} strokeWidth={2} fill="none" strokeLinecap="round" />
+          <path d="M12 17 L11 12 L16 15 Z" {...f} />
+          <path d="M32 17 L33 12 L28 15 Z" {...f} />
+          <path d="M5 17 H39 V20 Q22 23 5 20 Z" {...f} />
+          <path d="M7 21 H37 L33 35 Q22 39 11 35 Z" {...f} />
+          <path d="M30 8 L36 28" stroke="#6B4F35" strokeWidth={2.2} fill="none" strokeLinecap="round" />
+          <path d="M33 7 L38 26" stroke="#6B4F35" strokeWidth={2.2} fill="none" strokeLinecap="round" />
+          <circle cx={18} cy={27} r={1} fill={DARK} />
+          <circle cx={26} cy={27} r={1} fill={DARK} />
+          <circle cx={14} cy={30} r={1.2} fill={ORANGE} opacity={0.55} />
+          <circle cx={30} cy={30} r={1.2} fill={ORANGE} opacity={0.55} />
+          <path d="M21 30 q1 1 2 0" stroke={DARK} strokeWidth={1.1} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'dessert':
+      return (
+        <g>
+          <path d="M22 9 q-2 -3 -5 -5" stroke="#6B4F35" strokeWidth={1.6} fill="none" strokeLinecap="round" />
+          <circle cx={22} cy={9} r={3} fill="#E11D48" />
+          <path d="M14 14 L13 9 L18 12 Z" {...f} />
+          <path d="M30 14 L31 9 L26 12 Z" {...f} />
+          <path d="M9 25 Q9 14 22 13 Q35 14 35 25 Q35 26 33 26 H11 Q9 26 9 25 Z" {...f} />
+          <path d="M9 26 H35 V29 H9 Z" {...f} />
+          <path d="M11 29 L13 38 L16 29 L18 38 L21 29 L23 38 L26 29 L28 38 L31 29 L33 38 V29 Z" {...f} />
+          <circle cx={17} cy={20} r={1} fill={DARK} />
+          <circle cx={27} cy={20} r={1} fill={DARK} />
+          <circle cx={13.5} cy={23} r={1.2} fill={ORANGE} opacity={0.55} />
+          <circle cx={30.5} cy={23} r={1.2} fill={ORANGE} opacity={0.55} />
+          <path d="M21 23 q1 1 2 0" stroke={DARK} strokeWidth={1.1} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'fruit':
+      return (
+        <g>
+          <path d="M22 11 L22 7" stroke="#6B4F35" strokeWidth={2.2} fill="none" strokeLinecap="round" />
+          <path d="M22 9 Q28 4 33 7 Q31 13 24 11 Z" fill="#5CB88A" />
+          <path d="M22 12 Q13 11 10 22 Q9 34 16 37 Q19 38 22 36 Q25 38 28 37 Q35 34 34 22 Q31 11 22 12 Z" {...f} />
+          <path d="M16 14 L15 10 L19 12 Z" {...f} />
+          <path d="M28 14 L29 10 L25 12 Z" {...f} />
+          <circle cx={18} cy={25} r={1.1} fill={DARK} />
+          <circle cx={26} cy={25} r={1.1} fill={DARK} />
+          <circle cx={14} cy={29} r={1.5} fill={ORANGE} opacity={0.55} />
+          <circle cx={30} cy={29} r={1.5} fill={ORANGE} opacity={0.55} />
+          <path d="M22 29 q-1.5 1.5 -3 0.4 M22 29 q1.5 1.5 3 0.4" stroke={DARK} strokeWidth={1.1} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'cart':
+      return (
+        <g>
+          <path d="M4 9 H8 L11 14 H38 L34 28 H14 Z" {...f} />
+          <circle cx={17} cy={34} r={2.6} {...f} />
+          <circle cx={31} cy={34} r={2.6} {...f} />
+          <circle cx={17} cy={34} r={1} fill={DARK} />
+          <circle cx={31} cy={34} r={1} fill={DARK} />
+        </g>
+      );
+    case 'pricetag':
+      return (
+        <g>
+          <path d="M6 10 H26 L38 22 L26 34 H6 Z" {...f} />
+          <circle cx={28} cy={22} r={2.4} fill={DARK} />
+          <circle cx={28} cy={22} r={0.8} fill={stroke} />
+          <PawStamp x={15} y={26} s={0.6} color={DARK} />
+        </g>
+      );
+    case 'star':
+      return (
+        <g>
+          <path d="M22 4 L27.5 15.2 L40 17 L31 26 L33.2 38.5 L22 32.6 L10.8 38.5 L13 26 L4 17 L16.5 15.2 Z" {...f} />
+          <circle cx={19} cy={20} r={0.9} fill={DARK} />
+          <circle cx={25} cy={20} r={0.9} fill={DARK} />
+          <path d="M20.5 23 q1.5 1.5 3 0" stroke={DARK} strokeWidth={1.2} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'construct':
+      return (
+        <g>
+          <path d="M28 8 Q34 8 34 14 Q34 18 30 19 L18 31 Q15 34 12 31 Q9 28 12 25 L24 13 Q23 9 28 8 Z" {...f} />
+          <circle cx={29} cy={13} r={1.3} fill={DARK} />
+          <path d="M36 22 l1 2 2 1 -2 1 -1 2 -1 -2 -2 -1 2 -1 z" {...f} />
+        </g>
+      );
+    case 'car-sport':
+      return (
+        <g>
+          <path d="M5 28 V25 L9 18 Q11 16 14 16 H30 Q33 16 35 18 L39 25 V28 Q39 31 36 31 Q34 31 33 30 V32 H29 V30 H15 V32 H11 V30 Q10 31 8 31 Q5 31 5 28 Z" {...f} />
+          <path d="M13 21 L16 16 H28 L31 21 Z" fill={DARK} opacity={0.45} />
+          <circle cx={12} cy={31} r={2.6} fill={DARK} />
+          <circle cx={32} cy={31} r={2.6} fill={DARK} />
+        </g>
+      );
+    case 'body':
+      return (
+        <g>
+          <path d="M18 10 L17 5 L21 7 Z" {...f} />
+          <path d="M26 10 L27 5 L23 7 Z" {...f} />
+          <circle cx={22} cy={12} r={5.5} {...f} />
+          <circle cx={20} cy={12} r={0.7} fill={DARK} />
+          <circle cx={24} cy={12} r={0.7} fill={DARK} />
+          <path d="M14 30 L17 18 H27 L30 30 V37 H14 Z" {...f} />
+          <path d="M14 22 L9 28 M30 22 L35 28" stroke={stroke} strokeWidth={2.6} fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case 'package':
+      return (
+        <g>
+          <path d="M6 16 L22 8 L38 16 V32 L22 40 L6 32 Z" {...f} />
+          <path d="M6 16 L22 24 L38 16 M22 24 V40" stroke={DARK} strokeWidth={1.4} opacity={0.4} fill="none" />
+          <path d="M14 12 L30 20" stroke={DARK} strokeWidth={2} opacity={0.45} />
+          <PawStamp x={28} y={28} s={0.55} color={DARK} />
+        </g>
+      );
+    case 'ellipsis-horizontal':
+    default:
+      return <FatCatFace stroke={stroke} />;
+  }
+}
+
+function CatIcon({ kind, size = 44, bg = '#A39685', strokeColor = '#FFFFFF', bare = false }) {
+  const inner = (
+    <svg width={size * (bare ? 1 : 0.88)} height={size * (bare ? 1 : 0.88)} viewBox="0 0 44 44" style={{ display: 'block' }}>
+      {renderGlyph(kind, strokeColor)}
+    </svg>
+  );
+  if (bare) return inner;
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: size / 2, background: bg,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: '0 2px 0 rgba(42,35,32,0.08), inset 0 -2px 0 rgba(42,35,32,0.08)',
+    }}>
+      {inner}
+    </div>
+  );
+}
+
+window.CatIcon = CatIcon;
+window.CAT_ICON_KEYS = [
+  'fast-food','noodles','dessert','fruit','cafe','wine',
+  'car','car-sport','bus','airplane',
+  'home','bulb','water','wifi','flame','phone-portrait','laundry',
+  'cart','basket','shirt','bag','pricetag','beauty','gift',
+  'medkit','barbell','body',
+  'film','game-controller','tv','sparkles','star',
+  'people','heart','paw','donate','heart-hand',
+  'school','book','notebook',
+  'briefcase','business','salary','storefront','laptop','time','network',
+  'cash','wallet','card','receipt','piggy-bank','savings','gold-bars','gold-coin',
+  'trending-up','stats-chart','analytics','shield-checkmark','trophy',
+  'package','construct','ellipsis-horizontal',
+];
