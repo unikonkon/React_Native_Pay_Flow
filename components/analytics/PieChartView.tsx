@@ -17,6 +17,9 @@ interface PieChartViewProps {
   period?: Period;
   walletId?: string | null;
   viewType?: 'expense' | 'income' | 'all';
+  /** When `viewType === 'all'`, this is the net (income - expense) shown in the donut center
+   * with a +/- prefix and color. If undefined, the chart falls back to the sum of `data`. */
+  netAmount?: number;
 }
 
 const CHART_SIZE = 220;
@@ -31,7 +34,7 @@ const FALLBACK_PALETTE = [
   '#9BB07A', '#D48F6A',
 ];
 
-export function PieChartView({ data, title, minPercentage = 0, period, walletId, viewType }: PieChartViewProps) {
+export function PieChartView({ data, title, minPercentage = 0, period, walletId, viewType, netAmount }: PieChartViewProps) {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [showAllModal, setShowAllModal] = useState(false);
   const [showCompareModal, setShowCompareModal] = useState(false);
@@ -202,11 +205,28 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
               position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
               alignItems: 'center', justifyContent: 'center',
             }}>
-              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">ยอดรวม</Text>
-              <Text style={{ fontFamily: 'Inter_900Black', fontSize: 26, fontVariant: ['tabular-nums'], letterSpacing: -0.5 }} className="text-foreground">
-                {formatCurrency(total)}
-              </Text>
-              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 2 }} className="text-muted-foreground">บาท</Text>
+              {viewType === 'all' && netAmount !== undefined ? (() => {
+                const isNeg = netAmount < 0;
+                const sign = isNeg ? '-' : '+';
+                const netColor = isNeg ? '#C65A4E' : '#3E8B68';
+                return (
+                  <>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">คงเหลือ</Text>
+                    <Text style={{ fontFamily: 'Inter_900Black', fontSize: 26, fontVariant: ['tabular-nums'], letterSpacing: -0.5, color: netColor }}>
+                      {sign}{formatCurrency(Math.abs(netAmount))}
+                    </Text>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 2, color: netColor }}>บาท</Text>
+                  </>
+                );
+              })() : (
+                <>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">ยอดรวม</Text>
+                  <Text style={{ fontFamily: 'Inter_900Black', fontSize: 26, fontVariant: ['tabular-nums'], letterSpacing: -0.5 }} className="text-foreground">
+                    {formatCurrency(total)}
+                  </Text>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 2 }} className="text-muted-foreground">บาท</Text>
+                </>
+              )}
             </View>
           </View>
         </View>

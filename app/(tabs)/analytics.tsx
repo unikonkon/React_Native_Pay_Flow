@@ -23,7 +23,7 @@ export default function AnalyticsScreen() {
   const bgMascotId = useThemeStore(s => s.currentBgMascot);
   const mascotRun = getBgMascotSource(bgMascotId);
 
-  const { expenseByCategory, incomeByCategory } = useSummary(transactions);
+  const { expenseByCategory, incomeByCategory, balance } = useSummary(transactions);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
@@ -89,22 +89,29 @@ export default function AnalyticsScreen() {
           </View>
           {/* Expense / Income / All toggle */}
           <View className="flex-row bg-white rounded-full border border-border overflow-hidden">
-            {([['expense', 'จ่าย'], ['income', 'รับ'], ['all', 'รวม']] as const).map(([key, label]) => (
-              <Pressable
-                key={key}
-                onPress={() => { Haptics.selectionAsync(); setViewType(key); }}
-                style={{ backgroundColor: viewType === key ? '#2B2118' : 'transparent' }}
-                className="px-3 py-1.5 rounded-full"
-              >
-                <Text style={{
-                  fontFamily: 'IBMPlexSansThai_600SemiBold',
-                  fontSize: 13,
-                  paddingHorizontal: 6,
-                  color: viewType === key ? '#fff' : '#6B5F52',
-                }}>{label}</Text>
-              </Pressable>
-            ))}
-          </View>         
+            {([
+              ['expense', 'จ่าย', '#C65A4E'],
+              ['income', 'รับ', '#3E8B68'],
+              ['all', 'คงเหลือ', '#2B2118'],
+            ] as const).map(([key, label, accent]) => {
+              const active = viewType === key;
+              return (
+                <Pressable
+                  key={key}
+                  onPress={() => { Haptics.selectionAsync(); setViewType(key); }}
+                  style={{ backgroundColor: active ? accent : 'transparent' }}
+                  className="px-3 py-1.5 rounded-full"
+                >
+                  <Text style={{
+                    fontFamily: 'IBMPlexSansThai_600SemiBold',
+                    fontSize: 13,
+                    paddingHorizontal: 6,
+                    color: active ? '#fff' : key === 'all' ? '#6B5F52' : accent,
+                  }}>{label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
 
         <PieChartView
@@ -114,6 +121,7 @@ export default function AnalyticsScreen() {
           period={currentPeriod}
           walletId={selectedWalletId}
           viewType={viewType}
+          netAmount={viewType === 'all' ? balance : undefined}
         />
 
       </ScrollView>
