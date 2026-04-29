@@ -66,9 +66,11 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
       for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = `${curYear}-${String(curMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const dayTxs = txByDate.get(dateStr) ?? [];
-        const amount = dayTxs.reduce((sum, tx) => sum + tx.amount, 0);
+        const expenseAmount = dayTxs.filter(t => t.type === 'expense').reduce((s, tx) => s + tx.amount, 0);
+        const incomeAmount = dayTxs.filter(t => t.type === 'income').reduce((s, tx) => s + tx.amount, 0);
+        const amount = expenseAmount + incomeAmount;
         if (amount > 0) hasAmount = true;
-        days.push({ day: d, amount, txs: dayTxs });
+        days.push({ day: d, amount, txs: dayTxs, expenseAmount, incomeAmount });
       }
 
       if (hasAmount) result.push({ year: curYear, month: curMonth, days });
@@ -79,8 +81,12 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
     return result;
   }, [period, txByDate]);
 
-  const totalAmount = transactions.reduce((s, tx) => s + tx.amount, 0);
+  const totalExpense = transactions.filter(t => t.type === 'expense').reduce((s, tx) => s + tx.amount, 0);
+  const totalIncome = transactions.filter(t => t.type === 'income').reduce((s, tx) => s + tx.amount, 0);
+  const totalBalance = totalIncome - totalExpense;
+  const totalAmount = totalIncome + totalExpense;
   const selectedTxs = selectedDay ? (txByDate.get(selectedDay) ?? []) : [];
+  const isSplit = viewType === 'all';
 
   return (
     <Modal visible={visible} animationType="fade" onRequestClose={onClose}>
@@ -98,7 +104,7 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
               <View className="ml-3 flex-1">
                 <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }} className="text-foreground">{themeTitle}</Text>
                 <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">
-                  {formatCurrency(totalAmount)} บาท · {transactions.length} รายการ
+                  {isSplit ? `${transactions.length} รายการ` : `${formatCurrency(totalAmount)} บาท · ${transactions.length} รายการ`}
                 </Text>
               </View>
             </View>
@@ -109,6 +115,79 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
         </View>
 
         <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+          {isSplit && (
+            <View
+              className="mx-4 mt-3 bg-card"
+              style={{
+                borderRadius: 20,
+                padding: 14,
+                shadowColor: '#2A2320',
+                shadowOpacity: 0.05,
+                shadowRadius: 12,
+                shadowOffset: { width: 0, height: 4 },
+                elevation: 2,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 8,
+              }}
+            >
+              <View style={{ flex: 1, alignItems: 'center' }}>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-muted-foreground">
+                  จ่าย
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: 'Inter_700Bold',
+                    fontSize: 14,
+                    fontVariant: ['tabular-nums'],
+                    color: '#C65A4E',
+                    marginTop: 2,
+                  }}
+                  numberOfLines={1}
+                >
+                  -{formatCurrency(totalExpense)}
+                </Text>
+              </View>
+              <View style={{ width: 1, height: 30, backgroundColor: 'rgba(42,35,32,0.08)' }} />
+              <View style={{ flex: 1, alignItems: 'center' }}>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-muted-foreground">
+                  รับ
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: 'Inter_700Bold',
+                    fontSize: 14,
+                    fontVariant: ['tabular-nums'],
+                    color: '#3E8B68',
+                    marginTop: 2,
+                  }}
+                  numberOfLines={1}
+                >
+                  +{formatCurrency(totalIncome)}
+                </Text>
+              </View>
+              <View style={{ width: 1, height: 30, backgroundColor: 'rgba(42,35,32,0.08)' }} />
+              <View style={{ flex: 1, alignItems: 'center' }}>
+                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-muted-foreground">
+                  คงเหลือ
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: 'Inter_700Bold',
+                    fontSize: 14,
+                    fontVariant: ['tabular-nums'],
+                    color: totalBalance >= 0 ? '#3E8B68' : '#C65A4E',
+                    marginTop: 2,
+                  }}
+                  numberOfLines={1}
+                >
+                  {totalBalance >= 0 ? '+' : '-'}{formatCurrency(Math.abs(totalBalance))}
+                </Text>
+              </View>
+            </View>
+          )}
+
           {months.map((m) => (
             <CalendarMonth
               key={`${m.year}-${m.month}`}
@@ -116,6 +195,7 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
               color={themeColor}
               selectedDay={selectedDay}
               onSelectDay={(dateStr) => setSelectedDay(selectedDay === dateStr ? null : dateStr)}
+              splitMode={isSplit}
             />
           ))}
 
@@ -199,9 +279,38 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
                             />
                           </View>
                           <View style={{ flex: 1 }}>
-                            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground" numberOfLines={1}>
-                              {catName}
-                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                              {isSplit && (
+                                <View
+                                  style={{
+                                    paddingHorizontal: 6,
+                                    paddingVertical: 1,
+                                    borderRadius: 6,
+                                    backgroundColor: isIncome ? '#E3F1EA' : '#FBE5E1',
+                                    borderWidth: 1,
+                                    borderColor: isIncome ? '#3E8B68' : '#C65A4E',
+                                  }}
+                                >
+                                  <Text
+                                    style={{
+                                      fontFamily: 'IBMPlexSansThai_700Bold',
+                                      fontSize: 10,
+                                      lineHeight: 14,
+                                      color: isIncome ? '#3E8B68' : '#C65A4E',
+                                    }}
+                                  >
+                                    {isIncome ? 'รับ' : 'จ่าย'}
+                                  </Text>
+                                </View>
+                              )}
+                              <Text
+                                style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, flexShrink: 1 }}
+                                className="text-foreground"
+                                numberOfLines={1}
+                              >
+                                {catName}
+                              </Text>
+                            </View>
                             <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 1 }} className="text-muted-foreground">
                               {group.txs.length} รายการ
                             </Text>
@@ -210,7 +319,7 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
                             className={isIncome ? '' : 'text-foreground'}
                             style={{
                               fontFamily: 'Inter_700Bold', fontSize: 14, fontVariant: ['tabular-nums'],
-                              color: isIncome ? '#3E8B68' : undefined,
+                              color: isIncome ? '#3E8B68' : '#C65A4E',
                               marginRight: 8,
                             }}
                           >
@@ -254,7 +363,7 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
                               className={isIncome ? '' : 'text-foreground'}
                               style={{
                                 fontFamily: 'Inter_600SemiBold', fontSize: 13, fontVariant: ['tabular-nums'],
-                                color: isIncome ? '#3E8B68' : undefined,
+                                color: isIncome ? '#3E8B68' : '#C65A4E',
                               }}
                             >
                               {sign}{formatCurrency(tx.amount)}

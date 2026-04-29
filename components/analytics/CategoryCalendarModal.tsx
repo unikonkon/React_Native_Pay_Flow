@@ -19,7 +19,15 @@ const DAY_LABELS = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
 export interface MonthData {
   year: number;
   month: number; // 0-based
-  days: { day: number; amount: number; txs: Transaction[] }[];
+  days: {
+    day: number;
+    amount: number;
+    txs: Transaction[];
+    /** When the parent runs in split mode (viewType === 'all'), this is the expense-only sum for the day. */
+    expenseAmount?: number;
+    /** When the parent runs in split mode (viewType === 'all'), this is the income-only sum for the day. */
+    incomeAmount?: number;
+  }[];
 }
 
 interface Props {
@@ -203,16 +211,20 @@ export function CategoryCalendarModal({ visible, onClose, category, period, wall
 
 // ===== Calendar Month Component =====
 
-export const CalendarMonth = React.memo(function CalendarMonth({ data, color, selectedDay, onSelectDay }: {
+export const CalendarMonth = React.memo(function CalendarMonth({ data, color, selectedDay, onSelectDay, splitMode = false }: {
   data: MonthData;
   color: string;
   selectedDay: string | null;
   onSelectDay: (dateStr: string) => void;
+  /** When true, each day cell shows expense (left, red) + income (right, green). */
+  splitMode?: boolean;
 }) {
   const isDark = useIsDarkTheme();
   const firstDayOfWeek = new Date(data.year, data.month, 1).getDay(); // 0=Sun
   const buddhistYear = data.year + 543;
   const totalAmount = data.days.reduce((s, d) => s + d.amount, 0);
+  const totalExpense = data.days.reduce((s, d) => s + (d.expenseAmount ?? 0), 0);
+  const totalIncome = data.days.reduce((s, d) => s + (d.incomeAmount ?? 0), 0);
 
   // Build grid: empty cells + day cells
   const cells: (null | MonthData['days'][number])[] = [];
@@ -241,9 +253,56 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
         <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, marginBottom: 8 }} className="text-foreground">
           {THAI_MONTHS[data.month]} {buddhistYear}
         </Text>
-        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground">
-          รวม: {formatCurrency(totalAmount)}
-        </Text>
+        <View className="flex-row items-center" style={{ gap: 8 }}>
+          {splitMode ? (
+            <>
+              {totalExpense > 0 && (
+                <Text
+                  style={{
+                    fontFamily: 'IBMPlexSansThai_600SemiBold',
+                    fontSize: 11,
+                    fontVariant: ['tabular-nums'],
+                    color: '#C65A4E',
+                  }}
+                >
+                   -{formatCurrency(totalExpense)}
+                </Text>
+              )}
+              {totalIncome > 0 && (
+                <Text
+                  style={{
+                    fontFamily: 'IBMPlexSansThai_600SemiBold',
+                    fontSize: 11,
+                    fontVariant: ['tabular-nums'],
+                    color: '#3E8B68',
+                  }}
+                >
+                   +{formatCurrency(totalIncome)}
+                </Text>
+              )}
+              {(() => {
+                const balance = totalIncome - totalExpense;
+                const isNeg = balance < 0;
+                return (
+                  <Text
+                    style={{
+                      fontFamily: 'IBMPlexSansThai_600SemiBold',
+                      fontSize: 11,
+                      fontVariant: ['tabular-nums'],
+                      color: isNeg ? '#A93322' : '#21734A',
+                    }}
+                  >
+                    เหลือ {isNeg ? '-' : '+'}{formatCurrency(Math.abs(balance))}
+                  </Text>
+                );
+              })()}
+            </>
+          ) : (
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }} className="text-foreground">
+              รวม: {formatCurrency(totalAmount)}
+            </Text>
+          )}
+        </View>
       </View>
 
 
@@ -269,6 +328,8 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
             const isSelected = selectedDay === dateStr;
             const hasAmount = cell.amount > 0;
 
+            const isSplitWithAmount = hasAmount && splitMode;
+
             return (
               <Pressable
                 key={ci}
@@ -279,12 +340,33 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
                 }}
                 style={{
                   flex: 1, aspectRatio: 1,
-                  alignItems: 'center', justifyContent: 'center',
+                  alignItems: 'center',
+                  justifyContent: isSplitWithAmount ? 'space-between' : 'center',
+                  paddingVertical: isSplitWithAmount ? 3 : 0,
                   margin: 1.5, borderRadius: 12,
                   // Dark mode: bump tint opacity (~20%) so category color is still visible on dark bg
-                  backgroundColor: isSelected ? color : hasAmount ? color + (isDark ? '33' : '12') : 'transparent',
+                  backgroundColor: isSelected ? color : hasAmount ? color + (isDark ? '45' : '12') : 'transparent',
                 }}
               >
+                {/* Split mode: income at top edge — placeholder keeps the day centered when income is 0 */}
+                {isSplitWithAmount && (
+                  (cell.incomeAmount ?? 0) > 0 ? (
+                    <Text
+                      style={{
+                        fontFamily: 'Inter_700Bold',
+                        fontSize: 9,
+                        lineHeight: 11,
+                        color: isSelected ? '#fff' : '#3E8B68',
+                      }}
+                      numberOfLines={1}
+                    >
+                      {formatCompact(cell.incomeAmount ?? 0)}
+                    </Text>
+                  ) : (
+                    <View style={{ height: 11 }} />
+                  )
+                )}
+
                 <Text
                   className={isSelected ? '' : hasAmount ? 'text-foreground' : 'text-muted-foreground'}
                   style={{
@@ -295,14 +377,13 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
                 >
                   {cell.day}
                 </Text>
-                {hasAmount && (
+
+                {hasAmount && !splitMode && (
                   <Text
                     style={{
                       fontFamily: 'Inter_700Bold',
                       fontSize: 10,
                       paddingTop: 4,
-                      // Selected → white; Dark mode unselected → cream foreground (readable on dark);
-                      // Light mode unselected → category color (traditional brand look)
                       color: isSelected ? '#fff' : color,
                       marginTop: -1,
                       textShadowColor: isSelected ? 'rgba(0,0,0,0.15)' : undefined,
@@ -315,6 +396,24 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
                   </Text>
                 )}
 
+                {/* Split mode: expense at bottom edge — placeholder keeps the day centered when expense is 0 */}
+                {isSplitWithAmount && (
+                  (cell.expenseAmount ?? 0) > 0 ? (
+                    <Text
+                      style={{
+                        fontFamily: 'Inter_700Bold',
+                        fontSize: 9,
+                        lineHeight: 11,
+                        color: isSelected ? '#fff' : '#C65A4E',
+                      }}
+                      numberOfLines={1}
+                    >
+                      {formatCompact(cell.expenseAmount ?? 0)}
+                    </Text>
+                  ) : (
+                    <View style={{ height: 11 }} />
+                  )
+                )}
               </Pressable>
             );
           })}
