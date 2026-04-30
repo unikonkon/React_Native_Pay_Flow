@@ -13,6 +13,9 @@ export const DARK_THEMES = new Set([
   'mocha-dark',
   'slate-dark',
   'moss-dark',
+  'obsidian',
+  'graphite-dark',
+  'indigo-dark',
 ]);
 
 export function useIsDarkTheme(): boolean {

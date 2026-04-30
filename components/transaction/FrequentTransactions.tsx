@@ -13,19 +13,32 @@ interface FrequentTransactionsProps {
   onSelect: (analysis: Analysis) => void;
 }
 
+/**
+ * Item limit per row setting.
+ * - 1 row → 9 items shown in a single horizontal scroll.
+ * - 2+ rows → flex-wrap layout, 5 items per visual row (10 / 15 / 20).
+ */
+const ITEMS_LIMIT_BY_ROWS: Record<1 | 2 | 3 | 4, number> = {
+  1: 9,
+  2: 10,
+  3: 15,
+  4: 20,
+};
+
 export function FrequentTransactions({ onSelect }: FrequentTransactionsProps) {
   const categories = useCategoryStore(s => s.categories);
   const selectedWalletId = useTransactionStore(s => s.selectedWalletId);
   const transactions = useTransactionStore(s => s.transactions);
-  const recTxColumns = useSettingsStore(s => s.recTxColumns);
-  const recTxRows = useSettingsStore(s => s.recTxRows);
+  const showHomeFrequentList = useSettingsStore(s => s.showHomeFrequentList);
+  const homeFrequentRows = useSettingsStore(s => s.homeFrequentRows);
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
 
-  const limit = Math.min(4, Math.max(1, recTxColumns || 2)) * Math.min(4, Math.max(1, recTxRows || 2));
+  const rows = Math.min(4, Math.max(1, homeFrequentRows || 1)) as 1 | 2 | 3 | 4;
+  const limit = ITEMS_LIMIT_BY_ROWS[rows];
 
   useEffect(() => {
     const wId = selectedWalletId;
-    if (!wId) { setAnalyses([]); return; }
+    if (!wId || !showHomeFrequentList) { setAnalyses([]); return; }
     let cancelled = false;
     (async () => {
       try {
@@ -37,28 +50,64 @@ export function FrequentTransactions({ onSelect }: FrequentTransactionsProps) {
       }
     })();
     return () => { cancelled = true; };
-  }, [selectedWalletId, limit, transactions]);
+  }, [selectedWalletId, limit, transactions, showHomeFrequentList]);
 
+  if (!showHomeFrequentList) return null;
   if (analyses.length === 0) return null;
+
+  // rows === 1 → horizontal scroll (9 items, scroll right to see all).
+  // rows >= 2 → single flex-wrap container, justify-between, ~5 items per visual row.
+  if (rows === 1) {
+    return (
+      <View className="pb-1">
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-muted-foreground px-4 mb-1">รายการใช้บ่อย</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16 }}
+        >
+          <View className="flex-row" style={{ gap: 16 }}>
+            {analyses.map((analysis) => {
+              const cat = categories.find(c => c.id === analysis.categoryId);
+              return (
+                <FrequentItem
+                  key={analysis.id}
+                  analysis={analysis}
+                  category={cat}
+                  onSelect={onSelect}
+                />
+              );
+            })}
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
     <View className="pb-1">
       <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-muted-foreground px-4 mb-1">รายการใช้บ่อย</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
-        <View className="flex-row" style={{ gap: 16 }}>
-          {analyses.map((analysis) => {
-            const cat = categories.find(c => c.id === analysis.categoryId);
-            return (
-              <FrequentItem
-                key={analysis.id}
-                analysis={analysis}
-                category={cat}
-                onSelect={onSelect}
-              />
-            );
-          })}
-        </View>
-      </ScrollView>
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+          paddingHorizontal: 20,
+          rowGap: 12,
+        }}
+      >
+        {analyses.map((analysis) => {
+          const cat = categories.find(c => c.id === analysis.categoryId);
+          return (
+            <FrequentItem
+              key={analysis.id}
+              analysis={analysis}
+              category={cat}
+              onSelect={onSelect}
+            />
+          );
+        })}
+      </View>
     </View>
   );
 }

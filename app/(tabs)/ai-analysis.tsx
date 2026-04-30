@@ -1,5 +1,6 @@
 import { GoldCracks, MiawThinking } from '@/assets/svg';
 import { AiResultView } from '@/components/ai/AiResultView';
+import { WallpaperBackground } from '@/components/layout/WallpaperBackground';
 import { NotificationsSettingsContent } from '@/components/settings/NotificationsSettingsContent';
 import { ThemeSettingsContent } from '@/components/settings/ThemeSettingsContent';
 import { analyzeFinances, deleteApiKey, getApiKey, getThaiMonthName, setApiKey } from '@/lib/api/ai';
@@ -38,7 +39,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { WallpaperBackground } from '@/components/layout/WallpaperBackground';
 
 type PromptType = 'structured' | 'full';
 type InnerTab = 'ai' | 'data' | 'theme' | 'notifications';
@@ -225,7 +225,7 @@ const mascotPlus = require('@/assets/mascot-cosmic.png');
 const PREMIUM_FEATURES: { icon: keyof typeof Ionicons.glyphMap; title: string; desc: string }[] = [
   { icon: 'sparkles-outline', title: 'AI วิเคราะห์การใช้จ่าย', desc: 'แมวช่วยดูพฤติกรรมการใช้เงิน ทุกสัปดาห์' },
   { icon: 'download-outline', title: 'Export และ Import ข้อมูล Excel/Txt', desc: 'ส่งออกรายงาน หรือนำเข้าข้อมูล' },
-  { icon: 'color-palette-outline', title: 'ธีมพิเศษ + แมวเปลี่ยนชุด', desc: '16 ธีมสี และชุดแมวให้เปลี่ยน' },
+  { icon: 'color-palette-outline', title: 'ธีมพิเศษ + พื้นหลังแอป + แมวเปลี่ยนชุด', desc: '30 ธีมสี (สว่าง/มืด), พื้นหลังแอป + ปรับ overlay & ความเข้มการ์ด, ชุดแมว, ตีนแมว' },
   { icon: 'notifications-outline', title: 'แจ้งเตือน Push', desc: 'เตือนเมื่อใกล้/เกินงบรายวัน รายเดือน' },
 ];
 

@@ -457,3 +457,117 @@
   --border: #2C3326;
   --ring: #E87A3D;
 }
+
+/* MiawMoney — ออบซิเดียน (สว่าง) */
+.obsidian-light {
+  --background: #F2F4F8;
+  --foreground: #14161D;
+  --card: #FFFFFF;
+  --card-foreground: #14161D;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #E8EAF1;
+  --secondary-foreground: #14161D;
+  --muted: #E8EAF1;
+  --muted-foreground: #7C8093;
+  --accent: #D8DDE6;
+  --accent-foreground: #14161D;
+  --destructive: #E57373;
+  --border: #E2E5EC;
+  --ring: #E87A3D;
+}
+
+/* MiawMoney — ออบซิเดียน (มืด — ดำสนิทแกมน้ำเงิน) */
+.obsidian {
+  --background: #0A0E16;
+  --foreground: #ECEEF5;
+  --card: #14161F;
+  --card-foreground: #ECEEF5;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #11141C;
+  --secondary-foreground: #ECEEF5;
+  --muted: #11141C;
+  --muted-foreground: #7C8093;
+  --accent: #28293A;
+  --accent-foreground: #ECEEF5;
+  --destructive: #E57373;
+  --border: #1E2028;
+  --ring: #E87A3D;
+}
+
+/* MiawMoney — กราไฟต์ (สว่าง) */
+.graphite {
+  --background: #F4F4F5;
+  --foreground: #27272A;
+  --card: #FFFFFF;
+  --card-foreground: #27272A;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EBEBEE;
+  --secondary-foreground: #27272A;
+  --muted: #EBEBEE;
+  --muted-foreground: #8A8A8E;
+  --accent: #DEDEE0;
+  --accent-foreground: #27272A;
+  --destructive: #E57373;
+  --border: #E5E5E7;
+  --ring: #E87A3D;
+}
+
+/* MiawMoney — กราไฟต์ (มืด — เทาดำกลาง) */
+.graphite-dark {
+  --background: #27272A;
+  --foreground: #EFEFEF;
+  --card: #2F2F33;
+  --card-foreground: #EFEFEF;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #2A2A2E;
+  --secondary-foreground: #EFEFEF;
+  --muted: #2A2A2E;
+  --muted-foreground: #8A8A8E;
+  --accent: #3D3D42;
+  --accent-foreground: #EFEFEF;
+  --destructive: #E57373;
+  --border: #38383C;
+  --ring: #E87A3D;
+}
+
+/* MiawMoney — คราม (สว่าง) */
+.indigo {
+  --background: #F4F3FA;
+  --foreground: #1F1E2A;
+  --card: #FFFFFF;
+  --card-foreground: #1F1E2A;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EAE8F2;
+  --secondary-foreground: #1F1E2A;
+  --muted: #EAE8F2;
+  --muted-foreground: #8484A0;
+  --accent: #DCDAE8;
+  --accent-foreground: #1F1E2A;
+  --destructive: #E57373;
+  --border: #E2E0EE;
+  --ring: #E87A3D;
+}
+
+/* MiawMoney — คราม (มืด — น้ำเงินครามเข้ม) */
+.indigo-dark {
+  --background: #1A1A24;
+  --foreground: #EDECF7;
+  --card: #22222F;
+  --card-foreground: #EDECF7;
+  --primary: #E87A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1F1F2C;
+  --secondary-foreground: #EDECF7;
+  --muted: #1F1F2C;
+  --muted-foreground: #8484A0;
+  --accent: #353548;
+  --accent-foreground: #EDECF7;
+  --destructive: #E57373;
+  --border: #2C2C3D;
+  --ring: #E87A3D;
+}

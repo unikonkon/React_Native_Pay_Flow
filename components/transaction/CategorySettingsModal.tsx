@@ -21,6 +21,8 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
   const showCommonCategories = useSettingsStore(s => s.showCommonCategories);
   const showTopCategories = useSettingsStore(s => s.showTopCategories);
   const showFrequentPills = useSettingsStore(s => s.showFrequentPills);
+  const showHomeFrequentList = useSettingsStore(s => s.showHomeFrequentList);
+  const homeFrequentRows = useSettingsStore(s => s.homeFrequentRows);
   const commonCategoryLimit = useSettingsStore(s => s.commonCategoryLimit);
   const topCategoryLimit = useSettingsStore(s => s.topCategoryLimit);
   const addTxSheetHeight = useSettingsStore(s => s.addTxSheetHeight);
@@ -43,7 +45,10 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
     [allCommonCats, commonCategoryLimit]
   );
 
-  const handleToggle = (key: 'showCommonCategories' | 'showTopCategories' | 'showFrequentPills', value: boolean) => {
+  const handleToggle = (
+    key: 'showCommonCategories' | 'showTopCategories' | 'showFrequentPills' | 'showHomeFrequentList',
+    value: boolean,
+  ) => {
     Haptics.selectionAsync();
     updateSettings({ [key]: value });
   };
@@ -54,6 +59,14 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
     if (next !== current) {
       Haptics.selectionAsync();
       updateSettings({ [key]: next });
+    }
+  };
+
+  const handleHomeFrequentRows = (delta: number) => {
+    const next = Math.min(4, Math.max(1, homeFrequentRows + delta));
+    if (next !== homeFrequentRows) {
+      Haptics.selectionAsync();
+      updateSettings({ homeFrequentRows: next });
     }
   };
 
@@ -250,7 +263,7 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">
-                    รายการที่ใช้บ่อย
+                    รายการที่ใช้บ่อย (ในฟอร์ม)
                   </Text>
                   <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">
                     แสดงรายการบันทึกที่ใช้บ่อยเพื่อเลือกซ้ำได้เร็ว
@@ -263,6 +276,60 @@ export function CategorySettingsModal({ visible, type, categories, onClose }: Pr
                   thumbColor="#E5DCC9"
                 />
               </View>
+
+              {/* Home page FrequentTransactions widget */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">
+                    รายการที่ใช้บ่อย (หน้าหลัก)
+                  </Text>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">
+                    แสดงแถบรายการใช้บ่อยบนหน้ารายการ
+                  </Text>
+                </View>
+                <Switch
+                  value={showHomeFrequentList}
+                  onValueChange={(v) => handleToggle('showHomeFrequentList', v)}
+                  trackColor={{ false: '#A89888', true: '#E87A3D' }}
+                  thumbColor="#E5DCC9"
+                />
+              </View>
+
+              {showHomeFrequentList && (
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                  backgroundColor: 'rgba(42,35,32,0.03)', borderRadius: 12, padding: 12, marginTop: 10,
+                }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground">
+                    จำนวนแถว
+                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <Pressable
+                      onPress={() => handleHomeFrequentRows(-1)}
+                      style={{
+                        width: 32, height: 32, borderRadius: 16,
+                        alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: homeFrequentRows <= 1 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                      }}
+                    >
+                      <Ionicons name="remove" size={16} color={homeFrequentRows <= 1 ? '#D1C7BC' : '#E87A3D'} />
+                    </Pressable>
+                    <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 18, fontVariant: ['tabular-nums'], minWidth: 28, textAlign: 'center' }} className="text-foreground">
+                      {homeFrequentRows}
+                    </Text>
+                    <Pressable
+                      onPress={() => handleHomeFrequentRows(1)}
+                      style={{
+                        width: 32, height: 32, borderRadius: 16,
+                        alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: homeFrequentRows >= 4 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                      }}
+                    >
+                      <Ionicons name="add" size={16} color={homeFrequentRows >= 4 ? '#D1C7BC' : '#E87A3D'} />
+                    </Pressable>
+                  </View>
+                </View>
+              )}
             </View>
 
             {/* Divider */}

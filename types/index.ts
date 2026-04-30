@@ -70,6 +70,8 @@ export interface Settings {
   showCommonCategories: boolean;
   showTopCategories: boolean;
   showFrequentPills: boolean;
+  showHomeFrequentList: boolean; // Toggle the FrequentTransactions widget on the home screen
+  homeFrequentRows: number;      // Number of rows for the home FrequentTransactions widget (1–4)
   commonCategoryLimit: number;
   topCategoryLimit: number;
   addTxSheetHeight: number; // Bottom sheet height (%) for add-transaction modal, range 50–95
