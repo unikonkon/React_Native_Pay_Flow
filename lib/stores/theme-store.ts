@@ -1,27 +1,42 @@
-import { create } from 'zustand';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DEFAULT_ADD_MASCOT_ID, DEFAULT_BG_MASCOT_ID } from '@/lib/constants/mascots';
+import {
+  DEFAULT_ADD_MASCOT_ID,
+  DEFAULT_BG_MASCOT_ID,
+} from "@/lib/constants/mascots";
 import {
   MAX_CUSTOM_WALLPAPERS,
   WALLPAPER_PRESETS,
   type CustomWallpaper,
-} from '@/lib/constants/wallpapers';
+} from "@/lib/constants/wallpapers";
 import {
   deleteCustomWallpaperFile,
   importCustomWallpaper,
-} from '@/lib/utils/wallpaper-storage';
+} from "@/lib/utils/wallpaper-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { create } from "zustand";
 
-const THEME_KEY = 'app_theme';
-const BG_MASCOT_KEY = 'app_bg_mascot';
-const ADD_MASCOT_KEY = 'app_add_mascot';
-const PAW_VARIANT_KEY = 'app_paw_variant';
-const WALLPAPER_KEY = 'app_wallpaper';                    // '' = no wallpaper
-const WALLPAPER_OVERLAY_KEY = 'app_wallpaper_overlay';    // '0'..'100'
-const CUSTOM_WALLPAPERS_KEY = 'app_custom_wallpapers';    // JSON CustomWallpaper[]
+const THEME_KEY = "app_theme";
+const BG_MASCOT_KEY = "app_bg_mascot";
+const ADD_MASCOT_KEY = "app_add_mascot";
+const PAW_VARIANT_KEY = "app_paw_variant";
+const WALLPAPER_KEY = "app_wallpaper"; // '' = no wallpaper
+const WALLPAPER_OVERLAY_KEY = "app_wallpaper_overlay"; // '0'..'100'
+const CARD_OVERLAY_KEY = "app_card_overlay"; // '0'..'100' (card opacity when wallpaper is on)
+const CUSTOM_WALLPAPERS_KEY = "app_custom_wallpapers"; // JSON CustomWallpaper[]
 
-export type PawPrintVariant = 'classic' | 'detailed' | 'outlined' | 'with-claws' | 'heart';
+export type PawPrintVariant =
+  | "classic"
+  | "detailed"
+  | "outlined"
+  | "with-claws"
+  | "heart";
 
-const PAW_VARIANTS: PawPrintVariant[] = ['classic', 'detailed', 'outlined', 'with-claws', 'heart'];
+const PAW_VARIANTS: PawPrintVariant[] = [
+  "classic",
+  "detailed",
+  "outlined",
+  "with-claws",
+  "heart",
+];
 
 function isValidPawVariant(v: string | null): v is PawPrintVariant {
   return v !== null && (PAW_VARIANTS as string[]).includes(v);
@@ -39,7 +54,10 @@ function parseCustomWallpapers(raw: string | null): CustomWallpaper[] {
     if (!Array.isArray(parsed)) return [];
     return parsed.filter(
       (e): e is CustomWallpaper =>
-        e && typeof e.id === 'string' && typeof e.uri === 'string' && typeof e.addedAt === 'number',
+        e &&
+        typeof e.id === "string" &&
+        typeof e.uri === "string" &&
+        typeof e.addedAt === "number",
     );
   } catch {
     return [];
@@ -53,6 +71,7 @@ interface ThemeStore {
   pawPrintVariant: PawPrintVariant;
   currentWallpaperId: string | null;
   wallpaperOverlayPercent: number;
+  cardOverlayPercent: number;
   customWallpapers: CustomWallpaper[];
   isLoaded: boolean;
 
@@ -64,37 +83,42 @@ interface ThemeStore {
 
   setWallpaper: (id: string | null) => Promise<void>;
   setOverlayPercent: (n: number) => Promise<void>;
+  setCardOverlayPercent: (n: number) => Promise<void>;
   addCustomWallpaper: (srcUri: string) => Promise<CustomWallpaper | null>;
   removeCustomWallpaper: (id: string) => Promise<void>;
 }
 
 export const useThemeStore = create<ThemeStore>((set, get) => ({
-  currentTheme: 'warm',
+  currentTheme: "warm",
   currentBgMascot: DEFAULT_BG_MASCOT_ID,
   currentAddMascot: DEFAULT_ADD_MASCOT_ID,
-  pawPrintVariant: 'classic',
+  pawPrintVariant: "classic",
   currentWallpaperId: null,
   wallpaperOverlayPercent: 50,
+  cardOverlayPercent: 95,
   customWallpapers: [],
   isLoaded: false,
 
   loadTheme: async () => {
-    const [theme, bg, add, paw, wallpaper, overlay, customs] = await Promise.all([
-      AsyncStorage.getItem(THEME_KEY),
-      AsyncStorage.getItem(BG_MASCOT_KEY),
-      AsyncStorage.getItem(ADD_MASCOT_KEY),
-      AsyncStorage.getItem(PAW_VARIANT_KEY),
-      AsyncStorage.getItem(WALLPAPER_KEY),
-      AsyncStorage.getItem(WALLPAPER_OVERLAY_KEY),
-      AsyncStorage.getItem(CUSTOM_WALLPAPERS_KEY),
-    ]);
+    const [theme, bg, add, paw, wallpaper, overlay, cardOverlay, customs] =
+      await Promise.all([
+        AsyncStorage.getItem(THEME_KEY),
+        AsyncStorage.getItem(BG_MASCOT_KEY),
+        AsyncStorage.getItem(ADD_MASCOT_KEY),
+        AsyncStorage.getItem(PAW_VARIANT_KEY),
+        AsyncStorage.getItem(WALLPAPER_KEY),
+        AsyncStorage.getItem(WALLPAPER_OVERLAY_KEY),
+        AsyncStorage.getItem(CARD_OVERLAY_KEY),
+        AsyncStorage.getItem(CUSTOM_WALLPAPERS_KEY),
+      ]);
     set({
-      currentTheme: theme ?? 'warm',
+      currentTheme: theme ?? "warm",
       currentBgMascot: bg ?? DEFAULT_BG_MASCOT_ID,
       currentAddMascot: add ?? DEFAULT_ADD_MASCOT_ID,
-      pawPrintVariant: isValidPawVariant(paw) ? paw : 'classic',
+      pawPrintVariant: isValidPawVariant(paw) ? paw : "classic",
       currentWallpaperId: wallpaper && wallpaper.length > 0 ? wallpaper : null,
       wallpaperOverlayPercent: overlay ? clampOverlay(Number(overlay)) : 50,
+      cardOverlayPercent: cardOverlay ? clampOverlay(Number(cardOverlay)) : 100,
       customWallpapers: parseCustomWallpapers(customs),
       isLoaded: true,
     });
@@ -121,7 +145,7 @@ export const useThemeStore = create<ThemeStore>((set, get) => ({
   },
 
   setWallpaper: async (id) => {
-    await AsyncStorage.setItem(WALLPAPER_KEY, id ?? '');
+    await AsyncStorage.setItem(WALLPAPER_KEY, id ?? "");
     set({ currentWallpaperId: id });
   },
 
@@ -129,6 +153,12 @@ export const useThemeStore = create<ThemeStore>((set, get) => ({
     const value = clampOverlay(n);
     await AsyncStorage.setItem(WALLPAPER_OVERLAY_KEY, String(value));
     set({ wallpaperOverlayPercent: value });
+  },
+
+  setCardOverlayPercent: async (n) => {
+    const value = clampOverlay(n);
+    await AsyncStorage.setItem(CARD_OVERLAY_KEY, String(value));
+    set({ cardOverlayPercent: value });
   },
 
   /**
@@ -160,7 +190,7 @@ export const useThemeStore = create<ThemeStore>((set, get) => ({
     await AsyncStorage.setItem(CUSTOM_WALLPAPERS_KEY, JSON.stringify(next));
     const wasSelected = get().currentWallpaperId === id;
     if (wasSelected) {
-      await AsyncStorage.setItem(WALLPAPER_KEY, '');
+      await AsyncStorage.setItem(WALLPAPER_KEY, "");
       set({ customWallpapers: next, currentWallpaperId: null });
     } else {
       set({ customWallpapers: next });

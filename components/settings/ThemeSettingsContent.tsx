@@ -43,6 +43,8 @@ export function ThemeSettingsContent({ showIntro = false }: { showIntro?: boolea
   const setWallpaper = useThemeStore((s) => s.setWallpaper);
   const wallpaperOverlayPercent = useThemeStore((s) => s.wallpaperOverlayPercent);
   const setOverlayPercent = useThemeStore((s) => s.setOverlayPercent);
+  const cardOverlayPercent = useThemeStore((s) => s.cardOverlayPercent);
+  const setCardOverlayPercent = useThemeStore((s) => s.setCardOverlayPercent);
   const customWallpapers = useThemeStore((s) => s.customWallpapers);
   const addCustomWallpaper = useThemeStore((s) => s.addCustomWallpaper);
   const removeCustomWallpaper = useThemeStore((s) => s.removeCustomWallpaper);
@@ -129,6 +131,18 @@ export function ThemeSettingsContent({ showIntro = false }: { showIntro?: boolea
   const handleOverlayCommit = (n: number) => {
     Haptics.selectionAsync();
     setOverlayPercent(Math.round(n));
+  };
+
+  const handleCardOverlayDecrement = () => {
+    if (cardOverlayPercent <= 0) return;
+    Haptics.selectionAsync();
+    setCardOverlayPercent(cardOverlayPercent - 1);
+  };
+
+  const handleCardOverlayIncrement = () => {
+    if (cardOverlayPercent >= 100) return;
+    Haptics.selectionAsync();
+    setCardOverlayPercent(cardOverlayPercent + 1);
   };
 
   return (
@@ -376,20 +390,29 @@ export function ThemeSettingsContent({ showIntro = false }: { showIntro?: boolea
               marginBottom: 14,
             }}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <Text
                 className="text-foreground"
                 style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }}
               >
-                ความเข้มของ overlay
+                ความเข้มของ overlay ของพื้นหลัง
               </Text>
               <Text
                 className="text-muted-foreground"
-                style={{ fontFamily: 'Inter_700Bold', fontSize: 13, fontVariant: ['tabular-nums'] }}
+                style={{ fontFamily: 'Inter_700Bold', fontSize: 17, fontVariant: ['tabular-nums'] }}
               >
                 {wallpaperOverlayPercent}%
               </Text>
             </View>
+            {wallpaperOverlayPercent === 100 && (
+              <Text
+                className="text-red-500"
+                style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 10, fontVariant: ['tabular-nums'] }}
+              >
+                พื้นหลังของแอปไม่ปรากฏ
+              </Text>
+            )}
+       
             <Slider
               minimumValue={0}
               maximumValue={100}
@@ -405,6 +428,102 @@ export function ThemeSettingsContent({ showIntro = false }: { showIntro?: boolea
           </View>
         )}
 
+        {/* Card opacity stepper — only when a wallpaper is selected */}
+        {currentWallpaperId !== null && (
+          <View
+            className="bg-card"
+            style={{
+              borderRadius: 14,
+              padding: 12,
+              marginBottom: 14,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Text
+                className="text-foreground"
+                style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }}
+              >
+                ความเข้มของการ์ด
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
+                <Pressable
+                  onPress={handleCardOverlayDecrement}
+                  disabled={cardOverlayPercent <= 0}
+                  style={({ pressed }) => ({
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: cardOverlayPercent <= 0 ? 'rgba(42,35,32,0.04)' : '#FFF6EE',
+                    borderWidth: 1.5,
+                    borderColor: cardOverlayPercent <= 0 ? 'rgba(42,35,32,0.08)' : '#E87A3D',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: pressed ? 0.7 : 1,
+                    transform: [{ scale: pressed ? 0.96 : 1 }],
+                  })}
+                  accessibilityRole="button"
+                  accessibilityLabel="ลดความเข้มของการ์ด 1 เปอร์เซ็นต์"
+                >
+                  <Ionicons
+                    name="remove"
+                    size={32}
+                    style={{ borderWidth: 1, borderColor: '#E87A3D', borderRadius: 22 }}
+                    color={cardOverlayPercent <= 0 ? '#9A8D80' : '#C85F28'}
+                  />
+                </Pressable>
+
+                <View style={{ minWidth: 72, alignItems: 'center' }}>
+                  <Text
+                    style={{
+                      fontFamily: 'Inter_900Black',
+                      fontSize: 24,
+                      color: '#C85F28',
+                      fontVariant: ['tabular-nums'],
+                      letterSpacing: -0.5,
+                    }}
+                  >
+                    {cardOverlayPercent}
+                    <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 14, color: '#9A8D80' }}> %</Text>
+                  </Text>
+                </View>
+
+                <Pressable
+                  onPress={handleCardOverlayIncrement}
+                  disabled={cardOverlayPercent >= 100}
+                  style={({ pressed }) => ({
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: cardOverlayPercent >= 100 ? 'rgba(42,35,32,0.04)' : '#FFF6EE',
+                    borderWidth: 1.5,
+                    borderColor: cardOverlayPercent >= 100 ? 'rgba(42,35,32,0.08)' : '#E87A3D',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: pressed ? 0.7 : 1,
+                    transform: [{ scale: pressed ? 0.96 : 1 }],
+                  })}
+                  accessibilityRole="button"
+                  accessibilityLabel="เพิ่มความเข้มของการ์ด 1 เปอร์เซ็นต์"
+                >
+                  <Ionicons
+                    name="add"
+                    size={32}
+                    style={{ borderWidth: 1, borderColor: '#E87A3D', borderRadius: 22 }}
+                    color={cardOverlayPercent >= 100 ? '#9A8D80' : '#C85F28'}
+                  />
+                </Pressable>
+              </View>
+            </View>
+            <Text
+              className="text-muted-foreground"
+              style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }}
+            >
+              ลดเพื่อให้ภาพพื้นหลังโปร่งผ่านการ์ด
+            </Text>
+
+          </View>
+        )}
+
         {/* Custom uploads */}
         <CustomWallpaperRow
           customs={customWallpapers}
@@ -414,7 +533,7 @@ export function ThemeSettingsContent({ showIntro = false }: { showIntro?: boolea
           onDelete={handleDeleteCustomWallpaper}
           onAdd={handlePickCustomWallpaper}
         />
-        
+
         {/* Preset categories */}
         {WALLPAPER_CATEGORY_ORDER.map((category) => (
           <WallpaperCategoryRow

@@ -1,5 +1,5 @@
-import { AddWalletModal } from '@/components/wallet/AddWalletModal';
 import { WallpaperBackground } from '@/components/layout/WallpaperBackground';
+import { AddWalletModal } from '@/components/wallet/AddWalletModal';
 import { getBgMascotSource } from '@/lib/constants/mascots';
 import { useThemeStore } from '@/lib/stores/theme-store';
 import { getBiometricEnabled, isBiometricAvailable, setBiometricEnabled } from '@/lib/utils/auth';
@@ -189,7 +189,7 @@ export default function SettingsScreen() {
         >
           <Pressable
             onPress={(e) => e.stopPropagation()}
-            className="w-full max-w-md bg-card rounded-3xl border border-border"
+            className="w-full max-w-md bg-background rounded-3xl border border-border"
             style={{ padding: 22 }}
           >
             <View style={{ alignItems: 'center', marginBottom: 14 }}>

@@ -1,11 +1,14 @@
 import { getThemeSwatch } from '@/lib/constants/themes';
 import { resolveWallpaperSource } from '@/lib/constants/wallpapers';
 import { useThemeStore } from '@/lib/stores/theme-store';
+import { hexToRgba } from '@/lib/utils/theme';
+import { vars } from 'nativewind';
 import { Image, StyleSheet, View } from 'react-native';
 
 export function WallpaperBackground({ children }: { children: React.ReactNode }) {
   const wallpaperId = useThemeStore((s) => s.currentWallpaperId);
   const overlayPct = useThemeStore((s) => s.wallpaperOverlayPercent);
+  const cardOverlayPct = useThemeStore((s) => s.cardOverlayPercent);
   const themeKey = useThemeStore((s) => s.currentTheme);
   const customs = useThemeStore((s) => s.customWallpapers);
 
@@ -26,10 +29,13 @@ export function WallpaperBackground({ children }: { children: React.ReactNode })
     );
   }
 
-  const overlayColor = getThemeSwatch(themeKey)?.bg ?? '#FBF7F0';
+  const swatch = getThemeSwatch(themeKey);
+  const overlayColor = swatch?.bg ?? '#FBF7F0';
+  const cardColorRgba = hexToRgba(swatch?.card ?? '#FFFFFF', cardOverlayPct / 100);
+  const cardOverride = vars({ '--card': cardColorRgba });
 
   return (
-    <View style={{ flex: 1 }} className="bg-background">
+    <View style={[{ flex: 1 }, cardOverride]} className="bg-background">
       <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
         <Image source={source} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
         <View
