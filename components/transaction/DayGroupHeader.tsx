@@ -20,16 +20,16 @@ export function DayGroupHeader({ date, income, expense }: DayGroupHeaderProps) {
       </Text>
       <View style={{ flex: 1 }} />
       {income > 0 && (
-        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 14, fontVariant: ['tabular-nums'], color: '#3E8B68' }}>+{formatCurrency(income)}</Text>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 16, fontVariant: ['tabular-nums'], color: '#3E8B68' }}>+{formatCurrency(income)}</Text>
       )}
       {expense > 0 && (
-        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 14, fontVariant: ['tabular-nums'], color: '#C65A4E' }}>−{formatCurrency(expense)}</Text>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 16, fontVariant: ['tabular-nums'], color: '#C65A4E' }}>−{formatCurrency(expense)}</Text>
       )}
       {hasAny && (
         <Text
           style={{
             fontFamily: 'Inter_700Bold',
-            fontSize: 14,
+            fontSize: 16,
             fontVariant: ['tabular-nums'],
             color: balanceColor,
             paddingHorizontal: 6,

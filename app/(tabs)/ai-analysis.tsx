@@ -38,6 +38,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { WallpaperBackground } from '@/components/layout/WallpaperBackground';
 
 type PromptType = 'structured' | 'full';
 type InnerTab = 'ai' | 'data' | 'theme' | 'notifications';
@@ -1415,15 +1416,18 @@ export default function PremiumScreen() {
   // ===== Not Premium: show paywall =====
   if (!isPremium) {
     return (
-      <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-        <PremiumPaywall onUnlock={() => setIsPremium(true)} />
-      </SafeAreaView>
+      <WallpaperBackground>
+        <SafeAreaView className="flex-1" edges={['top']}>
+          <PremiumPaywall onUnlock={() => setIsPremium(true)} />
+        </SafeAreaView>
+      </WallpaperBackground>
     );
   }
 
   // ===== Premium: show inner tabs =====
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <WallpaperBackground>
+    <SafeAreaView className="flex-1" edges={['top']}>
       {/* Header */}
       <View style={{ paddingHorizontal: 18, paddingTop: 8, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Ionicons name="diamond" size={22} color="#C85F28" />
@@ -1779,5 +1783,6 @@ export default function PremiumScreen() {
         onClose={() => setApiKeyHelpVisible(false)}
       />
     </SafeAreaView>
+    </WallpaperBackground>
   );
 }

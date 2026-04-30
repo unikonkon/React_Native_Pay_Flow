@@ -2,6 +2,7 @@ import { FrequentTransactions } from '@/components/transaction/FrequentTransacti
 import { TransactionList } from '@/components/transaction/TransactionList';
 import { AlertBanner } from '@/components/ui/AlertBanner';
 import { FAB } from '@/components/ui/FAB';
+import { WallpaperBackground } from '@/components/layout/WallpaperBackground';
 
 import { PeriodSelector } from '@/components/ui/PeriodSelector';
 import { WalletFilter } from '@/components/wallet/WalletFilter';
@@ -160,7 +161,8 @@ export default function TransactionsScreen() {
   }, [addTransaction, selectedWalletId]);
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <WallpaperBackground>
+    <SafeAreaView className="flex-1" edges={['top']}>
       {/* Header */}
       <View className="px-4 pb-1">
         <View className="flex-row items-center mb-2 justify-between">
@@ -254,5 +256,6 @@ export default function TransactionsScreen() {
 
       <FAB onPress={handleAddNew} />
     </SafeAreaView>
+    </WallpaperBackground>
   );
 }

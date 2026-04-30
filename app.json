@@ -15,7 +15,8 @@
         "CFBundleLocalizations": [
           "th"
         ],
-        "CFBundleDevelopmentRegion": "th"
+        "CFBundleDevelopmentRegion": "th",
+        "NSPhotoLibraryUsageDescription": "ขออนุญาตเข้าถึงรูปภาพเพื่อใช้เป็นพื้นหลังของแอป"
       }
     },
     "android": {
@@ -53,7 +54,13 @@
       "expo-sqlite",
       "expo-secure-store",
       "@react-native-community/datetimepicker",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "ขออนุญาตเข้าถึงรูปภาพเพื่อใช้เป็นพื้นหลังของแอป"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

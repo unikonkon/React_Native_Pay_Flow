@@ -1,4 +1,5 @@
 import { PieChartView } from '@/components/analytics/PieChartView';
+import { WallpaperBackground } from '@/components/layout/WallpaperBackground';
 import { PeriodSelector } from '@/components/ui/PeriodSelector';
 import { WalletFilter } from '@/components/wallet/WalletFilter';
 import { useSummary } from '@/hooks/useSummary';
@@ -60,7 +61,8 @@ export default function AnalyticsScreen() {
   const filterMin = viewType === 'all' ? 0 : 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <WallpaperBackground>
+    <SafeAreaView className="flex-1" edges={['top']}>
       <ScrollView>
         {/* Header */}
         <View className="px-4 mb-2">
@@ -126,5 +128,6 @@ export default function AnalyticsScreen() {
 
       </ScrollView>
     </SafeAreaView>
+    </WallpaperBackground>
   );
 }

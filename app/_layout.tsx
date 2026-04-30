@@ -28,7 +28,7 @@ export const unstable_settings = {
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-const DARK_THEMES = ['warm-dark', 'sakura-dark', 'ocean-dark', 'forest-dark', 'midnight', 'plum-dark', 'honey', 'emerald-dark'];
+const DARK_THEMES = ['warm-dark', 'sakura-dark', 'ocean-dark', 'forest-dark', 'midnight', 'plum-dark', 'honey', 'emerald-dark', 'paper-dark', 'mocha-dark', 'slate-dark', 'moss-dark'];
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({

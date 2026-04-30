@@ -9,6 +9,10 @@ export const DARK_THEMES = new Set([
   'plum-dark',
   'honey',
   'emerald-dark',
+  'paper-dark',
+  'mocha-dark',
+  'slate-dark',
+  'moss-dark',
 ]);
 
 export function useIsDarkTheme(): boolean {

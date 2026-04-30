@@ -1,10 +1,25 @@
 import { PAW_VARIANT_OPTIONS, PawPrintIcon } from '@/components/common/PawPrintIcon';
 import { ADD_MASCOTS, BG_MASCOTS, type MascotOption } from '@/lib/constants/mascots';
 import { FAMILIES, type ThemeFamily, type ThemeSwatch } from '@/lib/constants/themes';
+import {
+  MAX_CUSTOM_WALLPAPERS,
+  WALLPAPER_CATEGORY_LABELS,
+  WALLPAPER_CATEGORY_ORDER,
+  WALLPAPER_PRESETS,
+  type CustomWallpaper,
+  type WallpaperCategory,
+} from '@/lib/constants/wallpapers';
 import { useThemeStore, type PawPrintVariant } from '@/lib/stores/theme-store';
 import { Ionicons } from '@expo/vector-icons';
+import SliderLib from '@react-native-community/slider';
 import * as Haptics from 'expo-haptics';
-import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import React from 'react';
+import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
+
+// Workaround for TS2607: @react-native-community/slider's default export mixes
+// Constructor<NativeMethods> into its class declaration, which confuses JSX type-checking.
+const Slider = SliderLib as unknown as React.ComponentType<React.ComponentProps<typeof SliderLib>>;
 
 type ThemeOption = { swatch: ThemeSwatch; family: ThemeFamily; isDark: boolean };
 
@@ -24,6 +39,13 @@ export function ThemeSettingsContent({ showIntro = false }: { showIntro?: boolea
   const setAddMascot = useThemeStore(s => s.setAddMascot);
   const pawPrintVariant = useThemeStore(s => s.pawPrintVariant);
   const setPawPrintVariant = useThemeStore(s => s.setPawPrintVariant);
+  const currentWallpaperId = useThemeStore((s) => s.currentWallpaperId);
+  const setWallpaper = useThemeStore((s) => s.setWallpaper);
+  const wallpaperOverlayPercent = useThemeStore((s) => s.wallpaperOverlayPercent);
+  const setOverlayPercent = useThemeStore((s) => s.setOverlayPercent);
+  const customWallpapers = useThemeStore((s) => s.customWallpapers);
+  const addCustomWallpaper = useThemeStore((s) => s.addCustomWallpaper);
+  const removeCustomWallpaper = useThemeStore((s) => s.removeCustomWallpaper);
 
   const handleSelect = (key: string) => {
     if (key === currentTheme) return;
@@ -47,6 +69,66 @@ export function ThemeSettingsContent({ showIntro = false }: { showIntro?: boolea
     if (v === pawPrintVariant) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setPawPrintVariant(v);
+  };
+
+  const handleSelectWallpaper = (id: string | null) => {
+    if (id === currentWallpaperId) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setWallpaper(id);
+  };
+
+  const handlePickCustomWallpaper = async () => {
+    if (customWallpapers.length >= MAX_CUSTOM_WALLPAPERS) {
+      Alert.alert('เพิ่มได้สูงสุด 10 รูป', 'กรุณาลบรูปเก่าก่อน');
+      return;
+    }
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert('ขออนุญาตเข้าถึงรูปภาพ', 'กรุณาเปิดสิทธิ์ในการตั้งค่าระบบ');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images',
+      quality: 0.85,
+      allowsEditing: false,
+    });
+    if (result.canceled || !result.assets?.length) return;
+    try {
+      const entry = await addCustomWallpaper(result.assets[0].uri);
+      if (entry) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        await setWallpaper(entry.id);
+      }
+    } catch {
+      Alert.alert('เกิดข้อผิดพลาด', 'ไม่สามารถเพิ่มรูปภาพได้ กรุณาลองใหม่');
+    }
+  };
+
+  const handleDeleteCustomWallpaper = (entry: CustomWallpaper) => {
+    Alert.alert(
+      'ลบรูปนี้ใช่ไหม?',
+      'รูปจะถูกลบออกจากแอป',
+      [
+        { text: 'ยกเลิก', style: 'cancel' },
+        {
+          text: 'ลบ',
+          style: 'destructive',
+          onPress: async () => {
+            await removeCustomWallpaper(entry.id);
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          },
+        },
+      ],
+    );
+  };
+
+  const handleOverlayChange = (n: number) => {
+    setOverlayPercent(Math.round(n));
+  };
+
+  const handleOverlayCommit = (n: number) => {
+    Haptics.selectionAsync();
+    setOverlayPercent(Math.round(n));
   };
 
   return (
@@ -212,6 +294,138 @@ export function ThemeSettingsContent({ showIntro = false }: { showIntro?: boolea
             })}
           </ScrollView>
         </View>
+      </View>
+
+      {/* ===== พื้นหลังของแอป ===== */}
+      <View style={{ marginTop: 22 }}>
+        <Text
+          className="text-foreground"
+          style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, marginBottom: 4 }}
+        >
+          พื้นหลังของแอป
+        </Text>
+        <Text
+          className="text-muted-foreground"
+          style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, marginBottom: 12 }}
+        >
+          เลือกภาพพื้นหลังสำหรับ 4 หน้าหลัก หรือเพิ่มภาพจากเครื่อง
+        </Text>
+
+        {/* "ไม่ใช้" tile — standalone, always visible */}
+        <Pressable
+          onPress={() => handleSelectWallpaper(null)}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.7 : 1,
+            transform: [{ scale: pressed ? 0.98 : 1 }],
+          })}
+          accessibilityRole="button"
+          accessibilityLabel="ไม่ใช้พื้นหลัง"
+        >
+          <View
+            className="bg-card"
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              padding: 12,
+              borderRadius: 14,
+              borderWidth: 2,
+              borderColor: currentWallpaperId === null ? '#E87A3D' : 'rgba(42,35,32,0.08)',
+              marginBottom: 14,
+            }}
+          >
+            <View
+              style={{
+                width: 56,
+                height: 40,
+                borderRadius: 8,
+                backgroundColor: 'rgba(42,35,32,0.05)',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Ionicons name="ban-outline" size={20} color="#9A8D80" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text
+                className="text-foreground"
+                style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14 }}
+              >
+                ไม่ใช้
+              </Text>
+              <Text
+                className="text-muted-foreground"
+                style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }}
+              >
+                ใช้สีพื้นหลังของธีมตามปกติ
+              </Text>
+            </View>
+            {currentWallpaperId === null && (
+              <Ionicons name="checkmark-circle" size={20} color="#E87A3D" />
+            )}
+          </View>
+        </Pressable>
+
+        {/* Overlay strength slider — only when a wallpaper is selected */}
+        {currentWallpaperId !== null && (
+          <View
+            className="bg-card"
+            style={{
+              borderRadius: 14,
+              padding: 12,
+              marginBottom: 14,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <Text
+                className="text-foreground"
+                style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }}
+              >
+                ความเข้มของ overlay
+              </Text>
+              <Text
+                className="text-muted-foreground"
+                style={{ fontFamily: 'Inter_700Bold', fontSize: 13, fontVariant: ['tabular-nums'] }}
+              >
+                {wallpaperOverlayPercent}%
+              </Text>
+            </View>
+            <Slider
+              minimumValue={0}
+              maximumValue={100}
+              step={1}
+              value={wallpaperOverlayPercent}
+              onValueChange={handleOverlayChange}
+              onSlidingComplete={handleOverlayCommit}
+              minimumTrackTintColor="#E87A3D"
+              maximumTrackTintColor="rgba(42,35,32,0.15)"
+              thumbTintColor="#E87A3D"
+              accessibilityLabel="ปรับความเข้มของ overlay"
+            />
+          </View>
+        )}
+
+        {/* Custom uploads */}
+        <CustomWallpaperRow
+          customs={customWallpapers}
+          currentId={currentWallpaperId}
+          canAdd={customWallpapers.length < MAX_CUSTOM_WALLPAPERS}
+          onSelect={(id) => handleSelectWallpaper(id)}
+          onDelete={handleDeleteCustomWallpaper}
+          onAdd={handlePickCustomWallpaper}
+        />
+        
+        {/* Preset categories */}
+        {WALLPAPER_CATEGORY_ORDER.map((category) => (
+          <WallpaperCategoryRow
+            key={category}
+            category={category}
+            currentId={currentWallpaperId}
+            onSelect={(id) => handleSelectWallpaper(id)}
+          />
+        ))}
+
+
       </View>
     </ScrollView>
   );
@@ -573,5 +787,216 @@ function ThemeListItem({
         </View>
       </View>
     </Pressable>
+  );
+}
+
+// ===== Wallpaper category row =====
+
+function WallpaperCategoryRow({
+  category,
+  currentId,
+  onSelect,
+}: {
+  category: WallpaperCategory;
+  currentId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  const presets = WALLPAPER_PRESETS.filter((p) => p.category === category);
+  return (
+    <View style={{ marginBottom: 12 }}>
+      <Text
+        className="text-foreground"
+        style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 6, paddingHorizontal: 2 }}
+      >
+        {WALLPAPER_CATEGORY_LABELS[category]}
+      </Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 10, paddingVertical: 4, paddingRight: 4 }}
+      >
+        {presets.map((p) => {
+          const isSelected = p.id === currentId;
+          return (
+            <Pressable
+              key={p.id}
+              onPress={() => onSelect(p.id)}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.7 : 1,
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
+              accessibilityRole="button"
+              accessibilityLabel={`เลือกพื้นหลัง ${p.name}`}
+            >
+              <View
+                style={{
+                  width: 132,
+                  height: 92,
+                  borderRadius: 12,
+                  borderWidth: 2,
+                  borderColor: isSelected ? '#E87A3D' : 'rgba(42,35,32,0.08)',
+                  backgroundColor: '#FAF5EC',
+                  overflow: 'hidden',
+                }}
+              >
+                <Image source={p.source} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                {isSelected && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 4,
+                      right: 4,
+                      width: 22,
+                      height: 22,
+                      borderRadius: 11,
+                      backgroundColor: '#E87A3D',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Ionicons name="checkmark" size={14} color="#fff" />
+                  </View>
+                )}
+              </View>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+}
+
+// ===== Custom wallpaper row =====
+
+function CustomWallpaperRow({
+  customs,
+  currentId,
+  canAdd,
+  onSelect,
+  onDelete,
+  onAdd,
+}: {
+  customs: CustomWallpaper[];
+  currentId: string | null;
+  canAdd: boolean;
+  onSelect: (id: string) => void;
+  onDelete: (entry: CustomWallpaper) => void;
+  onAdd: () => void;
+}) {
+  return (
+    <View style={{ marginTop: 4 }}>
+      <Text
+        className="text-foreground"
+        style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 6, paddingHorizontal: 2 }}
+      >
+        ของคุณ
+      </Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 10, paddingVertical: 4, paddingRight: 4 }}
+      >
+        {customs.map((c) => {
+          const isSelected = c.id === currentId;
+          return (
+            <View key={c.id} style={{ position: 'relative' }}>
+              <Pressable
+                onPress={() => onSelect(c.id)}
+                style={({ pressed }) => ({
+                  opacity: pressed ? 0.7 : 1,
+                  transform: [{ scale: pressed ? 0.96 : 1 }],
+                })}
+                accessibilityRole="button"
+                accessibilityLabel="เลือกพื้นหลังของฉัน"
+              >
+                <View
+                  style={{
+                    width: 132,
+                    height: 92,
+                    borderRadius: 12,
+                    borderWidth: 2,
+                    borderColor: isSelected ? '#E87A3D' : 'rgba(42,35,32,0.08)',
+                    backgroundColor: '#FAF5EC',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <Image source={{ uri: c.uri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                  {isSelected && (
+                    <View
+                      style={{
+                        position: 'absolute',
+                        top: 4,
+                        left: 4,
+                        width: 22,
+                        height: 22,
+                        borderRadius: 11,
+                        backgroundColor: '#E87A3D',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Ionicons name="checkmark" size={14} color="#fff" />
+                    </View>
+                  )}
+                </View>
+              </Pressable>
+              <Pressable
+                onPress={() => onDelete(c)}
+                hitSlop={8}
+                style={{
+                  position: 'absolute',
+                  top: -6,
+                  right: -6,
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: '#E57373',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="ลบรูปนี้"
+              >
+                <Ionicons name="close" size={14} color="#fff" />
+              </Pressable>
+            </View>
+          );
+        })}
+        <Pressable
+          onPress={onAdd}
+          style={({ pressed }) => ({
+            opacity: !canAdd ? 0.4 : pressed ? 0.7 : 1,
+            transform: [{ scale: pressed ? 0.96 : 1 }],
+          })}
+          accessibilityRole="button"
+          accessibilityLabel="เพิ่มพื้นหลังจากเครื่อง"
+        >
+          <View
+            style={{
+              width: 132,
+              height: 92,
+              borderRadius: 12,
+              borderWidth: 1.5,
+              borderStyle: 'dashed',
+              borderColor: '#E87A3D',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4,
+            }}
+          >
+            <Ionicons name="add" size={22} color="#E87A3D" />
+            <Text
+              style={{
+                fontFamily: 'IBMPlexSansThai_600SemiBold',
+                fontSize: 11.5,
+                color: '#E87A3D',
+              }}
+            >
+              เพิ่มจากเครื่อง
+            </Text>
+          </View>
+        </Pressable>
+      </ScrollView>
+    </View>
   );
 }

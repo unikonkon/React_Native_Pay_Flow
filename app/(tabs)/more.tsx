@@ -1,4 +1,5 @@
 import { AddWalletModal } from '@/components/wallet/AddWalletModal';
+import { WallpaperBackground } from '@/components/layout/WallpaperBackground';
 import { getBgMascotSource } from '@/lib/constants/mascots';
 import { useThemeStore } from '@/lib/stores/theme-store';
 import { getBiometricEnabled, isBiometricAvailable, setBiometricEnabled } from '@/lib/utils/auth';
@@ -121,7 +122,8 @@ export default function SettingsScreen() {
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <WallpaperBackground>
+    <SafeAreaView className="flex-1" edges={['top']}>
       {/* Header */}
       <View style={{ paddingHorizontal: 18, paddingTop: 2, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <Image source={mascotRun} style={{ width: 50, height: 34 }} resizeMode="contain" />
@@ -260,5 +262,6 @@ export default function SettingsScreen() {
         </Pressable>
       </Modal>
     </SafeAreaView>
+    </WallpaperBackground>
   );
 }
