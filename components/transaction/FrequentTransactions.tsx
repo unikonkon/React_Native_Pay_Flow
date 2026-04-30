@@ -1,11 +1,11 @@
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { PawPrintTapEffect, type PawPrintTapEffectHandle } from '@/components/ui/PawPrintTapEffect';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { getDb, getFrequentAmountsByWallet } from '@/lib/stores/db';
+import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { formatCurrency } from '@/lib/utils/format';
 import type { Analysis, Category } from '@/types';
-import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
-import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
@@ -16,22 +16,28 @@ interface FrequentTransactionsProps {
 export function FrequentTransactions({ onSelect }: FrequentTransactionsProps) {
   const categories = useCategoryStore(s => s.categories);
   const selectedWalletId = useTransactionStore(s => s.selectedWalletId);
+  const transactions = useTransactionStore(s => s.transactions);
+  const recTxColumns = useSettingsStore(s => s.recTxColumns);
+  const recTxRows = useSettingsStore(s => s.recTxRows);
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
 
+  const limit = Math.min(4, Math.max(1, recTxColumns || 2)) * Math.min(4, Math.max(1, recTxRows || 2));
+
   useEffect(() => {
-    const wId = selectedWalletId || 'wallet-cash';
+    const wId = selectedWalletId;
+    if (!wId) { setAnalyses([]); return; }
     let cancelled = false;
     (async () => {
       try {
         const db = getDb();
-        const results = await getFrequentAmountsByWallet(db, wId, 'expense', 10);
+        const results = await getFrequentAmountsByWallet(db, wId, 'expense', limit);
         if (!cancelled) setAnalyses(results);
       } catch {
         if (!cancelled) setAnalyses([]);
       }
     })();
     return () => { cancelled = true; };
-  }, [selectedWalletId]);
+  }, [selectedWalletId, limit, transactions]);
 
   if (analyses.length === 0) return null;
 
@@ -80,8 +86,8 @@ function FrequentItem({ analysis, category, onSelect }: FrequentItemProps) {
         bg={category?.color ?? '#999'}
         size={56}
       />
-      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-foreground text-center mt-1.5" numberOfLines={1}>
-        {analysis.note || category?.name || 'อื่นๆ'}
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-foreground text-center mt-1" numberOfLines={1}>
+        {analysis.note ? analysis.note : category?.name ? category.name : 'อื่นๆ'}
       </Text>
       <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 12, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">
         {formatCurrency(analysis.amount)}

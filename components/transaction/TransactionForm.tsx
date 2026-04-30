@@ -86,13 +86,13 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
     setNote(editTransaction.note ?? '');
   }, [editTransaction, wallets, categories]);
 
-  // Auto-select first category when adding new
+  // Auto-select first category only for fresh adds — skip when populating from edit/copy
   useEffect(() => {
-    if (isEditMode) return;
+    if (editTransaction) return;
     if (!selectedCategory && filteredCategories.length > 0) {
       setSelectedCategory(filteredCategories[0]);
     }
-  }, [isEditMode, filteredCategories, selectedCategory]);
+  }, [editTransaction, filteredCategories, selectedCategory]);
 
   // Load past notes
   useEffect(() => {
