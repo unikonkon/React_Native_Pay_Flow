@@ -102,45 +102,47 @@ export default function RootLayout() {
   const statusBarStyle = DARK_THEMES.includes(currentTheme) ? 'light' : 'dark';
 
   return (
-    <GestureHandlerRootView style={[{ flex: 1 }, getThemeVars(currentTheme)]}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="transaction/add"
-          options={{
-            presentation: 'transparentModal',
-            headerShown: false,
-            animation: 'none',
-          }}
-        />
-        <Stack.Screen name="settings/wallets" options={{ headerShown: false }} />
-        <Stack.Screen name="settings/categories" options={{ title: 'หมวดหมู่', headerBackTitle: 'กลับ' }} />
-        <Stack.Screen name="settings/alerts" options={{ title: 'เป้าใช้จ่าย', headerBackTitle: 'กลับ' }} />
-        <Stack.Screen name="settings/export" options={{ title: 'ส่งออก', headerBackTitle: 'กลับ' }} />
-        <Stack.Screen name="settings/theme" options={{ headerShown: false }} />
-        <Stack.Screen name="settings/notifications" options={{ headerShown: false }} />
-        <Stack.Screen name="settings/data-transfer" options={{ title: 'ส่งออก / นำเข้าข้อมูล', headerBackTitle: 'กลับ' }} />
-      </Stack>
-      {isLocked && (
-        <View
-          className="bg-background"
-          style={{
-            position: 'absolute', top: 0, bottom: 0, left: 0, right: 0,
-            justifyContent: 'center', alignItems: 'center',
-          }}
-        >
-          <Ionicons name="lock-closed" size={64} color="#E87A3D" />
-          <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 20, marginTop: 16 }}>MiawMoney</Text>
-          <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14, marginTop: 4 }}>กรุณาปลดล็อกเพื่อใช้งาน</Text>
-          <Pressable
-            onPress={handleUnlock}
-            className="bg-primary"
-            style={{ marginTop: 24, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 999 }}
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={[{ flex: 1 }, getThemeVars(currentTheme)]}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="transaction/add"
+            options={{
+              presentation: 'transparentModal',
+              headerShown: false,
+              animation: 'none',
+            }}
+          />
+          <Stack.Screen name="settings/wallets" options={{ headerShown: false }} />
+          <Stack.Screen name="settings/categories" options={{ title: 'หมวดหมู่', headerBackTitle: 'กลับ' }} />
+          <Stack.Screen name="settings/alerts" options={{ title: 'เป้าใช้จ่าย', headerBackTitle: 'กลับ' }} />
+          <Stack.Screen name="settings/export" options={{ title: 'ส่งออก', headerBackTitle: 'กลับ' }} />
+          <Stack.Screen name="settings/theme" options={{ headerShown: false }} />
+          <Stack.Screen name="settings/notifications" options={{ headerShown: false }} />
+          <Stack.Screen name="settings/data-transfer" options={{ title: 'ส่งออก / นำเข้าข้อมูล', headerBackTitle: 'กลับ' }} />
+        </Stack>
+        {isLocked && (
+          <View
+            className="bg-background"
+            style={{
+              position: 'absolute', top: 0, bottom: 0, left: 0, right: 0,
+              justifyContent: 'center', alignItems: 'center',
+            }}
           >
-            <Text className="text-primary-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16 }}>ปลดล็อก</Text>
-          </Pressable>
-        </View>
-      )}
+            <Ionicons name="lock-closed" size={64} color="#E87A3D" />
+            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 20, marginTop: 16 }}>MiawMoney</Text>
+            <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14, marginTop: 4 }}>กรุณาปลดล็อกเพื่อใช้งาน</Text>
+            <Pressable
+              onPress={handleUnlock}
+              className="bg-primary"
+              style={{ marginTop: 24, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 999 }}
+            >
+              <Text className="text-primary-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16 }}>ปลดล็อก</Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
       <StatusBar style={statusBarStyle} />
     </GestureHandlerRootView>
   );

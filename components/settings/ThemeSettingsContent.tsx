@@ -495,7 +495,11 @@ function ThemeListItem({
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             <Text
               className="text-foreground"
-              style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14.5 }}
+              style={{
+                fontFamily: 'IBMPlexSansThai_700Bold',
+                fontSize: 14.5,
+                color: '#5A4830',
+              }}
               numberOfLines={1}
             >
               {family.name}

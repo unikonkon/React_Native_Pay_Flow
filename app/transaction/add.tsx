@@ -3,6 +3,7 @@ import { getThemeSwatch } from '@/lib/constants/themes';
 import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useThemeStore } from '@/lib/stores/theme-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
+import { getThemeVars } from '@/lib/utils/theme-vars';
 import BottomSheet, {
   BottomSheetBackdrop,
   useBottomSheetTimingConfigs,
@@ -10,6 +11,7 @@ import BottomSheet, {
 } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Easing } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -68,22 +70,24 @@ export default function AddTransactionScreen() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <BottomSheet
-        ref={sheetRef}
-        index={0}
-        snapPoints={snapPoints}
-        topInset={insets.top}
-        enableDynamicSizing={false}
-        enableOverDrag={false}
-        enablePanDownToClose
-        animationConfigs={animationConfigs}
-        onClose={handleSheetClose}
-        backdropComponent={renderBackdrop}
-        handleIndicatorStyle={{ backgroundColor: indicatorColor, width: 36, height: 4 }}
-        backgroundStyle={{ backgroundColor: sheetBg, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
-      >
-        <TransactionForm editTransaction={editingTransaction} onClose={handleRequestClose} />
-      </BottomSheet>
+      <View style={[{ flex: 1 }, getThemeVars(currentTheme)]}>
+        <BottomSheet
+          ref={sheetRef}
+          index={0}
+          snapPoints={snapPoints}
+          topInset={insets.top}
+          enableDynamicSizing={false}
+          enableOverDrag={false}
+          enablePanDownToClose
+          animationConfigs={animationConfigs}
+          onClose={handleSheetClose}
+          backdropComponent={renderBackdrop}
+          handleIndicatorStyle={{ backgroundColor: indicatorColor, width: 36, height: 4 }}
+          backgroundStyle={{ backgroundColor: sheetBg, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+        >
+          <TransactionForm editTransaction={editingTransaction} onClose={handleRequestClose} />
+        </BottomSheet>
+      </View>
     </GestureHandlerRootView>
   );
 }
