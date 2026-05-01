@@ -82,13 +82,21 @@ const CREATE_TRANSACTIONS_TABLE = `
 
 const CREATE_INDEXES = [
   "CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);",
-  "CREATE INDEX IF NOT EXISTS idx_transactions_type ON transactions(type);",
   "CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category_id);",
+  "CREATE INDEX IF NOT EXISTS idx_transactions_category_created ON transactions(category_id, created_at DESC);",
   "CREATE INDEX IF NOT EXISTS idx_transactions_date_created ON transactions(date DESC, created_at DESC);",
   "CREATE INDEX IF NOT EXISTS idx_transactions_wallet_date ON transactions(wallet_id, date DESC, created_at DESC);",
+  "CREATE INDEX IF NOT EXISTS idx_transactions_wallet_type_date ON transactions(wallet_id, type, date DESC);",
   // Fix 8 — Composite index on analysis
   "CREATE INDEX IF NOT EXISTS idx_analysis_wallet_type ON analysis(wallet_id, type, count DESC);",
   "CREATE INDEX IF NOT EXISTS idx_analysis_lookup ON analysis(wallet_id, category_id, type, amount, match_type);",
+  "CREATE INDEX IF NOT EXISTS idx_ai_history_created ON ai_history(created_at DESC);",
+];
+
+// Single-column type index removed: low selectivity (only 'income'/'expense') and
+// superseded by idx_transactions_wallet_type_date for filtered queries.
+const DROP_DEPRECATED_INDEXES = [
+  "DROP INDEX IF EXISTS idx_transactions_type;",
 ];
 
 const CREATE_WALLETS_TABLE = `
@@ -240,6 +248,11 @@ async function migrateDatabase(db: SQLiteDatabase) {
 
   // wallet_id column must exist before creating indexes that reference it
   await migrateWalletId(db);
+
+  // Drop deprecated indexes before recreating
+  for (const sql of DROP_DEPRECATED_INDEXES) {
+    await db.execAsync(sql);
+  }
 
   // Indexes must be created after all tables AND after wallet_id column exists
   for (const sql of CREATE_INDEXES) {
