@@ -60,7 +60,8 @@
         {
           "photosPermission": "ขออนุญาตเข้าถึงรูปภาพเพื่อใช้เป็นพื้นหลังของแอป"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -167,7 +167,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
 
   return (
     <View className={className}>
-      <View className="flex-row items-center justify-between rounded-full bg-card border border-border">
+      <View className="flex-row items-center justify-between rounded-full bg-background border border-border">
         <Pressable
           onPress={() => { if (canShift) { Haptics.selectionAsync(); onChange(shiftPeriod(period, -1)); } }}
           disabled={!canShift}
@@ -201,7 +201,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
         >
           <Pressable
             onPress={(e) => e.stopPropagation()}
-            className="w-11/12 max-w-md bg-card rounded-2xl p-4 border border-border"
+            className="w-11/12 max-w-md bg-background rounded-2xl p-4 border border-border"
           >
             <View className="flex-row items-center justify-between mb-3">
               <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }} className="text-foreground">

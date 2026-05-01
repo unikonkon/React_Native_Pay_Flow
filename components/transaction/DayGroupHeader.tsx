@@ -15,15 +15,15 @@ export function DayGroupHeader({ date, income, expense }: DayGroupHeaderProps) {
 
   return (
     <View className="flex-row items-center" style={{ paddingHorizontal: 18, paddingTop: 10, paddingBottom: 2, borderTopWidth: 0.5, borderTopColor: 'rgba(42,35,32,0.08)', marginTop: 8, gap: 10 }}>
-      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, fontVariant: ['tabular-nums'] }} className="text-foreground">
+      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 17, fontVariant: ['tabular-nums'] }} className="text-foreground">
         {formatRelativeDate(date)}
       </Text>
       <View style={{ flex: 1 }} />
       {income > 0 && (
-        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 16, fontVariant: ['tabular-nums'], color: '#3E8B68' }}>+{formatCurrency(income)}</Text>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 15, fontVariant: ['tabular-nums'], color: '#3E8B68' }}>+{formatCurrency(income)}</Text>
       )}
       {expense > 0 && (
-        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 16, fontVariant: ['tabular-nums'], color: '#C65A4E' }}>−{formatCurrency(expense)}</Text>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 15, fontVariant: ['tabular-nums'], color: '#C65A4E' }}>−{formatCurrency(expense)}</Text>
       )}
       {hasAny && (
         <Text

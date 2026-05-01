@@ -33,7 +33,7 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
     <View className={className}>
       <Pressable
         onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setOpen(true); }}
-        className="flex-row items-center px-3.5 py-1.5 bg-card rounded-2xl self-start border border-border"
+        className="flex-row items-center px-3.5 py-1.5 bg-background rounded-2xl self-start border border-border"
       >
         <Ionicons name="wallet-outline" size={15} color="#E87A3D" />
         <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground ml-1.5">{selectedWalletName}</Text>
@@ -47,7 +47,7 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
         >
           <Pressable
             onPress={(e) => e.stopPropagation()}
-            className="w-11/12 max-w-md bg-card rounded-2xl p-4 border border-border"
+            className="w-11/12 max-w-md bg-background rounded-2xl p-4 border border-border"
           >
             <View className="flex-row items-center justify-between mb-3">
               <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }} className="text-foreground">เลือกกระเป๋า</Text>
