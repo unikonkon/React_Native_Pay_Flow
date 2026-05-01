@@ -1,5 +1,6 @@
 import { GoldCracks, MiawThinking } from '@/assets/svg';
 import { AiResultView } from '@/components/ai/AiResultView';
+import { PawLoading } from '@/components/common/PawLoading';
 import { WallpaperBackground } from '@/components/layout/WallpaperBackground';
 import { NotificationsSettingsContent } from '@/components/settings/NotificationsSettingsContent';
 import { ThemeSettingsContent } from '@/components/settings/ThemeSettingsContent';
@@ -819,6 +820,7 @@ function DataTransferTab() {
 
   const loadTransactions = useTransactionStore(s => s.loadTransactions);
   const loadCategories = useCategoryStore(s => s.loadCategories);
+  const wallets = useWalletStore(s => s.wallets);
   const loadWallets = useWalletStore(s => s.loadWallets);
   const loadAnalysis = useAnalysisStore(s => s.loadAnalysis);
   const loadAiHistories = useAiHistoryStore(s => s.loadHistories);
@@ -862,9 +864,9 @@ function DataTransferTab() {
       if (result.success) await reloadAllStores();
     } catch {
       setImportResult({
-        success: false, wallets: 0, walletsRenamed: 0, categories: 0,
-        transactions: 0, analysis: 0, aiHistory: 0, settingsRestored: false,
-        error: 'เกิดข้อผิดพลาดที่ไม่คาดคิด',
+        success: false, wallets: 0, walletsRenamed: 0, walletNames: [],
+        categories: 0, transactions: 0, analysis: 0, aiHistory: 0,
+        settingsRestored: false, error: 'เกิดข้อผิดพลาดที่ไม่คาดคิด',
       });
     } finally {
       setLoading(false);
@@ -936,6 +938,37 @@ function DataTransferTab() {
             )}
           </View>
 
+          {/* Wallet list preview (export) */}
+          {wallets.length > 0 && (
+            <View className="bg-card rounded-2xl p-4 mb-4 border border-border">
+              <View className="flex-row items-center mb-3">
+                <Ionicons name="list-outline" size={18} color="#E87A3D" />
+                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, marginLeft: 8 }}>
+                  รายชื่อกระเป๋าที่จะส่งออก ({wallets.length})
+                </Text>
+              </View>
+              <View style={{ gap: 6 }}>
+                {wallets.map(w => (
+                  <View key={w.id} className="flex-row items-center">
+                    <View
+                      style={{
+                        width: 8, height: 8, borderRadius: 4,
+                        backgroundColor: w.color, marginRight: 8,
+                      }}
+                    />
+                    <Text
+                      className="text-foreground flex-1"
+                      numberOfLines={1}
+                      style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }}
+                    >
+                      {w.name}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
           {/* Info */}
           <View className="bg-blue-50 rounded-xl p-3 mb-4 border border-blue-200">
             <View className="flex-row items-start">
@@ -969,7 +1002,12 @@ function DataTransferTab() {
           {/* Export button */}
           <Pressable onPress={handleExport} disabled={loading || !counts}
             className={`rounded-xl py-4 items-center ${loading ? 'bg-primary/50' : 'bg-primary'}`}>
-            {loading ? <ActivityIndicator color="white" /> : (
+            {loading ? (
+              <View className="flex-row items-center">
+                <PawLoading size={18} color="white" count={3} gap={4} zigzag={3} />
+                <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, color: '#fff', marginLeft: 8 }}>กำลังส่งออก...</Text>
+              </View>
+            ) : (
               <View className="flex-row items-center">
                 <Ionicons name="share-outline" size={20} color="white" />
                 <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#fff', marginLeft: 8 }}>
@@ -1024,6 +1062,22 @@ function DataTransferTab() {
                   <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#15803d' }}>✓ คืนค่าตั้งค่าแอปแล้ว</Text>
                 )}
               </View>
+              {importResult.walletNames.length > 0 && (
+                <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#bbf7d0' }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#15803d', marginBottom: 6 }}>
+                    กระเป๋าที่นำเข้า ({importResult.walletNames.length}):
+                  </Text>
+                  {importResult.walletNames.map((name, i) => (
+                    <Text
+                      key={`${name}-${i}`}
+                      numberOfLines={1}
+                      style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#166534' }}
+                    >
+                      • {name}
+                    </Text>
+                  ))}
+                </View>
+              )}
             </View>
           )}
           {importResult && !importResult.success && (
@@ -1040,7 +1094,7 @@ function DataTransferTab() {
             className={`rounded-xl py-4 items-center ${loading ? 'bg-primary/50' : 'bg-primary'}`}>
             {loading ? (
               <View className="flex-row items-center">
-                <ActivityIndicator color="white" />
+                <PawLoading size={18} color="white" count={3} gap={4} zigzag={3} />
                 <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, color: '#fff', marginLeft: 8 }}>กำลังนำเข้า...</Text>
               </View>
             ) : (
@@ -1058,12 +1112,21 @@ function DataTransferTab() {
       {/* Loading overlay */}
       {loading && (
         <View pointerEvents="auto" className="absolute inset-0 items-center justify-center bg-black/40" style={{ zIndex: 50 }}>
-          <View className="bg-card rounded-2xl px-6 py-5 items-center border border-border min-w-[220px]">
-            <ActivityIndicator size="large" color="#E87A3D" />
-            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, marginTop: 12 }}>
-              {dataTab === 'export' ? 'กำลังส่งออกข้อมูล...' : 'กำลังนำเข้าข้อมูล...'}
+          <View className="bg-card rounded-2xl px-8 py-6 items-center border border-border min-w-[240px]">
+            <View className="flex-row items-center" style={{ marginBottom: 8 }}>
+              <Ionicons
+                name={dataTab === 'export' ? 'cloud-upload-outline' : 'cloud-download-outline'}
+                size={22}
+                color="#E87A3D"
+              />
+              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, marginLeft: 8 }}>
+                {dataTab === 'export' ? 'กำลังส่งออกข้อมูล' : 'กำลังนำเข้าข้อมูล'}
+              </Text>
+            </View>
+            <PawLoading size={28} color="#E87A3D" count={4} gap={6} zigzag={5} />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginTop: 4 }}>
+              รูปแบบ {format === 'txt' ? '.txt (JSON)' : '.xlsx (Excel)'} · กรุณารอสักครู่
             </Text>
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginTop: 4 }}>กรุณารอสักครู่</Text>
           </View>
         </View>
       )}
@@ -1111,9 +1174,9 @@ function SpecialImportSection({ onSuccess }: { onSuccess: () => void | Promise<v
       if (r.success) await onSuccess();
     } catch {
       setResult({
-        success: false, wallets: 0, walletsRenamed: 0, categories: 0,
-        transactions: 0, analysis: 0, aiHistory: 0, settingsRestored: false,
-        error: 'เกิดข้อผิดพลาดที่ไม่คาดคิด',
+        success: false, wallets: 0, walletsRenamed: 0, walletNames: [],
+        categories: 0, transactions: 0, analysis: 0, aiHistory: 0,
+        settingsRestored: false, error: 'เกิดข้อผิดพลาดที่ไม่คาดคิด',
       });
     } finally {
       setLoading(false);
@@ -1174,6 +1237,22 @@ function SpecialImportSection({ onSuccess }: { onSuccess: () => void | Promise<v
             <ResultRow label="ธุรกรรม" count={result.transactions} />
             <ResultRow label="รายการที่ใช้บ่อย" count={result.analysis} />
           </View>
+          {result.walletNames.length > 0 && (
+            <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#bbf7d0' }}>
+              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#15803d', marginBottom: 6 }}>
+                กระเป๋าที่นำเข้า ({result.walletNames.length}):
+              </Text>
+              {result.walletNames.map((name, i) => (
+                <Text
+                  key={`${name}-${i}`}
+                  numberOfLines={1}
+                  style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#166534' }}
+                >
+                  • {name}
+                </Text>
+              ))}
+            </View>
+          )}
         </View>
       )}
       {result && !result.success && (
@@ -1193,7 +1272,7 @@ function SpecialImportSection({ onSuccess }: { onSuccess: () => void | Promise<v
       >
         {loading ? (
           <View className="flex-row items-center">
-            <ActivityIndicator color="white" />
+            <PawLoading size={18} color="white" count={3} gap={4} zigzag={3} />
             <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14.5, color: '#fff', marginLeft: 8 }}>กำลังนำเข้า...</Text>
           </View>
         ) : (
@@ -1205,6 +1284,24 @@ function SpecialImportSection({ onSuccess }: { onSuccess: () => void | Promise<v
           </View>
         )}
       </Pressable>
+
+      {/* Special import loading overlay */}
+      {loading && (
+        <View pointerEvents="auto" className="absolute inset-0 items-center justify-center bg-black/40" style={{ zIndex: 50 }}>
+          <View className="bg-card rounded-2xl px-8 py-6 items-center border border-border min-w-[240px]">
+            <View className="flex-row items-center" style={{ marginBottom: 8 }}>
+              <Ionicons name="cloud-download-outline" size={22} color="#E87A3D" />
+              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, marginLeft: 8 }}>
+                กำลังนำเข้าข้อมูล
+              </Text>
+            </View>
+            <PawLoading size={28} color="#E87A3D" count={4} gap={6} zigzag={5} />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginTop: 4 }}>
+              ไฟล์ Pay Flow (.txt) · กรุณารอสักครู่
+            </Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 }

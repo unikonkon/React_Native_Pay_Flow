@@ -68,6 +68,8 @@ export interface ImportResult {
   success: boolean;
   wallets: number;
   walletsRenamed: number;
+  /** Final wallet names actually inserted (with rename suffix applied). */
+  walletNames: string[];
   categories: number;
   transactions: number;
   analysis: number;
@@ -80,7 +82,7 @@ export interface ImportResult {
 
 function emptyResult(error: string): ImportResult {
   return {
-    success: false, wallets: 0, walletsRenamed: 0, categories: 0,
+    success: false, wallets: 0, walletsRenamed: 0, walletNames: [], categories: 0,
     transactions: 0, analysis: 0, aiHistory: 0, settingsRestored: false, error,
   };
 }
@@ -111,6 +113,7 @@ async function importParsedData(data: ExportData['data']): Promise<ImportResult>
   const db = getDb();
   let walletsImported = 0;
   let walletsRenamed = 0;
+  const walletNames: string[] = [];
   let categoriesImported = 0;
   let transactionsImported = 0;
   let analysisImported = 0;
@@ -140,6 +143,7 @@ async function importParsedData(data: ExportData['data']): Promise<ImportResult>
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [newId, name, w.type, w.icon, w.color, w.currency ?? 'THB', w.initial_balance ?? 0, w.current_balance ?? 0, w.is_asset ?? 1, w.created_at ?? new Date().toISOString()],
         );
+        walletNames.push(name);
         walletsImported++;
       }
 
@@ -210,7 +214,7 @@ async function importParsedData(data: ExportData['data']): Promise<ImportResult>
     }
 
     return {
-      success: true, wallets: walletsImported, walletsRenamed,
+      success: true, wallets: walletsImported, walletsRenamed, walletNames,
       categories: categoriesImported, transactions: transactionsImported,
       analysis: analysisImported, aiHistory: aiHistoryImported, settingsRestored,
     };
@@ -667,6 +671,7 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
   const db = getDb();
   let walletsImported = 0;
   let walletsRenamed = 0;
+  const walletNames: string[] = [];
   let categoriesImported = 0;
   let transactionsImported = 0;
   let analysisImported = 0;
@@ -699,6 +704,7 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [newId, name, w.type, 'cash-outline', '#22C55E', 'THB', w.initialBalance, w.currentBalance, 1, new Date().toISOString()],
         );
+        walletNames.push(name);
         walletsImported++;
       }
 
@@ -796,6 +802,7 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
       success: true,
       wallets: walletsImported,
       walletsRenamed,
+      walletNames,
       categories: categoriesImported,
       transactions: transactionsImported,
       analysis: analysisImported,

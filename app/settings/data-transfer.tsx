@@ -1,3 +1,21 @@
+import { PawLoading } from '@/components/common/PawLoading';
+import { useAiHistoryStore } from '@/lib/stores/ai-history-store';
+import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
+import { useAnalysisStore } from '@/lib/stores/analysis-store';
+import { useCategoryStore } from '@/lib/stores/category-store';
+import { useSettingsStore } from '@/lib/stores/settings-store';
+import { useThemeStore } from '@/lib/stores/theme-store';
+import { useTransactionStore } from '@/lib/stores/transaction-store';
+import { useWalletStore } from '@/lib/stores/wallet-store';
+import {
+  exportAllData,
+  exportAllDataExcel,
+  getExportCounts,
+  pickAndImportData,
+  pickAndImportDataExcel,
+  type ExportCounts,
+  type ImportResult,
+} from '@/lib/utils/data-transfer';
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -8,23 +26,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  exportAllData,
-  exportAllDataExcel,
-  getExportCounts,
-  pickAndImportData,
-  pickAndImportDataExcel,
-  type ExportCounts,
-  type ImportResult,
-} from '@/lib/utils/data-transfer';
-import { useTransactionStore } from '@/lib/stores/transaction-store';
-import { useCategoryStore } from '@/lib/stores/category-store';
-import { useWalletStore } from '@/lib/stores/wallet-store';
-import { useAnalysisStore } from '@/lib/stores/analysis-store';
-import { useAiHistoryStore } from '@/lib/stores/ai-history-store';
-import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
-import { useThemeStore } from '@/lib/stores/theme-store';
-import { useSettingsStore } from '@/lib/stores/settings-store';
 
 type Tab = 'export' | 'import';
 type Format = 'txt' | 'excel';
@@ -40,6 +41,7 @@ export default function DataTransferScreen() {
 
   const loadTransactions = useTransactionStore(s => s.loadTransactions);
   const loadCategories = useCategoryStore(s => s.loadCategories);
+  const wallets = useWalletStore(s => s.wallets);
   const loadWallets = useWalletStore(s => s.loadWallets);
   const loadAnalysis = useAnalysisStore(s => s.loadAnalysis);
   const loadAiHistories = useAiHistoryStore(s => s.loadHistories);
@@ -83,9 +85,9 @@ export default function DataTransferScreen() {
       if (result.success) await reloadAllStores();
     } catch {
       setImportResult({
-        success: false, wallets: 0, walletsRenamed: 0, categories: 0,
-        transactions: 0, analysis: 0, aiHistory: 0, settingsRestored: false,
-        error: 'เกิดข้อผิดพลาดที่ไม่คาดคิด',
+        success: false, wallets: 0, walletsRenamed: 0, walletNames: [],
+        categories: 0, transactions: 0, analysis: 0, aiHistory: 0,
+        settingsRestored: false, error: 'เกิดข้อผิดพลาดที่ไม่คาดคิด',
       });
     } finally {
       setLoading(false);
@@ -140,6 +142,37 @@ export default function DataTransferScreen() {
               )}
             </View>
 
+            {/* Wallet list preview (export) */}
+            {wallets.length > 0 && (
+              <View className="bg-card rounded-2xl p-4 mb-4 border border-border">
+                <View className="flex-row items-center mb-3">
+                  <Ionicons name="list-outline" size={18} color="#E87A3D" />
+                  <Text className="text-foreground text-base ml-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }}>
+                    รายชื่อกระเป๋าที่จะส่งออก ({wallets.length})
+                  </Text>
+                </View>
+                <View className="gap-1.5">
+                  {wallets.map(w => (
+                    <View key={w.id} className="flex-row items-center">
+                      <View
+                        style={{
+                          width: 8, height: 8, borderRadius: 4,
+                          backgroundColor: w.color, marginRight: 8,
+                        }}
+                      />
+                      <Text
+                        className="text-foreground flex-1"
+                        numberOfLines={1}
+                        style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }}
+                      >
+                        {w.name}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
             {/* Info */}
             <View className="bg-blue-50 rounded-2xl p-3 mb-4 border border-blue-200">
               <View className="flex-row items-start">
@@ -173,7 +206,12 @@ export default function DataTransferScreen() {
             {/* Export button */}
             <Pressable onPress={handleExport} disabled={loading || !counts}
               className={`rounded-full py-4 items-center ${loading ? 'bg-primary/50' : 'bg-primary'}`}>
-              {loading ? <ActivityIndicator color="white" /> : (
+              {loading ? (
+                <View className="flex-row items-center">
+                  <PawLoading size={18} color="white" count={3} gap={4} zigzag={3} />
+                  <Text className="text-white text-base ml-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>กำลังส่งออก...</Text>
+                </View>
+              ) : (
                 <View className="flex-row items-center">
                   <Ionicons name="share-outline" size={20} color="white" />
                   <Text className="text-white text-base ml-2" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15 }}>
@@ -228,6 +266,23 @@ export default function DataTransferScreen() {
                     <Text className="text-green-700 text-xs" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }}>✓ คืนค่าตั้งค่าแอปแล้ว</Text>
                   )}
                 </View>
+                {importResult.walletNames.length > 0 && (
+                  <View className="mt-3 pt-3" style={{ borderTopWidth: 1, borderTopColor: '#bbf7d0' }}>
+                    <Text className="text-green-700 text-xs mb-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12 }}>
+                      กระเป๋าที่นำเข้า ({importResult.walletNames.length}):
+                    </Text>
+                    {importResult.walletNames.map((name, i) => (
+                      <Text
+                        key={`${name}-${i}`}
+                        className="text-green-800 text-xs"
+                        numberOfLines={1}
+                        style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }}
+                      >
+                        • {name}
+                      </Text>
+                    ))}
+                  </View>
+                )}
               </View>
             )}
             {importResult && !importResult.success && (
@@ -244,7 +299,7 @@ export default function DataTransferScreen() {
               className={`rounded-full py-4 items-center ${loading ? 'bg-primary/50' : 'bg-primary'}`}>
               {loading ? (
                 <View className="flex-row items-center">
-                  <ActivityIndicator color="white" />
+                  <PawLoading size={18} color="white" count={3} gap={4} zigzag={3} />
                   <Text className="text-white text-base ml-2" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>กำลังนำเข้า...</Text>
                 </View>
               ) : (
@@ -263,12 +318,21 @@ export default function DataTransferScreen() {
       {/* Loading overlay */}
       {loading && (
         <View pointerEvents="auto" className="absolute inset-0 items-center justify-center bg-black/40">
-          <View className="bg-card rounded-2xl px-6 py-5 items-center border border-border min-w-[220px]">
-            <ActivityIndicator size="large" color="#E87A3D" />
-            <Text className="text-foreground text-base mt-3" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }}>
-              {tab === 'export' ? 'กำลังส่งออกข้อมูล...' : 'กำลังนำเข้าข้อมูล...'}
+          <View className="bg-card rounded-2xl px-8 py-6 items-center border border-border min-w-[240px]">
+            <View className="flex-row items-center mb-2">
+              <Ionicons
+                name={tab === 'export' ? 'cloud-upload-outline' : 'cloud-download-outline'}
+                size={22}
+                color="#E87A3D"
+              />
+              <Text className="text-foreground ml-2" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16 }}>
+                {tab === 'export' ? 'กำลังส่งออกข้อมูล' : 'กำลังนำเข้าข้อมูล'}
+              </Text>
+            </View>
+            <PawLoading size={28} color="#E87A3D" count={4} gap={6} zigzag={5} />
+            <Text className="text-muted-foreground text-xs mt-1" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }}>
+              รูปแบบ {format === 'txt' ? '.txt (JSON)' : '.xlsx (Excel)'} · กรุณารอสักครู่
             </Text>
-            <Text className="text-muted-foreground text-xs mt-1" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }}>กรุณารอสักครู่</Text>
           </View>
         </View>
       )}
