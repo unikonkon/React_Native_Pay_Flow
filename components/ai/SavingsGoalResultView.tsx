@@ -270,66 +270,109 @@ function StructuredSavingsView({
               หมวดที่ควรลด
             </Text>
           </View>
-          {data.expensesToCut.map((item, i) => (
-            <View
-              key={i}
-              style={{
-                paddingVertical: 10,
-                borderBottomWidth: i < data.expensesToCut.length - 1 ? 0.5 : 0,
-                borderBottomColor: 'rgba(42,35,32,0.08)',
-              }}
-            >
+          {data.expensesToCut.map((item, i) => {
+            // Fallback to monthly/30 if AI didn't provide dailyReduction.
+            const dailyReduction =
+              item.dailyReduction ??
+              (item.suggestedReduction ? Math.round(item.suggestedReduction / 30) : 0);
+            return (
               <View
+                key={i}
                 style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: 4,
+                  paddingVertical: 10,
+                  borderBottomWidth: i < data.expensesToCut.length - 1 ? 0.5 : 0,
+                  borderBottomColor: 'rgba(42,35,32,0.08)',
                 }}
               >
-                <Text
-                  className="text-foreground"
-                  style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, flex: 1 }}
-                >
-                  {item.category}
-                </Text>
-                <Text
+                <View
                   style={{
-                    fontFamily: 'Inter_700Bold',
-                    fontSize: 13,
-                    color: '#C65A4E',
-                    fontVariant: ['tabular-nums'],
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 4,
                   }}
                 >
-                  − {formatCurrency(item.suggestedReduction)}
-                </Text>
-              </View>
-              <View style={{ flexDirection: 'row', gap: 12, marginBottom: 4 }}>
-                <Text
-                  style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#9A8D80' }}
-                >
-                  ปัจจุบัน {formatCurrency(item.currentAmount)}
-                </Text>
-                <Text
-                  style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#9A8D80' }}
-                >
-                  → เป้า {formatCurrency(item.targetAmount)}
-                </Text>
-              </View>
-              {item.reason && (
-                <Text
+                  <Text
+                    className="text-foreground"
+                    style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, flex: 1 }}
+                  >
+                    {item.category}
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: 'Inter_700Bold',
+                      fontSize: 13,
+                      color: '#C65A4E',
+                      fontVariant: ['tabular-nums'],
+                    }}
+                  >
+                    − {formatCurrency(item.suggestedReduction)}
+                  </Text>
+                </View>
+
+                {/* Per-day reduction pill */}
+                <View
                   style={{
-                    fontFamily: 'IBMPlexSansThai_400Regular',
-                    fontSize: 12,
-                    color: '#2A2320',
-                    lineHeight: 18,
+                    alignSelf: 'flex-start',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4,
+                    backgroundColor: 'rgba(198,90,78,0.1)',
+                    borderRadius: 999,
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    marginBottom: 6,
                   }}
                 >
-                  {item.reason}
-                </Text>
-              )}
-            </View>
-          ))}
+                  <Ionicons name="calendar-outline" size={11} color="#C65A4E" />
+                  <Text
+                    style={{
+                      fontFamily: 'IBMPlexSansThai_700Bold',
+                      fontSize: 11,
+                      color: '#C65A4E',
+                    }}
+                  >
+                    ลดต่อวัน
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: 'Inter_700Bold',
+                      fontSize: 11,
+                      color: '#C65A4E',
+                      fontVariant: ['tabular-nums'],
+                    }}
+                  >
+                    {formatCurrency(dailyReduction)}
+                  </Text>
+                </View>
+
+                <View style={{ flexDirection: 'row', gap: 12, marginBottom: 4, flexWrap: 'wrap' }}>
+                  <Text
+                    style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#9A8D80' }}
+                  >
+                    ปัจจุบัน/เดือน {formatCurrency(item.currentAmount)}
+                  </Text>
+                  <Text
+                    style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#9A8D80' }}
+                  >
+                    → เป้า/เดือน {formatCurrency(item.targetAmount)}
+                  </Text>
+                </View>
+                {item.reason && (
+                  <Text
+                    style={{
+                      fontFamily: 'IBMPlexSansThai_400Regular',
+                      fontSize: 12,
+                      color: '#2A2320',
+                      lineHeight: 18,
+                    }}
+                  >
+                    {item.reason}
+                  </Text>
+                )}
+              </View>
+            );
+          })}
         </View>
       )}
 

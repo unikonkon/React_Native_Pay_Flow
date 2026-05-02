@@ -193,6 +193,8 @@ export interface SavingsGoalResult {
     category: string;
     currentAmount: number;
     suggestedReduction: number;
+    /** Per-day equivalent of suggestedReduction. */
+    dailyReduction: number;
     targetAmount: number;
     reason: string;
   }[];
