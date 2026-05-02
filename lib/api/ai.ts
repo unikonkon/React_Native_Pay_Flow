@@ -139,6 +139,57 @@ ${summary}
 6. คำเตือนหรือข้อควรระวัง`;
 }
 
+function buildSavingsGoalPrompt(
+  summary: string,
+  targetAmount: number,
+  targetMonths: number,
+): string {
+  const monthlyRequired = targetAmount / targetMonths;
+  return `คุณเป็นที่ปรึกษาการเงินส่วนบุคคล ผู้ใช้ตั้งเป้าหมายเก็บเงินดังนี้:
+- จำนวนที่ต้องการเก็บ: ${formatCurrency(targetAmount)}
+- ระยะเวลา: ${targetMonths} เดือน
+- ต้องเก็บต่อเดือนเฉลี่ย: ${formatCurrency(monthlyRequired)}
+
+วิเคราะห์ข้อมูลการเงินปัจจุบันของผู้ใช้แล้วบอกว่าควรลด/เพิ่มอะไรเพื่อให้ถึงเป้า ตอบเป็น JSON เท่านั้น (ห้ามใส่ markdown code block) ภาษาไทย
+
+${summary}
+
+ตอบเป็น JSON ตามรูปแบบนี้ทุกฟิลด์ ห้ามขาด:
+{
+  "goal": {
+    "targetAmount": ${targetAmount},
+    "targetMonths": ${targetMonths},
+    "monthlyRequired": ${monthlyRequired}
+  },
+  "feasibility": {
+    "currentMonthlySaving": ตัวเลขเงินออมเฉลี่ยต่อเดือนปัจจุบัน (รายรับ-รายจ่าย หารด้วยจำนวนเดือนของข้อมูล),
+    "monthlyGap": ตัวเลข (currentMonthlySaving − monthlyRequired) ติดลบหมายถึงขาด,
+    "feasible": true/false (ทำได้หรือไม่ภายใต้พฤติกรรมเดิม),
+    "message": "ข้อความอธิบาย 1-2 ประโยค"
+  },
+  "expensesToCut": [
+    {
+      "category": "ชื่อหมวดที่ควรลด",
+      "currentAmount": ตัวเลขที่ใช้ปัจจุบัน,
+      "suggestedReduction": ตัวเลขจำนวนเงินที่ควรลด,
+      "targetAmount": ตัวเลขที่ควรใช้หลังลด,
+      "reason": "เหตุผลที่ควรลด"
+    }
+  ],
+  "incomeOpportunities": [
+    {
+      "source": "แหล่งรายได้เสริมที่แนะนำ",
+      "estimatedAmount": ตัวเลขรายได้เสริมต่อเดือน,
+      "description": "คำอธิบายสั้น"
+    }
+  ],
+  "actionPlan": ["ขั้นตอนปฏิบัติ 1", "ขั้นตอน 2", "ขั้นตอน 3"],
+  "warnings": ["ข้อควรระวังหรือความเสี่ยง 1", "ข้อ 2"]
+}
+
+หาก feasible เท่ากับ true ให้ expensesToCut/incomeOpportunities สามารถเป็นอาเรย์ว่างได้ แต่ actionPlan ห้ามว่าง`;
+}
+
 // ===== API Call =====
 
 export type PromptType = 'structured' | 'full';
@@ -185,4 +236,45 @@ export async function analyzeFinances(data: {
   }
 
   return { responseType: 'full', result: text };
+}
+
+// ===== Savings Goal Analyzer =====
+
+export async function analyzeSavingsGoal(data: {
+  year: number;
+  month: number | null;
+  walletId: string | null;
+  targetAmount: number;
+  targetMonths: number;
+  transactions: Transaction[];
+}): Promise<{ responseType: 'savings_goal' | 'text'; result: string }> {
+  const apiKey = await getApiKey();
+  if (!apiKey) {
+    throw new Error('ยังไม่ได้ตั้งค่า Gemini API Key กรุณาตั้งค่าในหน้าตั้งค่า');
+  }
+
+  const buddhistYear = data.year + 543;
+  const periodLabel = data.month
+    ? `${getThaiMonthName(data.month)} ${buddhistYear}`
+    : `ปี ${buddhistYear}`;
+
+  const summary = buildTransactionSummary(data.transactions, periodLabel);
+  const prompt = buildSavingsGoalPrompt(summary, data.targetAmount, data.targetMonths);
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+
+  const result = await model.generateContent(prompt);
+  const text = result.response.text();
+
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      return { responseType: 'savings_goal', result: JSON.stringify(parsed) };
+    }
+  } catch {
+    // JSON parse failed — fall through to text
+  }
+  return { responseType: 'text', result: text };
 }

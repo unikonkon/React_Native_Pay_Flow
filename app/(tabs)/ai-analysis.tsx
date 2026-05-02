@@ -1,10 +1,11 @@
 import { GoldCracks, MiawThinking } from '@/assets/svg';
 import { AiResultView } from '@/components/ai/AiResultView';
+import { SavingsGoalResultView } from '@/components/ai/SavingsGoalResultView';
 import { PawLoading } from '@/components/common/PawLoading';
 import { WallpaperBackground } from '@/components/layout/WallpaperBackground';
 import { NotificationsSettingsContent } from '@/components/settings/NotificationsSettingsContent';
 import { ThemeSettingsContent } from '@/components/settings/ThemeSettingsContent';
-import { analyzeFinances, deleteApiKey, getApiKey, getThaiMonthName, setApiKey } from '@/lib/api/ai';
+import { analyzeFinances, analyzeSavingsGoal, deleteApiKey, getApiKey, getThaiMonthName, setApiKey } from '@/lib/api/ai';
 import { useAiHistoryStore } from '@/lib/stores/ai-history-store';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
@@ -24,10 +25,11 @@ import {
   type ExportCounts,
   type ImportResult,
 } from '@/lib/utils/data-transfer';
+import { formatCurrency } from '@/lib/utils/format';
 import type { AiHistory } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, {
   Easing,
   FadeIn,
@@ -669,7 +671,11 @@ function HistoryModal({
                   })}
                 >
                   <View className="flex-row items-center gap-4 px-2 py-1 rounded-lg border border-border mb-4">
-                    <Ionicons name="document-text-outline" size={20} color="#E87A3D" />
+                    <Ionicons
+                      name={h.promptType === 'savings_goal' ? 'flag' : 'document-text-outline'}
+                      size={20}
+                      color="#E87A3D"
+                    />
                     <View style={{ flex: 1, marginLeft: 12 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} >
                         <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, flexShrink: 1 }} numberOfLines={1}>
@@ -687,7 +693,9 @@ function HistoryModal({
                         )}
                       </View>
                       <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: isSelected ? '#C85F28' : '#9A8D80', marginTop: 2 }}>
-                        {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
+                        {h.promptType === 'savings_goal'
+                          ? `🎯 ${formatCurrency(h.targetAmount ?? 0)} · ${h.targetMonths ?? 0} เดือน`
+                          : h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
                       </Text>
                     </View>
                     <Ionicons
@@ -1342,12 +1350,26 @@ export default function PremiumScreen() {
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
   const [promptType, setPromptType] = useState<PromptType>('structured');
   const [isLoading, setIsLoading] = useState(false);
-  const [currentResult, setCurrentResult] = useState<{ type: string; data: string; periodLabel: string } | null>(null);
+  const [currentResult, setCurrentResult] = useState<{
+    type: string;
+    data: string;
+    periodLabel: string;
+    targetAmount?: number | null;
+    targetMonths?: number | null;
+  } | null>(null);
   const [hasApiKey, setHasApiKey] = useState(false);
   const [apiKeyStatus, setApiKeyStatus] = useState('ตรวจสอบ...');
   const [apiKeyHelpVisible, setApiKeyHelpVisible] = useState(false);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
+
+  // Savings goal feature
+  const [savingsGoalExpanded, setSavingsGoalExpanded] = useState(false);
+  const [savingsTargetAmount, setSavingsTargetAmount] = useState('10000');
+  const [savingsTargetMonths, setSavingsTargetMonths] = useState('3');
+
+  // History list filter — 'all' | 'analyze' (structured/full) | 'savings_goal'
+  const [historyKindFilter, setHistoryKindFilter] = useState<'all' | 'analyze' | 'savings_goal'>('all');
 
   const gregorianYear = selectedYear - 543;
 
@@ -1487,9 +1509,100 @@ export default function PremiumScreen() {
     }
   }, [selectedYear, selectedMonth, selectedWalletId, promptType, gregorianYear, addHistory, hasApiKey]);
 
+  const handleAnalyzeSavingsGoal = useCallback(async () => {
+    if (!hasApiKey) {
+      Alert.alert('ยังไม่ได้ตั้งค่า', 'กรุณาตั้งค่า Gemini API Key ในหน้าตั้งค่าก่อน');
+      return;
+    }
+
+    const targetAmount = parseFloat(savingsTargetAmount.replace(/,/g, ''));
+    const targetMonths = parseInt(savingsTargetMonths, 10);
+
+    if (!targetAmount || targetAmount <= 0) {
+      Alert.alert('จำนวนเงินไม่ถูกต้อง', 'กรุณาใส่จำนวนเงินที่ต้องการเก็บ (มากกว่า 0)');
+      return;
+    }
+    if (!targetMonths || targetMonths <= 0 || targetMonths > 600) {
+      Alert.alert('ระยะเวลาไม่ถูกต้อง', 'กรุณาใส่จำนวนเดือน (1-600)');
+      return;
+    }
+
+    setIsLoading(true);
+    setCurrentResult(null);
+
+    try {
+      const db = getDb();
+      let transactions;
+      if (selectedMonth) {
+        const start = `${gregorianYear}-${String(selectedMonth).padStart(2, '0')}-01`;
+        const lastDay = new Date(gregorianYear, selectedMonth, 0).getDate();
+        const end = `${gregorianYear}-${String(selectedMonth).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+        transactions = await getTransactionsByRange(db, start, end, selectedWalletId);
+      } else {
+        transactions = await getTransactionsByYear(db, gregorianYear, selectedWalletId ?? undefined);
+      }
+
+      if (transactions.length === 0) {
+        const label = selectedMonth ? `${THAI_MONTHS_SHORT[selectedMonth]} ${selectedYear}` : `ปี ${selectedYear}`;
+        Alert.alert('ไม่มีข้อมูล', `ไม่พบรายการใน${label}`);
+        setIsLoading(false);
+        return;
+      }
+
+      const result = await analyzeSavingsGoal({
+        year: gregorianYear,
+        month: selectedMonth,
+        walletId: selectedWalletId,
+        targetAmount,
+        targetMonths,
+        transactions,
+      });
+
+      const periodLabel = getPeriodLabel(gregorianYear, selectedMonth);
+      setCurrentResult({
+        type: result.responseType,
+        data: result.result,
+        periodLabel,
+        targetAmount,
+        targetMonths,
+      });
+      setSelectedHistoryId(null);
+
+      await addHistory({
+        walletId: selectedWalletId,
+        promptType: 'savings_goal',
+        year: gregorianYear,
+        month: selectedMonth,
+        responseType: result.responseType,
+        responseData: result.result,
+        targetAmount,
+        targetMonths,
+      });
+    } catch (error: any) {
+      Alert.alert('ข้อผิดพลาด', error.message ?? 'ไม่สามารถวิเคราะห์ได้');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    hasApiKey,
+    savingsTargetAmount,
+    savingsTargetMonths,
+    selectedMonth,
+    selectedYear,
+    selectedWalletId,
+    gregorianYear,
+    addHistory,
+  ]);
+
   const handleViewHistory = useCallback((history: AiHistory) => {
     const periodLabel = getPeriodLabel(history.year, history.month);
-    setCurrentResult({ type: history.responseType, data: history.responseData, periodLabel });
+    setCurrentResult({
+      type: history.responseType,
+      data: history.responseData,
+      periodLabel,
+      targetAmount: history.targetAmount,
+      targetMonths: history.targetMonths,
+    });
     setSelectedHistoryId(history.id);
   }, []);
 
@@ -1513,7 +1626,21 @@ export default function PremiumScreen() {
     setSelectedHistoryId(prev => (prev !== null && ids.includes(prev) ? null : prev));
   }, [deleteHistoriesBulk]);
 
-  const recentHistories = histories.slice(0, 5);
+  const kindFilteredHistories = useMemo(() => {
+    if (historyKindFilter === 'all') return histories;
+    if (historyKindFilter === 'savings_goal') {
+      return histories.filter(h => h.promptType === 'savings_goal');
+    }
+    // 'analyze' = structured/full/compact (any non-savings)
+    return histories.filter(h => h.promptType !== 'savings_goal');
+  }, [histories, historyKindFilter]);
+
+  const recentHistories = kindFilteredHistories.slice(0, 5);
+
+  const savingsGoalCount = useMemo(
+    () => histories.filter(h => h.promptType === 'savings_goal').length,
+    [histories],
+  );
 
   // ===== Not Premium: show paywall =====
   if (!isPremium) {
@@ -1730,9 +1857,259 @@ export default function PremiumScreen() {
                   </View>
                 </View>
 
-                {/* เริ่มวิเคราะห์ */}
+                {/* Savings Goal — toggle card */}
+                <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+                  <Pressable
+                    onPress={() => setSavingsGoalExpanded(prev => !prev)}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: savingsGoalExpanded ? '#FFF6EE' : '#fff',
+                      borderRadius: 12,
+                      paddingVertical: 12,
+                      paddingHorizontal: 14,
+                      borderWidth: 1.5,
+                      borderColor: savingsGoalExpanded ? '#E87A3D' : '#D9CFC3',
+                      gap: 10,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                        backgroundColor: savingsGoalExpanded ? '#E87A3D' : 'rgba(232,122,61,0.12)',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Ionicons
+                        name="flag"
+                        size={16}
+                        color={savingsGoalExpanded ? '#fff' : '#E87A3D'}
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          fontFamily: 'IBMPlexSansThai_700Bold',
+                          fontSize: 14,
+                          color: '#2A2320',
+                        }}
+                      >
+                        วิเคราะห์เป้าหมายออมเงิน
+                      </Text>
+                      <Text
+                        style={{
+                          fontFamily: 'IBMPlexSansThai_400Regular',
+                          fontSize: 11,
+                          color: '#9A8D80',
+                          marginTop: 2,
+                        }}
+                      >
+                        ตั้งเป้าหมายและให้ AI แนะนำว่าจะถึงเป้าได้ยังไง
+                      </Text>
+                    </View>
+                    <Ionicons
+                      name={savingsGoalExpanded ? 'chevron-up' : 'chevron-down'}
+                      size={20}
+                      color="#9A8D80"
+                    />
+                  </Pressable>
+
+                  {savingsGoalExpanded && (
+                    <View
+                      style={{
+                        marginTop: 10,
+                        backgroundColor: '#fff',
+                        borderRadius: 12,
+                        padding: 14,
+                        borderWidth: 1.5,
+                        borderColor: '#D9CFC3',
+                        gap: 12,
+                      }}
+                    >
+                      {/* Target amount */}
+                      <View>
+                        <Text
+                          style={{
+                            fontFamily: 'IBMPlexSansThai_600SemiBold',
+                            fontSize: 12,
+                            color: '#2A2320',
+                            marginBottom: 6,
+                          }}
+                        >
+                          จำนวนเงินที่ต้องการเก็บ (บาท)
+                        </Text>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            borderWidth: 1.5,
+                            borderColor: '#D9CFC3',
+                            borderRadius: 10,
+                            paddingHorizontal: 12,
+                            backgroundColor: '#FAF5EC',
+                          }}
+                        >
+                          <Ionicons name="cash-outline" size={16} color="#E87A3D" />
+                          <TextInput
+                            value={
+                              // แสดงเลขด้วย , เมื่อตัวเลขมากกว่า 1,000
+                              savingsTargetAmount
+                                ? Number(savingsTargetAmount.replace(/,/g, '')).toLocaleString('en-US', { maximumFractionDigits: 2 })
+                                : ''
+                            }
+                            onChangeText={(v) => {
+                              // ลบ , ก่อนเก็บใน state
+                              const raw = v.replace(/,/g, '').replace(/[^0-9.]/g, '');
+                              setSavingsTargetAmount(raw);
+                            }}
+                            keyboardType="numeric"
+                            placeholder="10,000"
+                            placeholderTextColor="#9A8D80"
+                            style={{
+                              flex: 1,
+                              paddingVertical: 10,
+                              paddingHorizontal: 8,
+                              fontFamily: 'Inter_700Bold',
+                              fontSize: 16,
+                              color: '#2A2320',
+                            }}
+                          />
+                          <Text
+                            style={{
+                              fontFamily: 'IBMPlexSansThai_400Regular',
+                              fontSize: 12,
+                              color: '#9A8D80',
+                            }}
+                          >
+                            บาท
+                          </Text>
+                        </View>
+            
+                      </View>
+
+                      {/* Target months */}
+                      <View>
+                        <Text
+                          style={{
+                            fontFamily: 'IBMPlexSansThai_600SemiBold',
+                            fontSize: 12,
+                            color: '#2A2320',
+                            marginBottom: 6,
+                          }}
+                        >
+                          ภายใน (เดือน)
+                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                          <Pressable
+                            onPress={() => {
+                              const n = Math.max(1, (parseInt(savingsTargetMonths, 10) || 1) - 1);
+                              setSavingsTargetMonths(String(n));
+                            }}
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 20,
+                              borderWidth: 1.5,
+                              borderColor: '#E87A3D',
+                              backgroundColor: '#FFF6EE',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <Ionicons name="remove" size={20} color="#C85F28" />
+                          </Pressable>
+                          <View
+                            style={{
+                              flex: 1,
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              borderWidth: 1.5,
+                              borderColor: '#D9CFC3',
+                              borderRadius: 10,
+                              paddingHorizontal: 12,
+                              backgroundColor: '#FAF5EC',
+                            }}
+                          >
+                            <TextInput
+                              value={savingsTargetMonths}
+                              onChangeText={(v) => setSavingsTargetMonths(v.replace(/[^0-9]/g, ''))}
+                              keyboardType="number-pad"
+                              placeholder="3"
+                              placeholderTextColor="#9A8D80"
+                              style={{
+                                flex: 1,
+                                paddingVertical: 10,
+                                fontFamily: 'Inter_700Bold',
+                                fontSize: 16,
+                                color: '#2A2320',
+                                textAlign: 'center',
+                              }}
+                            />
+                            <Text
+                              style={{
+                                fontFamily: 'IBMPlexSansThai_400Regular',
+                                fontSize: 12,
+                                color: '#9A8D80',
+                              }}
+                            >
+                              เดือน
+                            </Text>
+                          </View>
+                          <Pressable
+                            onPress={() => {
+                              const n = Math.min(600, (parseInt(savingsTargetMonths, 10) || 0) + 1);
+                              setSavingsTargetMonths(String(n));
+                            }}
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 20,
+                              borderWidth: 1.5,
+                              borderColor: '#E87A3D',
+                              backgroundColor: '#FFF6EE',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <Ionicons name="add" size={20} color="#C85F28" />
+                          </Pressable>
+                        </View>
+                      </View>
+
+                      {/* Quick info */}
+                      <View
+                        style={{
+                          backgroundColor: 'rgba(232,122,61,0.08)',
+                          borderRadius: 10,
+                          padding: 10,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 8,
+                        }}
+                      >
+                        <Ionicons name="information-circle-outline" size={16} color="#E87A3D" />
+                        <Text
+                          style={{
+                            fontFamily: 'IBMPlexSansThai_400Regular',
+                            fontSize: 11,
+                            color: '#2A2320',
+                            flex: 1,
+                            lineHeight: 16,
+                          }}
+                        >
+                          AI จะใช้ข้อมูลในช่วงปี/เดือน/กระเป๋าที่เลือก เป็น baseline แนะนำว่าควรลดส่วนไหนถึงจะถึงเป้า
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+                </View>
+
+                {/* เริ่มวิเคราะห์ — dispatch ตาม savingsGoalExpanded */}
                 <Pressable
-                  onPress={handleAnalyze}
+                  onPress={savingsGoalExpanded ? handleAnalyzeSavingsGoal : handleAnalyze}
                   disabled={isLoading || !hasApiKey || availableYears.length === 0}
                   style={{
                     marginHorizontal: 16, marginTop: 6, marginBottom: 18,
@@ -1743,9 +2120,21 @@ export default function PremiumScreen() {
                     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
                   }}
                 >
-                  {isLoading ? <ActivityIndicator color="white" /> : <Ionicons name="sparkles" size={18} color="#fff" />}
+                  {isLoading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Ionicons
+                      name={savingsGoalExpanded ? 'flag' : 'sparkles'}
+                      size={18}
+                      color="#fff"
+                    />
+                  )}
                   <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, color: '#fff' }}>
-                    {isLoading ? 'กำลังวิเคราะห์...' : 'เริ่มวิเคราะห์'}
+                    {isLoading
+                      ? 'กำลังวิเคราะห์...'
+                      : savingsGoalExpanded
+                      ? 'วิเคราะห์เป้าหมายออมเงิน'
+                      : 'เริ่มวิเคราะห์'}
                   </Text>
                 </Pressable>
 
@@ -1756,13 +2145,72 @@ export default function PremiumScreen() {
                   <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
                       <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, flex: 1 }}>ประวัติการวิเคราะห์</Text>
-                      {histories.length > 5 && (
+                      {kindFilteredHistories.length > 5 && (
                         <Pressable onPress={() => setHistoryModalVisible(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#E87A3D' }}>ดูทั้งหมด ({histories.length})</Text>
+                          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#E87A3D' }}>ดูทั้งหมด ({kindFilteredHistories.length})</Text>
                           <Ionicons name="chevron-forward" size={12} color="#E87A3D" />
                         </Pressable>
                       )}
                     </View>
+
+                    {/* Filter tabs: All / Analyze / Savings Goal */}
+                    <View style={{ flexDirection: 'row', gap: 6, marginBottom: 10 }}>
+                      {([
+                        ['all', `ทั้งหมด (${histories.length})`],
+                        ['analyze', `วิเคราะห์ (${histories.length - savingsGoalCount})`],
+                        ['savings_goal', `เป้าหมายออม (${savingsGoalCount})`],
+                      ] as const).map(([k, label]) => {
+                        const active = historyKindFilter === k;
+                        return (
+                          <Pressable
+                            key={k}
+                            onPress={() => setHistoryKindFilter(k)}
+                            style={{
+                              flex: 1,
+                              paddingVertical: 8,
+                              borderRadius: 10,
+                              backgroundColor: active ? '#E87A3D' : '#fff',
+                              borderWidth: 1.5,
+                              borderColor: active ? '#E87A3D' : '#D9CFC3',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <Text
+                              numberOfLines={1}
+                              style={{
+                                fontFamily: 'IBMPlexSansThai_600SemiBold',
+                                fontSize: 11.5,
+                                color: active ? '#fff' : '#2A2320',
+                              }}
+                            >
+                              {label}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+
+                    {kindFilteredHistories.length === 0 ? (
+                      <View
+                        style={{
+                          padding: 16,
+                          borderRadius: 12,
+                          backgroundColor: 'rgba(42,35,32,0.04)',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontFamily: 'IBMPlexSansThai_400Regular',
+                            fontSize: 12,
+                            color: '#9A8D80',
+                          }}
+                        >
+                          ยังไม่มีประวัติในหมวดนี้
+                        </Text>
+                      </View>
+                    ) : (
                     <View style={{ gap: 10 }}>
                       {recentHistories.map(h => {
                         const isSelected = selectedHistoryId === h.id;
@@ -1790,10 +2238,14 @@ export default function PremiumScreen() {
                             <View className="flex-row items-center gap-4 px-2 py-1 rounded-lg border border-border">
                               <View style={{
                                 width: 30, height: 30, borderRadius: 8,
-                                backgroundColor: isSelected ? '#E87A3D' : '#FCE8D4',
+                                backgroundColor: isSelected ? '#E87A3D' : h.promptType === 'savings_goal' ? '#FFE9D6' : '#FCE8D4',
                                 alignItems: 'center', justifyContent: 'center',
                               }}>
-                                <Ionicons name="document-text-outline" size={14} color={isSelected ? '#fff' : '#C85F28'} />
+                                <Ionicons
+                                  name={h.promptType === 'savings_goal' ? 'flag' : 'document-text-outline'}
+                                  size={14}
+                                  color={isSelected ? '#fff' : '#C85F28'}
+                                />
                               </View>
                               <View style={{ flex: 1, minWidth: 0 }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -1812,7 +2264,9 @@ export default function PremiumScreen() {
                                   )}
                                 </View>
                                 <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: isSelected ? '#C85F28' : '#9A8D80', marginTop: 2 }}>
-                                  {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
+                                  {h.promptType === 'savings_goal'
+                                    ? `🎯 ${formatCurrency(h.targetAmount ?? 0)} · ${h.targetMonths ?? 0} เดือน`
+                                    : h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
                                 </Text>
                               </View>
                               <Ionicons
@@ -1841,6 +2295,7 @@ export default function PremiumScreen() {
                         );
                       })}
                     </View>
+                    )}
                   </View>
                 )}
 
@@ -1848,11 +2303,21 @@ export default function PremiumScreen() {
                 {currentResult && !isLoading && (
                   <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
                     <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, marginBottom: 10 }}>ผลวิเคราะห์</Text>
-                    <AiResultView
-                      responseType={currentResult.type as any}
-                      responseData={currentResult.data}
-                      periodLabel={currentResult.periodLabel}
-                    />
+                    {currentResult.type === 'savings_goal' ? (
+                      <SavingsGoalResultView
+                        responseType="savings_goal"
+                        responseData={currentResult.data}
+                        periodLabel={currentResult.periodLabel}
+                        targetAmount={currentResult.targetAmount}
+                        targetMonths={currentResult.targetMonths}
+                      />
+                    ) : (
+                      <AiResultView
+                        responseType={currentResult.type as any}
+                        responseData={currentResult.data}
+                        periodLabel={currentResult.periodLabel}
+                      />
+                    )}
                   </View>
                 )}
               </>
@@ -1872,7 +2337,7 @@ export default function PremiumScreen() {
         <HistoryModal
           visible={historyModalVisible}
           onClose={() => setHistoryModalVisible(false)}
-          histories={histories}
+          histories={kindFilteredHistories}
           wallets={wallets}
           onView={handleViewHistory}
           onDelete={handleDeleteHistory}

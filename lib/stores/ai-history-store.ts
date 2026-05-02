@@ -12,8 +12,10 @@ interface AiHistoryStore {
     promptType: AiPromptType;
     year: number;
     month: number | null;
-    responseType: 'structured' | 'full' | 'text';
+    responseType: 'structured' | 'full' | 'text' | 'savings_goal';
     responseData: string;
+    targetAmount?: number | null;
+    targetMonths?: number | null;
   }) => Promise<void>;
   deleteHistory: (id: string) => Promise<void>;
   deleteHistoriesBulk: (ids: string[]) => Promise<void>;

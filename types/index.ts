@@ -125,7 +125,7 @@ export interface DailySummary {
 
 // ===== AI Analysis Types =====
 
-export type AiPromptType = 'compact' | 'structured' | 'full';
+export type AiPromptType = 'compact' | 'structured' | 'full' | 'savings_goal';
 
 export interface AiHistory {
   id: string;
@@ -133,9 +133,13 @@ export interface AiHistory {
   promptType: AiPromptType;
   year: number;
   month: number | null; // 1-12, null = full year
-  responseType: 'structured' | 'full' | 'text';
+  responseType: 'structured' | 'full' | 'text' | 'savings_goal';
   responseData: string;
   createdAt: string;
+  /** Only set when promptType === 'savings_goal'. */
+  targetAmount?: number | null;
+  /** Only set when promptType === 'savings_goal'. */
+  targetMonths?: number | null;
 }
 
 export interface StructuredResult {
@@ -167,6 +171,36 @@ export interface StructuredResult {
     suggestedAmount: number;
     reason: string;
   };
+  actionPlan: string[];
+  warnings: string[];
+}
+
+export interface SavingsGoalResult {
+  goal: {
+    targetAmount: number;
+    targetMonths: number;
+    monthlyRequired: number;
+  };
+  feasibility: {
+    /** Current monthly net saving capacity (income − expense). */
+    currentMonthlySaving: number;
+    /** Positive = surplus per month, negative = shortfall. */
+    monthlyGap: number;
+    feasible: boolean;
+    message: string;
+  };
+  expensesToCut: {
+    category: string;
+    currentAmount: number;
+    suggestedReduction: number;
+    targetAmount: number;
+    reason: string;
+  }[];
+  incomeOpportunities: {
+    source: string;
+    estimatedAmount: number;
+    description: string;
+  }[];
   actionPlan: string[];
   warnings: string[];
 }

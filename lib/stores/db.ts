@@ -116,13 +116,15 @@ const CREATE_WALLETS_TABLE = `
 
 const CREATE_AI_HISTORY_TABLE = `
   CREATE TABLE IF NOT EXISTS ai_history (
-    id            TEXT PRIMARY KEY,
-    wallet_id     TEXT,
-    prompt_type   TEXT NOT NULL,
-    year          INTEGER NOT NULL,
-    response_type TEXT NOT NULL,
-    response_data TEXT NOT NULL,
-    created_at    TEXT NOT NULL
+    id             TEXT PRIMARY KEY,
+    wallet_id      TEXT,
+    prompt_type    TEXT NOT NULL,
+    year           INTEGER NOT NULL,
+    response_type  TEXT NOT NULL,
+    response_data  TEXT NOT NULL,
+    created_at     TEXT NOT NULL,
+    target_amount  REAL,
+    target_months  INTEGER
   );
 `;
 
@@ -971,6 +973,8 @@ export async function getAllAiHistory(
     response_type: string;
     response_data: string;
     created_at: string;
+    target_amount: number | null;
+    target_months: number | null;
   }>("SELECT * FROM ai_history ORDER BY created_at DESC");
 
   return rows.map((r) => ({
@@ -979,9 +983,11 @@ export async function getAllAiHistory(
     promptType: r.prompt_type as AiPromptType,
     year: r.year,
     month: r.month,
-    responseType: r.response_type as "structured" | "full" | "text",
+    responseType: r.response_type as "structured" | "full" | "text" | "savings_goal",
     responseData: r.response_data,
     createdAt: r.created_at,
+    targetAmount: r.target_amount,
+    targetMonths: r.target_months,
   }));
 }
 
@@ -994,13 +1000,15 @@ export async function insertAiHistory(
     month: number | null;
     responseType: string;
     responseData: string;
+    targetAmount?: number | null;
+    targetMonths?: number | null;
   },
 ): Promise<string> {
   const id = generateId();
   const createdAt = new Date().toISOString();
   await db.runAsync(
-    `INSERT INTO ai_history (id, wallet_id, prompt_type, year, month, response_type, response_data, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO ai_history (id, wallet_id, prompt_type, year, month, response_type, response_data, created_at, target_amount, target_months)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       data.walletId,
@@ -1010,6 +1018,8 @@ export async function insertAiHistory(
       data.responseType,
       data.responseData,
       createdAt,
+      data.targetAmount ?? null,
+      data.targetMonths ?? null,
     ],
   );
   return id;
@@ -1041,6 +1051,16 @@ async function migrateAiHistoryMonth(db: SQLiteDatabase) {
   if (!cols.some((c) => c.name === "month")) {
     await db.execAsync(
       "ALTER TABLE ai_history ADD COLUMN month INTEGER DEFAULT NULL",
+    );
+  }
+  if (!cols.some((c) => c.name === "target_amount")) {
+    await db.execAsync(
+      "ALTER TABLE ai_history ADD COLUMN target_amount REAL DEFAULT NULL",
+    );
+  }
+  if (!cols.some((c) => c.name === "target_months")) {
+    await db.execAsync(
+      "ALTER TABLE ai_history ADD COLUMN target_months INTEGER DEFAULT NULL",
     );
   }
 }
