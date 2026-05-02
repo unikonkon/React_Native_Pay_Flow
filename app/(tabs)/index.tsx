@@ -1,8 +1,8 @@
+import { WallpaperBackground } from '@/components/layout/WallpaperBackground';
 import { FrequentTransactions } from '@/components/transaction/FrequentTransactions';
 import { TransactionList } from '@/components/transaction/TransactionList';
 import { AlertBanner } from '@/components/ui/AlertBanner';
 import { FAB } from '@/components/ui/FAB';
-import { WallpaperBackground } from '@/components/layout/WallpaperBackground';
 
 import { PeriodSelector } from '@/components/ui/PeriodSelector';
 import { WalletFilter } from '@/components/wallet/WalletFilter';
@@ -164,7 +164,7 @@ export default function TransactionsScreen() {
     <WallpaperBackground>
     <SafeAreaView className="flex-1" edges={['top']}>
       {/* Header */}
-      <View className="px-4 pb-1">
+      <View className="px-4">
         <View className="flex-row items-center mb-2 justify-between">
           <View className="flex-row items-center">
             <Image source={mascotRun} style={{ width: 50, height: 34 }} resizeMode="contain" />
@@ -190,7 +190,7 @@ export default function TransactionsScreen() {
         </View>
 
         {/* Summary row — larger numbers like prototype */}
-        <View className="flex-row justify-around pb-3">
+        <View className="flex-row justify-around pb-2">
           <View className="items-center flex-1">
             <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">รายรับ</Text>
             <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 20, fontVariant: ['tabular-nums'], letterSpacing: -0.4 }} className="text-income">{formatCurrency(totalIncome)}</Text>

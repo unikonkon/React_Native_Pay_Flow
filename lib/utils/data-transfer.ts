@@ -120,6 +120,10 @@ async function importParsedData(data: ExportData['data']): Promise<ImportResult>
   let aiHistoryImported = 0;
   let settingsRestored = false;
 
+  // Drain any lingering transaction left behind by a prior interrupted
+  // operation. ROLLBACK errors silently if no transaction is active.
+  await db.execAsync('ROLLBACK').catch(() => {});
+
   try {
     await db.withTransactionAsync(async () => {
       // 1. Wallets
@@ -675,6 +679,10 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
   let categoriesImported = 0;
   let transactionsImported = 0;
   let analysisImported = 0;
+
+  // Drain any lingering transaction left behind by a prior interrupted
+  // operation. ROLLBACK errors silently if no transaction is active.
+  await db.execAsync('ROLLBACK').catch(() => {});
 
   try {
     await db.withTransactionAsync(async () => {

@@ -270,7 +270,7 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
             borderRadius: 999,
           }}>
             <Ionicons name="sparkles" size={10} color="#6B4A9E" />
-            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#6B4A9E' }}>มิว Premium</Text>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#6B4A9E' }}>แมวมันนี่ Premium</Text>
           </View>
           <Text className="text-muted-foreground" style={{
             fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 24,
@@ -345,8 +345,11 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
           }}
         >
           <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }}>รายเดือน</Text>
-          <Text className="text-foreground" style={{ fontFamily: 'Inter_900Black', fontSize: 26, marginTop: 4 }}>฿99</Text>
-          <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }}>/ เดือน</Text>
+          <View className="flex-row items-center gap-2">
+            <Text className="text-foreground" style={{ fontFamily: 'Inter_900Black', fontSize: 26, marginTop: 4 }}>฿99</Text>
+            <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }}>/ เดือน</Text>
+          </View>
+
           <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, marginTop: 6 }}>ยกเลิกได้ทุกเมื่อ</Text>
         </Pressable>
 
@@ -373,8 +376,10 @@ function PremiumPaywall({ onUnlock }: { onUnlock: () => void }) {
             }}
           >
             <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13 }}>รายปี</Text>
-            <Text className="text-foreground" style={{ fontFamily: 'Inter_900Black', fontSize: 26, marginTop: 4 }}>฿899</Text>
-            <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }}>/ ปี</Text>
+            <View className="flex-row items-center gap-2">
+              <Text className="text-foreground" style={{ fontFamily: 'Inter_900Black', fontSize: 26, marginTop: 4 }}>฿899</Text>
+              <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }}>/ ปี</Text>
+            </View>
             <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, color: '#C85F28', marginTop: 6 }}>ประหยัด 25%</Text>
           </Pressable>
         </View>
@@ -1194,7 +1199,7 @@ function SpecialImportSection({ onSuccess }: { onSuccess: () => void | Promise<v
         }}>
           <Ionicons name="sparkles-outline" size={14} color="#C85F28" />
         </View>
-        <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15 }}>
+        <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 20 }}>
           นำเข้าข้อมูลแบบพิเศษ
         </Text>
       </View>
@@ -1524,362 +1529,362 @@ export default function PremiumScreen() {
   // ===== Premium: show inner tabs =====
   return (
     <WallpaperBackground>
-    <SafeAreaView className="flex-1" edges={['top']}>
-      {/* Header */}
-      <View style={{ paddingHorizontal: 18, paddingTop: 8, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <SafeAreaView className="flex-1" edges={['top']}>
+        {/* Header */}
+        {/* <View style={{ paddingHorizontal: 18, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Ionicons name="diamond" size={22} color="#C85F28" />
         <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 26, letterSpacing: -0.4 }}>Premium</Text>
-      </View>
+      </View> */}
 
-      {/* Segmented tabs — 2 rows × 2 tabs */}
-      <View style={{ marginHorizontal: 16, marginBottom: 14, gap: 6 }}>
-        {([
-          [['ai', 'sparkles-outline', 'AI วิเคราะห์'], ['data', 'swap-horizontal-outline', 'ข้อมูล']],
-          [['theme', 'color-palette-outline', 'ธีม'], ['notifications', 'notifications-outline', 'แจ้งเตือน']],
-        ] as const).map((row, rowIdx) => (
-          <View
-            key={rowIdx}
-            style={{
-              padding: 4, borderRadius: 14,
-              backgroundColor: '#F5EEE0', flexDirection: 'row', gap: 4,
-            }}
-          >
-            {row.map(([key, icon, label]) => (
-              <Pressable
-                key={key}
-                onPress={() => setInnerTab(key as InnerTab)}
-                style={{
-                  flex: 1, height: 44, borderRadius: 12,
-                  backgroundColor: innerTab === key ? '#E87A3D' : 'transparent',
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-                }}
-              >
-                <Ionicons name={icon} size={14} color={innerTab === key ? '#fff' : '#9A8D80'} />
-                <Text style={{
-                  fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14.5,
-                  color: innerTab === key ? '#fff' : '#9A8D80',
-                }}>{label}</Text>
-              </Pressable>
-            ))}
-          </View>
-        ))}
-      </View>
+        {/* Segmented tabs — 2 rows × 2 tabs */}
+        <View style={{ marginHorizontal: 16, marginBottom: 14, gap: 6 }}>
+          {([
+            [['ai', 'sparkles-outline', 'AI วิเคราะห์'], ['data', 'swap-horizontal-outline', 'ข้อมูล']],
+            [['theme', 'color-palette-outline', 'ธีม'], ['notifications', 'notifications-outline', 'แจ้งเตือน']],
+          ] as const).map((row, rowIdx) => (
+            <View
+              key={rowIdx}
+              style={{
+                padding: 4, borderRadius: 14,
+                backgroundColor: '#F5EEE0', flexDirection: 'row', gap: 4,
+              }}
+            >
+              {row.map(([key, icon, label]) => (
+                <Pressable
+                  key={key}
+                  onPress={() => setInnerTab(key as InnerTab)}
+                  style={{
+                    flex: 1, height: 44, borderRadius: 12,
+                    backgroundColor: innerTab === key ? '#E87A3D' : 'transparent',
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  }}
+                >
+                  <Ionicons name={icon} size={14} color={innerTab === key ? '#fff' : '#9A8D80'} />
+                  <Text style={{
+                    fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14.5,
+                    color: innerTab === key ? '#fff' : '#9A8D80',
+                  }}>{label}</Text>
+                </Pressable>
+              ))}
+            </View>
+          ))}
+        </View>
 
-      {innerTab === 'ai' || innerTab === 'data' ? (
-        <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
-          {innerTab === 'ai' ? (
-            <>
-              {/* Gemini API Key */}
-              <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
-                <SettingsSection>
-                  <SettingsRow icon="key-outline" label="Gemini API Key" value={apiKeyStatus} onPress={handleApiKey} />
-                  <SettingsRow icon="help-circle-outline" label="วิธีรับ Gemini API Key" onPress={() => setApiKeyHelpVisible(true)} />
-                  <SettingsRow icon="sparkles-outline" label="AI วิเคราะห์" value={hasApiKey ? 'พร้อมใช้งาน' : 'ยังไม่ได้ตั้งค่า'} last />
-                </SettingsSection>
-              </View>
+        {innerTab === 'ai' || innerTab === 'data' ? (
+          <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
+            {innerTab === 'ai' ? (
+              <>
+                {/* Gemini API Key */}
+                <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+                  <SettingsSection>
+                    <SettingsRow icon="key-outline" label="Gemini API Key" value={apiKeyStatus} onPress={handleApiKey} />
+                    <SettingsRow icon="help-circle-outline" label="วิธีรับ Gemini API Key" onPress={() => setApiKeyHelpVisible(true)} />
+                    <SettingsRow icon="sparkles-outline" label="AI วิเคราะห์" value={hasApiKey ? 'พร้อมใช้งาน' : 'ยังไม่ได้ตั้งค่า'} last />
+                  </SettingsSection>
+                </View>
 
-              {/* ปี */}
-              <View style={{ marginHorizontal: 16, marginBottom: 6 }}>
-                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14 }}>ปี</Text>
-                {availableYears.length === 0 ? (
-                  <View style={{ padding: 12, borderRadius: 12, backgroundColor: '#F5EEE0' }}>
-                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80', textAlign: 'center' }}>
-                      ยังไม่มีข้อมูลรายการ{selectedWalletId ? 'ในกระเป๋านี้' : ''}
-                    </Text>
-                  </View>
-                ) : (
-                  <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-                    {availableYears.map(y => (
-                      <Pressable
-                        key={y}
-                        onPress={() => handleSelectYear(y)}
-                        style={{
-                          height: 34, paddingHorizontal: 14, borderRadius: 999,
-                          backgroundColor: selectedYear === y ? '#fff' : 'transparent',
-                          borderWidth: 1.5,
-                          borderColor: selectedYear === y ? '#E87A3D' : '#D9CFC3',
-                          alignItems: 'center', justifyContent: 'center',
-                        }}
-                      >
-                        <Text style={{
-                          fontFamily: selectedYear === y ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
-                          fontSize: 13, color: selectedYear === y ? '#C85F28' : '#9A8D80',
-                        }}>{y}</Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                )}
-              </View>
-
-              {/* เดือน */}
-              {availableMonths.length > 0 && (
+                {/* ปี */}
                 <View style={{ marginHorizontal: 16, marginBottom: 6 }}>
-                  <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14 }}>เดือน</Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    <View style={{ flexDirection: 'row', gap: 8 }}>
-                      <Pressable
-                        onPress={() => setSelectedMonth(null)}
-                        style={{
-                          height: 34, paddingHorizontal: 14, borderRadius: 999,
-                          backgroundColor: selectedMonth === null ? '#fff' : 'transparent',
-                          borderWidth: 1.5,
-                          borderColor: selectedMonth === null ? '#E87A3D' : '#D9CFC3',
-                          alignItems: 'center', justifyContent: 'center',
-                        }}
-                      >
-                        <Text style={{
-                          fontFamily: selectedMonth === null ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
-                          fontSize: 13, color: selectedMonth === null ? '#C85F28' : '#9A8D80',
-                        }}>ทั้งปี</Text>
-                      </Pressable>
-                      {availableMonths.map(m => (
+                  <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14 }}>ปี</Text>
+                  {availableYears.length === 0 ? (
+                    <View style={{ padding: 12, borderRadius: 12, backgroundColor: '#F5EEE0' }}>
+                      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#9A8D80', textAlign: 'center' }}>
+                        ยังไม่มีข้อมูลรายการ{selectedWalletId ? 'ในกระเป๋านี้' : ''}
+                      </Text>
+                    </View>
+                  ) : (
+                    <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+                      {availableYears.map(y => (
                         <Pressable
-                          key={m}
-                          onPress={() => setSelectedMonth(m)}
+                          key={y}
+                          onPress={() => handleSelectYear(y)}
                           style={{
                             height: 34, paddingHorizontal: 14, borderRadius: 999,
-                            backgroundColor: selectedMonth === m ? '#fff' : 'transparent',
+                            backgroundColor: selectedYear === y ? '#fff' : 'transparent',
                             borderWidth: 1.5,
-                            borderColor: selectedMonth === m ? '#E87A3D' : '#D9CFC3',
+                            borderColor: selectedYear === y ? '#E87A3D' : '#D9CFC3',
                             alignItems: 'center', justifyContent: 'center',
                           }}
                         >
                           <Text style={{
-                            fontFamily: selectedMonth === m ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
-                            fontSize: 13, color: selectedMonth === m ? '#C85F28' : '#9A8D80',
-                          }}>{THAI_MONTHS_SHORT[m]}</Text>
+                            fontFamily: selectedYear === y ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                            fontSize: 13, color: selectedYear === y ? '#C85F28' : '#9A8D80',
+                          }}>{y}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  )}
+                </View>
+
+                {/* เดือน */}
+                {availableMonths.length > 0 && (
+                  <View style={{ marginHorizontal: 16, marginBottom: 6 }}>
+                    <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14 }}>เดือน</Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                      <View style={{ flexDirection: 'row', gap: 8 }}>
+                        <Pressable
+                          onPress={() => setSelectedMonth(null)}
+                          style={{
+                            height: 34, paddingHorizontal: 14, borderRadius: 999,
+                            backgroundColor: selectedMonth === null ? '#fff' : 'transparent',
+                            borderWidth: 1.5,
+                            borderColor: selectedMonth === null ? '#E87A3D' : '#D9CFC3',
+                            alignItems: 'center', justifyContent: 'center',
+                          }}
+                        >
+                          <Text style={{
+                            fontFamily: selectedMonth === null ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                            fontSize: 13, color: selectedMonth === null ? '#C85F28' : '#9A8D80',
+                          }}>ทั้งปี</Text>
+                        </Pressable>
+                        {availableMonths.map(m => (
+                          <Pressable
+                            key={m}
+                            onPress={() => setSelectedMonth(m)}
+                            style={{
+                              height: 34, paddingHorizontal: 14, borderRadius: 999,
+                              backgroundColor: selectedMonth === m ? '#fff' : 'transparent',
+                              borderWidth: 1.5,
+                              borderColor: selectedMonth === m ? '#E87A3D' : '#D9CFC3',
+                              alignItems: 'center', justifyContent: 'center',
+                            }}
+                          >
+                            <Text style={{
+                              fontFamily: selectedMonth === m ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                              fontSize: 13, color: selectedMonth === m ? '#C85F28' : '#9A8D80',
+                            }}>{THAI_MONTHS_SHORT[m]}</Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    </ScrollView>
+                  </View>
+                )}
+
+                {/* กระเป๋าเงิน */}
+                <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
+                  <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>กระเป๋าเงิน</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                      <Pressable
+                        onPress={() => handleSelectWallet(null)}
+                        style={{
+                          height: 34, paddingHorizontal: 14, borderRadius: 999,
+                          backgroundColor: !selectedWalletId ? '#fff' : 'transparent',
+                          borderWidth: 1.5,
+                          borderColor: !selectedWalletId ? '#E87A3D' : '#D9CFC3',
+                          alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        <Text style={{
+                          fontFamily: !selectedWalletId ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                          fontSize: 13, color: !selectedWalletId ? '#C85F28' : '#9A8D80',
+                        }}>ทุกกระเป๋า</Text>
+                      </Pressable>
+                      {wallets.map(w => (
+                        <Pressable
+                          key={w.id}
+                          onPress={() => handleSelectWallet(w.id)}
+                          style={{
+                            height: 34, paddingHorizontal: 14, borderRadius: 999,
+                            backgroundColor: selectedWalletId === w.id ? '#fff' : 'transparent',
+                            borderWidth: 1.5,
+                            borderColor: selectedWalletId === w.id ? '#E87A3D' : '#D9CFC3',
+                            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                          }}
+                        >
+                          <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: w.color, alignItems: 'center', justifyContent: 'center' }}>
+                            <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={8} color="#fff" />
+                          </View>
+                          <Text style={{
+                            fontFamily: selectedWalletId === w.id ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
+                            fontSize: 13, color: selectedWalletId === w.id ? '#C85F28' : '#9A8D80',
+                          }}>{w.name}</Text>
                         </Pressable>
                       ))}
                     </View>
                   </ScrollView>
                 </View>
-              )}
 
-              {/* กระเป๋าเงิน */}
-              <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
-                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>กระเป๋าเงิน</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {/* รูปแบบ */}
+                <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+                  <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>รูปแบบ</Text>
                   <View style={{ flexDirection: 'row', gap: 8 }}>
-                    <Pressable
-                      onPress={() => handleSelectWallet(null)}
-                      style={{
-                        height: 34, paddingHorizontal: 14, borderRadius: 999,
-                        backgroundColor: !selectedWalletId ? '#fff' : 'transparent',
-                        borderWidth: 1.5,
-                        borderColor: !selectedWalletId ? '#E87A3D' : '#D9CFC3',
-                        alignItems: 'center', justifyContent: 'center',
-                      }}
-                    >
-                      <Text style={{
-                        fontFamily: !selectedWalletId ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
-                        fontSize: 13, color: !selectedWalletId ? '#C85F28' : '#9A8D80',
-                      }}>ทุกกระเป๋า</Text>
-                    </Pressable>
-                    {wallets.map(w => (
+                    {([['structured', 'วิเคราะห์แบบสรุป'], ['full', 'วิเคราะห์แบบละเอียด']] as const).map(([k, l]) => (
                       <Pressable
-                        key={w.id}
-                        onPress={() => handleSelectWallet(w.id)}
+                        key={k}
+                        onPress={() => setPromptType(k)}
                         style={{
-                          height: 34, paddingHorizontal: 14, borderRadius: 999,
-                          backgroundColor: selectedWalletId === w.id ? '#fff' : 'transparent',
+                          flex: 1, height: 44, borderRadius: 12,
+                          backgroundColor: promptType === k ? '#E87A3D' : '#fff',
                           borderWidth: 1.5,
-                          borderColor: selectedWalletId === w.id ? '#E87A3D' : '#D9CFC3',
-                          flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                          borderColor: promptType === k ? '#E87A3D' : '#D9CFC3',
+                          alignItems: 'center', justifyContent: 'center',
                         }}
                       >
-                        <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: w.color, alignItems: 'center', justifyContent: 'center' }}>
-                          <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={8} color="#fff" />
-                        </View>
                         <Text style={{
-                          fontFamily: selectedWalletId === w.id ? 'IBMPlexSansThai_700Bold' : 'IBMPlexSansThai_400Regular',
-                          fontSize: 13, color: selectedWalletId === w.id ? '#C85F28' : '#9A8D80',
-                        }}>{w.name}</Text>
+                          fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14,
+                          color: promptType === k ? '#fff' : '#2A2320',
+                        }}>{l}</Text>
                       </Pressable>
                     ))}
                   </View>
-                </ScrollView>
-              </View>
-
-              {/* รูปแบบ */}
-              <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
-                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14, marginBottom: 8 }}>รูปแบบ</Text>
-                <View style={{ flexDirection: 'row', gap: 8 }}>
-                  {([['structured', 'วิเคราะห์แบบสรุป'], ['full', 'วิเคราะห์แบบละเอียด']] as const).map(([k, l]) => (
-                    <Pressable
-                      key={k}
-                      onPress={() => setPromptType(k)}
-                      style={{
-                        flex: 1, height: 44, borderRadius: 12,
-                        backgroundColor: promptType === k ? '#E87A3D' : '#fff',
-                        borderWidth: 1.5,
-                        borderColor: promptType === k ? '#E87A3D' : '#D9CFC3',
-                        alignItems: 'center', justifyContent: 'center',
-                      }}
-                    >
-                      <Text style={{
-                        fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 14,
-                        color: promptType === k ? '#fff' : '#2A2320',
-                      }}>{l}</Text>
-                    </Pressable>
-                  ))}
                 </View>
-              </View>
 
-              {/* เริ่มวิเคราะห์ */}
-              <Pressable
-                onPress={handleAnalyze}
-                disabled={isLoading || !hasApiKey || availableYears.length === 0}
-                style={{
-                  marginHorizontal: 16, marginTop: 6, marginBottom: 18,
-                  height: 54, borderRadius: 14,
-                  backgroundColor: isLoading || !hasApiKey || availableYears.length === 0 ? 'rgba(232,122,61,0.5)' : '#E87A3D',
-                  shadowColor: '#E87A3D', shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
-                  elevation: 8,
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-                }}
-              >
-                {isLoading ? <ActivityIndicator color="white" /> : <Ionicons name="sparkles" size={18} color="#fff" />}
-                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, color: '#fff' }}>
-                  {isLoading ? 'กำลังวิเคราะห์...' : 'เริ่มวิเคราะห์'}
-                </Text>
-              </Pressable>
+                {/* เริ่มวิเคราะห์ */}
+                <Pressable
+                  onPress={handleAnalyze}
+                  disabled={isLoading || !hasApiKey || availableYears.length === 0}
+                  style={{
+                    marginHorizontal: 16, marginTop: 6, marginBottom: 18,
+                    height: 54, borderRadius: 14,
+                    backgroundColor: isLoading || !hasApiKey || availableYears.length === 0 ? 'rgba(232,122,61,0.5)' : '#E87A3D',
+                    shadowColor: '#E87A3D', shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+                    elevation: 8,
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}
+                >
+                  {isLoading ? <ActivityIndicator color="white" /> : <Ionicons name="sparkles" size={18} color="#fff" />}
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, color: '#fff' }}>
+                    {isLoading ? 'กำลังวิเคราะห์...' : 'เริ่มวิเคราะห์'}
+                  </Text>
+                </Pressable>
 
-              {isLoading && <View style={{ marginHorizontal: 16 }}><AiLoadingView /></View>}
+                {isLoading && <View style={{ marginHorizontal: 16 }}><AiLoadingView /></View>}
 
-              {/* ประวัติการวิเคราะห์ */}
-              {histories.length > 0 && !isLoading && (
-                <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                    <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, flex: 1 }}>ประวัติการวิเคราะห์</Text>
-                    {histories.length > 5 && (
-                      <Pressable onPress={() => setHistoryModalVisible(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#E87A3D' }}>ดูทั้งหมด ({histories.length})</Text>
-                        <Ionicons name="chevron-forward" size={12} color="#E87A3D" />
-                      </Pressable>
-                    )}
-                  </View>
-                  <View style={{ gap: 10 }}>
-                    {recentHistories.map(h => {
-                      const isSelected = selectedHistoryId === h.id;
-                      return (
-                        <Pressable
-                          key={h.id}
-                          onPress={() => handleViewHistory(h)}
-                          onLongPress={() => handleDeleteHistory(h)}
-                          className={isSelected ? '' : 'bg-card'}
-                          style={({ pressed }) => ({
-                            borderRadius: 16, padding: 14,
-                            flexDirection: 'row', alignItems: 'center', gap: 10,
-                            backgroundColor: isSelected ? '#FFF6EE' : undefined,
-                            borderWidth: 1.5,
-                            borderColor: isSelected ? '#E87A3D' : 'transparent',
-                            shadowColor: isSelected ? '#E87A3D' : '#2A2320',
-                            shadowOpacity: isSelected ? 0.18 : 0.05,
-                            shadowRadius: 16,
-                            shadowOffset: { width: 0, height: 4 },
-                            elevation: isSelected ? 4 : 2,
-                            opacity: pressed ? 0.6 : 1,
-                            transform: [{ scale: pressed ? 0.97 : 1 }],
-                          })}
-                        >
-                          <View className="flex-row items-center gap-4 px-2 py-1 rounded-lg border border-border">
-                            <View style={{
-                              width: 30, height: 30, borderRadius: 8,
-                              backgroundColor: isSelected ? '#E87A3D' : '#FCE8D4',
-                              alignItems: 'center', justifyContent: 'center',
-                            }}>
-                              <Ionicons name="document-text-outline" size={14} color={isSelected ? '#fff' : '#C85F28'} />
-                            </View>
-                            <View style={{ flex: 1, minWidth: 0 }}>
-                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, flexShrink: 1 }} numberOfLines={1}>
-                                  {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
-                                </Text>
-                                {isSelected && (
-                                  <View style={{
-                                    paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6,
-                                    backgroundColor: '#E87A3D',
-                                    flexDirection: 'row', alignItems: 'center', gap: 3,
-                                  }}>
-                                    <Ionicons name="eye" size={9} color="#fff" />
-                                    <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 9.5, color: '#fff' }}>กำลังดู</Text>
-                                  </View>
-                                )}
-                              </View>
-                              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: isSelected ? '#C85F28' : '#9A8D80', marginTop: 2 }}>
-                                {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
-                              </Text>
-                            </View>
-                            <Ionicons
-                              name={isSelected ? 'checkmark-circle' : 'chevron-forward'}
-                              size={isSelected ? 18 : 14}
-                              color={isSelected ? '#E87A3D' : '#9A8D80'}
-                            />
-                            <Pressable
-                              onPress={() => handleDeleteHistory(h)}
-                              hitSlop={8}
-                              style={({ pressed }) => ({
-                                width: 32, height: 32, borderRadius: 10,
-                                alignItems: 'center', justifyContent: 'center',
-                                backgroundColor: pressed ? '#FEE2E2' : '#FFF1F1',
-                                borderWidth: 1, borderColor: '#FECACA',
-                                opacity: pressed ? 0.7 : 1,
-                                transform: [{ scale: pressed ? 0.92 : 1 }],
-                              })}
-                              accessibilityRole="button"
-                              accessibilityLabel="ลบประวัติ"
-                            >
-                              <Ionicons name="trash-outline" size={15} color="#DC2626" />
-                            </Pressable>
-                          </View>
+                {/* ประวัติการวิเคราะห์ */}
+                {histories.length > 0 && !isLoading && (
+                  <View style={{ marginHorizontal: 16, marginBottom: 14 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                      <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, flex: 1 }}>ประวัติการวิเคราะห์</Text>
+                      {histories.length > 5 && (
+                        <Pressable onPress={() => setHistoryModalVisible(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#E87A3D' }}>ดูทั้งหมด ({histories.length})</Text>
+                          <Ionicons name="chevron-forward" size={12} color="#E87A3D" />
                         </Pressable>
-                      );
-                    })}
+                      )}
+                    </View>
+                    <View style={{ gap: 10 }}>
+                      {recentHistories.map(h => {
+                        const isSelected = selectedHistoryId === h.id;
+                        return (
+                          <Pressable
+                            key={h.id}
+                            onPress={() => handleViewHistory(h)}
+                            onLongPress={() => handleDeleteHistory(h)}
+                            className={isSelected ? '' : 'bg-card'}
+                            style={({ pressed }) => ({
+                              borderRadius: 16, padding: 14,
+                              flexDirection: 'row', alignItems: 'center', gap: 10,
+                              backgroundColor: isSelected ? '#FFF6EE' : undefined,
+                              borderWidth: 1.5,
+                              borderColor: isSelected ? '#E87A3D' : 'transparent',
+                              shadowColor: isSelected ? '#E87A3D' : '#2A2320',
+                              shadowOpacity: isSelected ? 0.18 : 0.05,
+                              shadowRadius: 16,
+                              shadowOffset: { width: 0, height: 4 },
+                              elevation: isSelected ? 4 : 2,
+                              opacity: pressed ? 0.6 : 1,
+                              transform: [{ scale: pressed ? 0.97 : 1 }],
+                            })}
+                          >
+                            <View className="flex-row items-center gap-4 px-2 py-1 rounded-lg border border-border">
+                              <View style={{
+                                width: 30, height: 30, borderRadius: 8,
+                                backgroundColor: isSelected ? '#E87A3D' : '#FCE8D4',
+                                alignItems: 'center', justifyContent: 'center',
+                              }}>
+                                <Ionicons name="document-text-outline" size={14} color={isSelected ? '#fff' : '#C85F28'} />
+                              </View>
+                              <View style={{ flex: 1, minWidth: 0 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                  <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14, flexShrink: 1 }} numberOfLines={1}>
+                                    {getPeriodLabel(h.year, h.month)} — {h.walletId ? wallets.find(w => w.id === h.walletId)?.name : 'ทุกกระเป๋า'}
+                                  </Text>
+                                  {isSelected && (
+                                    <View style={{
+                                      paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6,
+                                      backgroundColor: '#E87A3D',
+                                      flexDirection: 'row', alignItems: 'center', gap: 3,
+                                    }}>
+                                      <Ionicons name="eye" size={9} color="#fff" />
+                                      <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 9.5, color: '#fff' }}>กำลังดู</Text>
+                                    </View>
+                                  )}
+                                </View>
+                                <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11.5, color: isSelected ? '#C85F28' : '#9A8D80', marginTop: 2 }}>
+                                  {h.promptType === 'structured' ? 'แบบสรุป' : 'แบบละเอียด'} · {new Date(h.createdAt).toLocaleDateString('th-TH')}
+                                </Text>
+                              </View>
+                              <Ionicons
+                                name={isSelected ? 'checkmark-circle' : 'chevron-forward'}
+                                size={isSelected ? 18 : 14}
+                                color={isSelected ? '#E87A3D' : '#9A8D80'}
+                              />
+                              <Pressable
+                                onPress={() => handleDeleteHistory(h)}
+                                hitSlop={8}
+                                style={({ pressed }) => ({
+                                  width: 32, height: 32, borderRadius: 10,
+                                  alignItems: 'center', justifyContent: 'center',
+                                  backgroundColor: pressed ? '#FEE2E2' : '#FFF1F1',
+                                  borderWidth: 1, borderColor: '#FECACA',
+                                  opacity: pressed ? 0.7 : 1,
+                                  transform: [{ scale: pressed ? 0.92 : 1 }],
+                                })}
+                                accessibilityRole="button"
+                                accessibilityLabel="ลบประวัติ"
+                              >
+                                <Ionicons name="trash-outline" size={15} color="#DC2626" />
+                              </Pressable>
+                            </View>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
                   </View>
-                </View>
-              )}
+                )}
 
-              {/* Current Result */}
-              {currentResult && !isLoading && (
-                <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
-                  <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, marginBottom: 10 }}>ผลวิเคราะห์</Text>
-                  <AiResultView
-                    responseType={currentResult.type as any}
-                    responseData={currentResult.data}
-                    periodLabel={currentResult.periodLabel}
-                  />
-                </View>
-              )}
-            </>
-          ) : (
-            <View style={{ paddingHorizontal: 16 }}>
-              <DataTransferTab />
-              <SpecialImportSection onSuccess={reloadAfterSpecialImport} />
-            </View>
-          )}
-        </ScrollView>
-      ) : innerTab === 'theme' ? (
-        <ThemeSettingsContent />
-      ) : (
-        <NotificationsSettingsContent />
-      )}
+                {/* Current Result */}
+                {currentResult && !isLoading && (
+                  <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
+                    <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, marginBottom: 10 }}>ผลวิเคราะห์</Text>
+                    <AiResultView
+                      responseType={currentResult.type as any}
+                      responseData={currentResult.data}
+                      periodLabel={currentResult.periodLabel}
+                    />
+                  </View>
+                )}
+              </>
+            ) : (
+              <View style={{ paddingHorizontal: 16 }}>
+                <DataTransferTab />
+                <SpecialImportSection onSuccess={reloadAfterSpecialImport} />
+              </View>
+            )}
+          </ScrollView>
+        ) : innerTab === 'theme' ? (
+          <ThemeSettingsContent />
+        ) : (
+          <NotificationsSettingsContent />
+        )}
 
-      <HistoryModal
-        visible={historyModalVisible}
-        onClose={() => setHistoryModalVisible(false)}
-        histories={histories}
-        wallets={wallets}
-        onView={handleViewHistory}
-        onDelete={handleDeleteHistory}
-        onBulkDelete={handleBulkDeleteHistory}
-        selectedHistoryId={selectedHistoryId}
-      />
+        <HistoryModal
+          visible={historyModalVisible}
+          onClose={() => setHistoryModalVisible(false)}
+          histories={histories}
+          wallets={wallets}
+          onView={handleViewHistory}
+          onDelete={handleDeleteHistory}
+          onBulkDelete={handleBulkDeleteHistory}
+          selectedHistoryId={selectedHistoryId}
+        />
 
-      <ApiKeyHelpModal
-        visible={apiKeyHelpVisible}
-        onClose={() => setApiKeyHelpVisible(false)}
-      />
-    </SafeAreaView>
+        <ApiKeyHelpModal
+          visible={apiKeyHelpVisible}
+          onClose={() => setApiKeyHelpVisible(false)}
+        />
+      </SafeAreaView>
     </WallpaperBackground>
   );
 }

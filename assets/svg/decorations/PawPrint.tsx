@@ -1,4 +1,4 @@
-import Svg, { Circle, Ellipse, Path } from 'react-native-svg';
+import Svg, { Circle, Ellipse, Path, Rect } from 'react-native-svg';
 
 interface PawPrintProps {
   size?: number;
@@ -81,6 +81,83 @@ export function PawPrintHeart({ size = 12, color = '#E87A3D' }: PawPrintProps) {
       <Circle cx="10" cy="3.5" r="1.8" fill={color} />
       <Circle cx="14" cy="3.5" r="1.8" fill={color} />
       <Circle cx="18" cy="6" r="2" fill={color} />
+    </Svg>
+  );
+}
+
+// แบบ 6: Chunky — หนาแน่น แผ่นรองและนิ้วเท้าใหญ่ทรงไข่
+export function PawPrintChunky({ size = 12, color = '#E87A3D' }: PawPrintProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Ellipse cx="12" cy="17" rx="6.5" ry="5.2" fill={color} />
+      <Ellipse cx="5" cy="10" rx="2.8" ry="3" fill={color} />
+      <Ellipse cx="9.5" cy="6" rx="2.5" ry="2.8" fill={color} />
+      <Ellipse cx="14.5" cy="6" rx="2.5" ry="2.8" fill={color} />
+      <Ellipse cx="19" cy="10" rx="2.8" ry="3" fill={color} />
+    </Svg>
+  );
+}
+
+// แบบ 7: Square — แผ่นรองและนิ้วเท้าทรงสี่เหลี่ยมมุมมน
+export function PawPrintSquare({ size = 12, color = '#E87A3D' }: PawPrintProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Rect x="6.5" y="12" width="11" height="10" rx="3" ry="3" fill={color} />
+      <Rect x="3" y="8" width="4.5" height="5" rx="1.5" ry="1.5" fill={color} />
+      <Rect x="7.5" y="3.5" width="4" height="4.5" rx="1.4" ry="1.4" fill={color} />
+      <Rect x="12.5" y="3.5" width="4" height="4.5" rx="1.4" ry="1.4" fill={color} />
+      <Rect x="16.5" y="8" width="4.5" height="5" rx="1.5" ry="1.5" fill={color} />
+    </Svg>
+  );
+}
+
+// แบบ 8: Footstep — รอยเดินคู่ (เฉียงสองรอยเหมือนแมวเดิน)
+export function PawPrintFootstep({ size = 12, color = '#E87A3D' }: PawPrintProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      {/* รอยที่ 1 — บน-ซ้าย */}
+      <Circle cx="7" cy="9" r="2.4" fill={color} />
+      <Circle cx="4" cy="5.5" r="1.3" fill={color} />
+      <Circle cx="7.5" cy="4" r="1.2" fill={color} />
+      <Circle cx="10.5" cy="5.5" r="1.3" fill={color} />
+      {/* รอยที่ 2 — ล่าง-ขวา */}
+      <Circle cx="17" cy="18" r="2.4" fill={color} />
+      <Circle cx="13.5" cy="14.5" r="1.3" fill={color} />
+      <Circle cx="17" cy="13" r="1.2" fill={color} />
+      <Circle cx="20.5" cy="14.5" r="1.3" fill={color} />
+    </Svg>
+  );
+}
+
+// แบบ 9: Flower — แผ่นรองเป็นกลุ่มวงกลมเหมือนดอกไม้
+export function PawPrintFlower({ size = 12, color = '#E87A3D' }: PawPrintProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      {/* แผ่นรอง — 6 วงกลมเล็กรวมเป็นดอกไม้ */}
+      <Circle cx="12" cy="16" r="1.7" fill={color} />
+      <Circle cx="9" cy="14" r="1.7" fill={color} />
+      <Circle cx="15" cy="14" r="1.7" fill={color} />
+      <Circle cx="9.5" cy="18" r="1.7" fill={color} />
+      <Circle cx="14.5" cy="18" r="1.7" fill={color} />
+      <Circle cx="12" cy="20" r="1.7" fill={color} />
+      {/* นิ้วเท้า */}
+      <Circle cx="5" cy="9" r="2.2" fill={color} />
+      <Circle cx="9.5" cy="6" r="2" fill={color} />
+      <Circle cx="14.5" cy="6" r="2" fill={color} />
+      <Circle cx="19" cy="9" r="2.2" fill={color} />
+    </Svg>
+  );
+}
+
+// แบบ 10: Slim — เรียวยาวทรงสูง
+export function PawPrintSlim({ size = 12, color = '#E87A3D' }: PawPrintProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Ellipse cx="12" cy="17" rx="3.5" ry="5.5" fill={color} />
+      <Ellipse cx="6.5" cy="11" rx="1.8" ry="2.8" fill={color} />
+      <Ellipse cx="9.5" cy="6.5" rx="1.6" ry="2.5" fill={color} />
+      <Ellipse cx="14.5" cy="6.5" rx="1.6" ry="2.5" fill={color} />
+      <Ellipse cx="17.5" cy="11" rx="1.8" ry="2.8" fill={color} />
     </Svg>
   );
 }

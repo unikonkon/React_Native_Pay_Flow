@@ -28,7 +28,12 @@ export type PawPrintVariant =
   | "detailed"
   | "outlined"
   | "with-claws"
-  | "heart";
+  | "heart"
+  | "chunky"
+  | "square"
+  | "footstep"
+  | "flower"
+  | "slim";
 
 const PAW_VARIANTS: PawPrintVariant[] = [
   "classic",
@@ -36,6 +41,11 @@ const PAW_VARIANTS: PawPrintVariant[] = [
   "outlined",
   "with-claws",
   "heart",
+  "chunky",
+  "square",
+  "footstep",
+  "flower",
+  "slim",
 ];
 
 function isValidPawVariant(v: string | null): v is PawPrintVariant {
