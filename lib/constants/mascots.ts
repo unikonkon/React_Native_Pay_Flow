@@ -20,6 +20,7 @@ export const BG_MASCOTS: MascotOption[] = [
   { id: "bg5", name: "แบบ 5", source: require("@/assets/add/add5.png") },
   { id: "bg6", name: "แบบ 6", source: require("@/assets/add/add6.png") },
   { id: "bg7", name: "แบบ 7", source: require("@/assets/add/add7.png") },
+  { id: "add8", name: "แบบ 8", source: require("@/assets/add/add8.png") },
   { id: "bgEmty", name: "ว่าง", source: require("@/assets/bg/bgEmty.png") },
 ];
 
@@ -37,6 +38,14 @@ export const ADD_MASCOTS: MascotOption[] = [
   { id: "add5", name: "แบบ 5", source: require("@/assets/add/add5.png") },
   { id: "add6", name: "แบบ 6", source: require("@/assets/add/add6.png") },
   { id: "add7", name: "แบบ 7", source: require("@/assets/add/add7.png") },
+  { id: "add8", name: "แบบ 8", source: require("@/assets/add/add8.png") },
+  { id: "add9", name: "แบบ 9", source: require("@/assets/add/add9.png") },
+  { id: "add10", name: "แบบ 10", source: require("@/assets/add/add10.png") },
+  { id: "add11", name: "แบบ 11", source: require("@/assets/add/add11.png") },
+  { id: "add12", name: "แบบ 12", source: require("@/assets/add/add12.png") },
+  { id: "add13", name: "แบบ 13", source: require("@/assets/add/add13.png") },
+  { id: "add14", name: "แบบ 14", source: require("@/assets/add/add14.png") },
+  { id: "add15", name: "แบบ 15", source: require("@/assets/add/add15.png") },
   { id: "addbg", name: "แบบ bg", source: require("@/assets/bg/bg.png") },
   { id: "addbg1", name: "แบบ bg 1", source: require("@/assets/bg/bg1.png") },
   { id: "addbg2", name: "แบบ bg 2", source: require("@/assets/bg/bg2.png") },
