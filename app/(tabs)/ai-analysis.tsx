@@ -1,6 +1,7 @@
 import { GoldCracks, MiawThinking } from '@/assets/svg';
 import { AiResultView } from '@/components/ai/AiResultView';
 import { SavingsGoalResultView } from '@/components/ai/SavingsGoalResultView';
+import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { PawLoading } from '@/components/common/PawLoading';
 import { WallpaperBackground } from '@/components/layout/WallpaperBackground';
 import { NotificationsSettingsContent } from '@/components/settings/NotificationsSettingsContent';
@@ -1367,6 +1368,15 @@ export default function PremiumScreen() {
   const [savingsGoalExpanded, setSavingsGoalExpanded] = useState(false);
   const [savingsTargetAmount, setSavingsTargetAmount] = useState('10000');
   const [savingsTargetMonths, setSavingsTargetMonths] = useState('3');
+  // Category IDs the user excludes from savings-goal analysis — their
+  // transactions are stripped out of the summary sent to the AI.
+  const [excludedCategoryIds, setExcludedCategoryIds] = useState<Set<string>>(new Set());
+
+  const allCategories = useCategoryStore(s => s.categories);
+  const expenseCategoriesForExclude = useMemo(
+    () => allCategories.filter(c => c.type === 'expense'),
+    [allCategories],
+  );
 
   // History list filter — 'all' | 'analyze' (structured/full) | 'savings_goal'
   const [historyKindFilter, setHistoryKindFilter] = useState<'all' | 'analyze' | 'savings_goal'>('all');
@@ -1549,13 +1559,28 @@ export default function PremiumScreen() {
         return;
       }
 
+      // Strip excluded categories before sending to AI — these will not appear
+      // in the prompt summary, so the AI won't suggest cutting them.
+      const filteredTransactions = excludedCategoryIds.size > 0
+        ? transactions.filter(t => !excludedCategoryIds.has(t.categoryId))
+        : transactions;
+
+      if (filteredTransactions.length === 0) {
+        Alert.alert(
+          'ไม่มีข้อมูลเหลือ',
+          'หลังตัดหมวดที่ยกเว้นออกแล้ว ไม่เหลือธุรกรรมที่จะวิเคราะห์',
+        );
+        setIsLoading(false);
+        return;
+      }
+
       const result = await analyzeSavingsGoal({
         year: gregorianYear,
         month: selectedMonth,
         walletId: selectedWalletId,
         targetAmount,
         targetMonths,
-        transactions,
+        transactions: filteredTransactions,
       });
 
       const periodLabel = getPeriodLabel(gregorianYear, selectedMonth);
@@ -1592,6 +1617,7 @@ export default function PremiumScreen() {
     selectedWalletId,
     gregorianYear,
     addHistory,
+    excludedCategoryIds,
   ]);
 
   const handleViewHistory = useCallback((history: AiHistory) => {
@@ -2102,6 +2128,207 @@ export default function PremiumScreen() {
                         >
                           AI จะใช้ข้อมูลในช่วงปี/เดือน/กระเป๋าที่เลือก เป็น baseline แนะนำว่าควรลดส่วนไหนถึงจะถึงเป้า
                         </Text>
+                      </View>
+
+                      {/* Excluded categories — card chips with CatCategoryIcon */}
+                      <View>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            marginBottom: 4,
+                          }}
+                        >
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <Ionicons name="eye-off-outline" size={14} color="#C85F28" />
+                            <Text
+                              style={{
+                                fontFamily: 'IBMPlexSansThai_700Bold',
+                                fontSize: 13,
+                                color: '#2A2320',
+                              }}
+                            >
+                              ยกเว้นหมวด
+                            </Text>
+                            {excludedCategoryIds.size > 0 && (
+                              <View
+                                style={{
+                                  paddingHorizontal: 6,
+                                  paddingVertical: 1,
+                                  borderRadius: 999,
+                                  backgroundColor: '#E87A3D',
+                                }}
+                              >
+                                <Text
+                                  style={{
+                                    fontFamily: 'Inter_700Bold',
+                                    fontSize: 10,
+                                    color: '#fff',
+                                    fontVariant: ['tabular-nums'],
+                                  }}
+                                >
+                                  {excludedCategoryIds.size}
+                                </Text>
+                              </View>
+                            )}
+                          </View>
+                          {excludedCategoryIds.size > 0 && (
+                            <Pressable
+                              onPress={() => setExcludedCategoryIds(new Set())}
+                              hitSlop={8}
+                              style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}
+                            >
+                              <Ionicons name="refresh" size={11} color="#9A8D80" />
+                              <Text
+                                style={{
+                                  fontFamily: 'IBMPlexSansThai_600SemiBold',
+                                  fontSize: 11,
+                                  color: '#9A8D80',
+                                }}
+                              >
+                                ล้างทั้งหมด
+                              </Text>
+                            </Pressable>
+                          )}
+                        </View>
+                        <Text
+                          style={{
+                            fontFamily: 'IBMPlexSansThai_400Regular',
+                            fontSize: 10.5,
+                            color: '#9A8D80',
+                            marginBottom: 10,
+                            lineHeight: 14,
+                          }}
+                        >
+                          แตะหมวดที่ไม่อยากให้ AI แนะนำลด — รายการในหมวดที่เลือกจะถูกตัดออกก่อนวิเคราะห์
+                        </Text>
+                        {expenseCategoriesForExclude.length === 0 ? (
+                          <Text
+                            style={{
+                              fontFamily: 'IBMPlexSansThai_400Regular',
+                              fontSize: 11,
+                              color: '#9A8D80',
+                              fontStyle: 'italic',
+                            }}
+                          >
+                            ยังไม่มีหมวดรายจ่าย
+                          </Text>
+                        ) : (
+                          <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{ gap: 8, paddingRight: 4, paddingVertical: 2 }}
+                          >
+                            {expenseCategoriesForExclude.map(c => {
+                              const excluded = excludedCategoryIds.has(c.id);
+                              return (
+                                <Pressable
+                                  key={c.id}
+                                  onPress={() => {
+                                    setExcludedCategoryIds(prev => {
+                                      const next = new Set(prev);
+                                      if (next.has(c.id)) next.delete(c.id);
+                                      else next.add(c.id);
+                                      return next;
+                                    });
+                                  }}
+                                  style={({ pressed }) => ({
+                                    width: 78,
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 6,
+                                    borderRadius: 14,
+                                    borderWidth: 2,
+                                    borderColor: excluded ? '#E87A3D' : 'rgba(42,35,32,0.08)',
+                                    backgroundColor: excluded ? '#FFF6EE' : '#FAF5EC',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    opacity: pressed ? 0.7 : 1,
+                                    transform: [{ scale: pressed ? 0.96 : 1 }],
+                                    shadowColor: excluded ? '#E87A3D' : 'transparent',
+                                    shadowOpacity: excluded ? 0.18 : 0,
+                                    shadowRadius: 8,
+                                    shadowOffset: { width: 0, height: 2 },
+                                    elevation: excluded ? 3 : 0,
+                                  })}
+                                  accessibilityRole="button"
+                                  accessibilityState={{ selected: excluded }}
+                                  accessibilityLabel={`${excluded ? 'นำออก' : 'ยกเว้น'}หมวด ${c.name}`}
+                                >
+                                  {/* Icon with selected overlay */}
+                                  <View style={{ position: 'relative'}}>
+                                    <View style={{ opacity: excluded ? 0.45 : 1 }} className="items-center justify-center">
+                                      <CatCategoryIcon kind={c.icon} bg={c.color} size={40} />
+                                    </View>
+                                    {excluded && (
+                                      <View
+                                        style={{
+                                          position: 'absolute',
+                                          top: 0,
+                                          left: 0,
+                                          right: 0,
+                                          bottom: 0,
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                        }}
+                                      >
+                                        <View
+                                          style={{
+                                            width: 24,
+                                            height: 24,
+                                            borderRadius: 12,
+                                            backgroundColor: '#E87A3D',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            borderWidth: 2,
+                                            borderColor: '#fff',
+                                          }}
+                                        >
+                                          <Ionicons name="close" size={14} color="#fff" />
+                                        </View>
+                                      </View>
+                                    )}
+                                  </View>
+                                  <Text
+                                    style={{
+                                      fontFamily: excluded
+                                        ? 'IBMPlexSansThai_700Bold'
+                                        : 'IBMPlexSansThai_400Regular',
+                                      fontSize: 10.5,
+                                      color: excluded ? '#C85F28' : '#2A2320',
+                                      marginTop: 6,
+                                      textAlign: 'center',
+                                    }}
+                                    numberOfLines={2}
+                                  >
+                                    {c.name}
+                                  </Text>
+                                  {/* Status pill at bottom */}
+                                  <View
+                                    style={{
+                                      marginTop: 4,
+                                      paddingHorizontal: 6,
+                                      paddingVertical: 1,
+                                      borderRadius: 999,
+                                      backgroundColor: excluded ? '#E87A3D' : 'transparent',
+                                    }}
+                                  >
+                                    <Text
+                                      style={{
+                                        fontFamily: 'IBMPlexSansThai_700Bold',
+                                        fontSize: 9,
+                                        color: excluded ? '#fff' : '#9A8D80',
+                                        textAlign: 'center',
+                                      }}
+                                    >
+                                      {excluded ? 'ยกเว้น' : 'รวมในการวิเคราะห์'}
+                                    </Text>
+                                  </View>
+                                </Pressable>
+                              );
+                            })}
+                          </ScrollView>
+                        )}
                       </View>
                     </View>
                   )}
