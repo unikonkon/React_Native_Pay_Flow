@@ -46,6 +46,8 @@ export const ADD_MASCOTS: MascotOption[] = [
   { id: "add13", name: "แบบ 13", source: require("@/assets/add/add13.png") },
   { id: "add14", name: "แบบ 14", source: require("@/assets/add/add14.png") },
   { id: "add15", name: "แบบ 15", source: require("@/assets/add/add15.png") },
+  { id: "add16", name: "แบบ 16", source: require("@/assets/add/add16.png") },
+  { id: "add17", name: "แบบ 17", source: require("@/assets/add/add17.png") },
   { id: "addbg", name: "แบบ bg", source: require("@/assets/bg/bg.png") },
   { id: "addbg1", name: "แบบ bg 1", source: require("@/assets/bg/bg1.png") },
   { id: "addbg2", name: "แบบ bg 2", source: require("@/assets/bg/bg2.png") },
