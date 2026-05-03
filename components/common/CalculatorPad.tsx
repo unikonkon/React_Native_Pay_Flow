@@ -210,7 +210,7 @@ export function CalculatorPad({
                 onPress={() => handlePress(btn.label)}
                 android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
                 className={`flex-1 items-center justify-center ${isNumber ? 'bg-card' : 'bg-secondary'}`}
-                style={{ marginHorizontal: 4, paddingVertical: 8, borderRadius: 10, overflow: 'hidden' }}
+                style={{ marginHorizontal: 4, paddingVertical: 5.5, borderRadius: 10, overflow: 'hidden' }}
               >
                 {btn.icon ? (
                   <Ionicons name="backspace-outline" size={20} color="#A39685" />

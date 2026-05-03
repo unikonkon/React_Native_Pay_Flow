@@ -29,6 +29,7 @@ import {
 import { formatCurrency } from '@/lib/utils/format';
 import type { AiHistory } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, {
@@ -214,6 +215,268 @@ function ApiKeyHelpModal({ visible, onClose }: { visible: boolean; onClose: () =
             <Ionicons name="document-text-outline" size={18} color="#E87A3D" />
             <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#E87A3D' }}>
               อ่านคู่มือฉบับเต็ม
+            </Text>
+          </Pressable>
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+}
+
+// ===== API Key Setup Modal =====
+
+function ApiKeySetupModal({
+  visible,
+  onClose,
+  hasKey,
+  maskedTail,
+  onSave,
+  onDelete,
+  onOpenHelp,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  hasKey: boolean;
+  maskedTail: string;
+  onSave: (key: string) => Promise<void> | void;
+  onDelete: () => Promise<void> | void;
+  onOpenHelp: () => void;
+}) {
+  const [keyInput, setKeyInput] = useState('');
+  const [showKey, setShowKey] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Reset transient input state every time the modal is reopened, so a previous
+  // session's text doesn't linger on screen.
+  useEffect(() => {
+    if (visible) {
+      setKeyInput('');
+      setShowKey(false);
+      setSaving(false);
+    }
+  }, [visible]);
+
+  const handlePaste = async () => {
+    const text = await Clipboard.getStringAsync();
+    if (text) setKeyInput(text.trim());
+  };
+
+  const handleSave = async () => {
+    const trimmed = keyInput.trim();
+    if (!trimmed || saving) return;
+    setSaving(true);
+    try {
+      await onSave(trimmed);
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'ลบ API Key',
+      'ต้องการลบ Gemini API Key ที่บันทึกไว้ใช่หรือไม่?',
+      [
+        { text: 'ยกเลิก', style: 'cancel' },
+        {
+          text: 'ลบ',
+          style: 'destructive',
+          onPress: async () => {
+            await onDelete();
+            onClose();
+          },
+        },
+      ],
+    );
+  };
+
+  const canSave = keyInput.trim().length > 0 && !saving;
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable onPress={onClose} className="flex-1 bg-black/40" />
+      <View className="absolute bottom-0 left-0 right-0 bg-background rounded-t-2xl" style={{ maxHeight: '92%' }}>
+        {/* Handle bar */}
+        <View style={{ alignItems: 'center', paddingTop: 8 }}>
+          <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#D9CFC3' }} />
+        </View>
+
+        {/* Header */}
+        <View className="flex-row items-center justify-between" style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+            <View style={{
+              width: 34, height: 34, borderRadius: 11,
+              backgroundColor: '#E87A3D22',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Ionicons name="key" size={16} color="#E87A3D" />
+            </View>
+            <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18, flex: 1 }}>
+              Gemini API Key
+            </Text>
+          </View>
+          <Pressable onPress={onClose} hitSlop={8} style={{ padding: 4 }}>
+            <Ionicons name="close" size={22} color="#9A8D80" />
+          </Pressable>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, paddingTop: 8 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text className="text-muted-foreground" style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, lineHeight: 19, marginBottom: 14 }}>
+            ใส่ API Key จาก Google AI Studio เพื่อเปิดใช้งาน AI วิเคราะห์การใช้จ่าย
+          </Text>
+
+          {/* Current status (if a key is already saved) */}
+          {hasKey && (
+            <View className="bg-card" style={{
+              flexDirection: 'row', alignItems: 'center', gap: 12,
+              padding: 14, borderRadius: 16, marginBottom: 14,
+              borderWidth: 1, borderColor: 'rgba(42,35,32,0.08)',
+            }}>
+              <View style={{
+                width: 32, height: 32, borderRadius: 10,
+                backgroundColor: '#3B9A4F22',
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Ionicons name="checkmark-circle" size={18} color="#3B9A4F" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }}>
+                  ตั้งค่าแล้ว
+                </Text>
+                <Text className="text-muted-foreground" style={{ fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 }}>
+                  ****{maskedTail}
+                </Text>
+              </View>
+              <Pressable
+                onPress={handleDelete}
+                hitSlop={8}
+                style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  alignItems: 'center', justifyContent: 'center',
+                  backgroundColor: '#E0535322',
+                }}
+              >
+                <Ionicons name="trash-outline" size={18} color="#E05353" />
+              </Pressable>
+            </View>
+          )}
+
+          {/* Input label */}
+          <Text className="text-foreground" style={{
+            fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 13.5,
+            marginBottom: 8,
+          }}>
+            {hasKey ? 'อัปเดต API Key' : 'API Key'}
+          </Text>
+
+          {/* Input box */}
+          <View className="bg-card" style={{
+            flexDirection: 'row', alignItems: 'center',
+            borderRadius: 14, paddingHorizontal: 12,
+            borderWidth: 1.5, borderColor: keyInput ? '#E87A3D' : 'rgba(42,35,32,0.08)',
+            marginBottom: 10,
+          }}>
+            <Ionicons name="key-outline" size={16} color="#9A8D80" />
+            <TextInput
+              value={keyInput}
+              onChangeText={setKeyInput}
+              placeholder="วาง API Key ที่นี่..."
+              placeholderTextColor="#9A8D80"
+              secureTextEntry={!showKey}
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="off"
+              spellCheck={false}
+              style={{
+                flex: 1,
+                paddingVertical: 12,
+                paddingHorizontal: 8,
+                fontFamily: 'Inter_400Regular',
+                fontSize: 14,
+                color: '#2A2320',
+              }}
+            />
+            <Pressable
+              onPress={() => setShowKey(s => !s)}
+              hitSlop={8}
+              style={{ padding: 6 }}
+            >
+              <Ionicons name={showKey ? 'eye-off-outline' : 'eye-outline'} size={18} color="#9A8D80" />
+            </Pressable>
+            <Pressable
+              onPress={handlePaste}
+              hitSlop={8}
+              style={{
+                paddingHorizontal: 8, paddingVertical: 6, marginLeft: 2,
+                flexDirection: 'row', alignItems: 'center', gap: 4,
+                borderRadius: 10,
+                backgroundColor: '#E87A3D22',
+              }}
+            >
+              <Ionicons name="clipboard-outline" size={14} color="#C85F28" />
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 12, color: '#C85F28' }}>
+                วาง
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* Help link */}
+          <Pressable
+            onPress={onOpenHelp}
+            style={{
+              flexDirection: 'row', alignItems: 'center', gap: 6,
+              alignSelf: 'flex-start', paddingVertical: 6, marginBottom: 18,
+            }}
+          >
+            <Ionicons name="help-circle-outline" size={15} color="#E87A3D" />
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#E87A3D' }}>
+              ยังไม่มี Key? ดูวิธีรับ
+            </Text>
+            <Ionicons name="arrow-forward" size={13} color="#E87A3D" />
+          </Pressable>
+
+          {/* Primary action */}
+          <Pressable
+            onPress={handleSave}
+            disabled={!canSave}
+            style={{
+              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+              height: 52, borderRadius: 14, marginBottom: 10,
+              backgroundColor: canSave ? '#E87A3D' : 'rgba(232,122,61,0.5)',
+              shadowColor: '#E87A3D',
+              shadowOpacity: canSave ? 0.3 : 0,
+              shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+              elevation: canSave ? 6 : 0,
+            }}
+          >
+            {saving ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Ionicons name="save-outline" size={18} color="#fff" />
+                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#fff' }}>
+                  บันทึก
+                </Text>
+              </>
+            )}
+          </Pressable>
+
+          {/* Secondary action */}
+          <Pressable
+            onPress={onClose}
+            style={{
+              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+              height: 52, borderRadius: 14,
+              backgroundColor: 'transparent',
+              borderWidth: 1.5, borderColor: '#D9CFC3',
+            }}
+          >
+            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#9A8D80' }}>
+              ยกเลิก
             </Text>
           </Pressable>
         </ScrollView>
@@ -1359,8 +1622,10 @@ export default function PremiumScreen() {
     targetMonths?: number | null;
   } | null>(null);
   const [hasApiKey, setHasApiKey] = useState(false);
+  const [apiKeyTail, setApiKeyTail] = useState('');
   const [apiKeyStatus, setApiKeyStatus] = useState('ตรวจสอบ...');
   const [apiKeyHelpVisible, setApiKeyHelpVisible] = useState(false);
+  const [apiKeySetupVisible, setApiKeySetupVisible] = useState(false);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
 
@@ -1413,38 +1678,28 @@ export default function PremiumScreen() {
   useEffect(() => {
     getApiKey().then(key => {
       setHasApiKey(!!key);
+      setApiKeyTail(key ? key.slice(-4) : '');
       setApiKeyStatus(key ? `ตั้งค่าแล้ว (****${key.slice(-4)})` : 'ยังไม่ได้ตั้งค่า');
     });
     loadYears(selectedWalletId);
   }, []);
 
   const handleApiKey = () => {
-    Alert.prompt(
-      'Gemini API Key',
-      'ใส่ API Key จาก Google AI Studio',
-      [
-        { text: 'ยกเลิก', style: 'cancel' },
-        {
-          text: 'ลบ Key', style: 'destructive', onPress: async () => {
-            await deleteApiKey();
-            setHasApiKey(false);
-            setApiKeyStatus('ยังไม่ได้ตั้งค่า');
-          }
-        },
-        {
-          text: 'บันทึก', onPress: async (key?: string) => {
-            if (key?.trim()) {
-              await setApiKey(key.trim());
-              setHasApiKey(true);
-              setApiKeyStatus(`ตั้งค่าแล้ว (****${key.trim().slice(-4)})`);
-            }
-          }
-        },
-      ],
-      'plain-text',
-      '',
-      'default'
-    );
+    setApiKeySetupVisible(true);
+  };
+
+  const handleApiKeySave = async (key: string) => {
+    await setApiKey(key);
+    setHasApiKey(true);
+    setApiKeyTail(key.slice(-4));
+    setApiKeyStatus(`ตั้งค่าแล้ว (****${key.slice(-4)})`);
+  };
+
+  const handleApiKeyDelete = async () => {
+    await deleteApiKey();
+    setHasApiKey(false);
+    setApiKeyTail('');
+    setApiKeyStatus('ยังไม่ได้ตั้งค่า');
   };
 
   useEffect(() => {
@@ -2575,6 +2830,19 @@ export default function PremiumScreen() {
         <ApiKeyHelpModal
           visible={apiKeyHelpVisible}
           onClose={() => setApiKeyHelpVisible(false)}
+        />
+
+        <ApiKeySetupModal
+          visible={apiKeySetupVisible}
+          onClose={() => setApiKeySetupVisible(false)}
+          hasKey={hasApiKey}
+          maskedTail={apiKeyTail}
+          onSave={handleApiKeySave}
+          onDelete={handleApiKeyDelete}
+          onOpenHelp={() => {
+            setApiKeySetupVisible(false);
+            setApiKeyHelpVisible(true);
+          }}
         />
       </SafeAreaView>
     </WallpaperBackground>

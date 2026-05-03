@@ -455,7 +455,14 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                   {selectedCategory ? `รายการ ${selectedCategory.name} ที่ใช้บ่อย` : 'รายการที่ใช้บ่อย'}
                 </Text>
               </View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                nestedScrollEnabled
+                directionalLockEnabled
+                contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 1 }}
+              >
                 {topAnalyses.map((a) => {
                   const cat = categories.find(c => c.id === a.categoryId);
                   if (!cat) return null;
@@ -502,35 +509,41 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               </Text>
             </Pressable>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-1">
-              <View className="flex-row" style={{ gap: 6 }}>
-                {wallets.map(w => {
-                  const isSelected = w.id === selectedWallet?.id;
-                  return (
-                    <Pressable
-                      key={w.id}
-                      onPress={() => { Haptics.selectionAsync(); setSelectedWallet(w); }}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled
+              directionalLockEnabled
+              style={{ flex: 1, minWidth: 0 }}
+              contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingRight: 4 }}
+            >
+              {wallets.map(w => {
+                const isSelected = w.id === selectedWallet?.id;
+                return (
+                  <Pressable
+                    key={w.id}
+                    onPress={() => { Haptics.selectionAsync(); setSelectedWallet(w); }}
+                    style={{
+                      height: 30, paddingHorizontal: 12, borderRadius: 999, flexShrink: 0,
+                      flexDirection: 'row', alignItems: 'center', gap: 6,
+                      borderWidth: isSelected ? 1.5 : 1,
+                      borderColor: isSelected ? '#E87A3D' : 'rgba(42,35,32,0.08)',
+                    }}
+                  >
+                    <View className="rounded-full items-center justify-center" style={{ width: 16, height: 16, backgroundColor: w.color }}>
+                      <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={8} color="white" />
+                    </View>
+                    <Text
+                      className={isSelected ? 'text-primary' : 'text-foreground'}
                       style={{
-                        height: 30, paddingHorizontal: 12, borderRadius: 999, flexShrink: 0,
-                        flexDirection: 'row', alignItems: 'center', gap: 6,
-                        borderWidth: isSelected ? 1.5 : 1,
-                        borderColor: isSelected ? '#E87A3D' : 'rgba(42,35,32,0.08)',
+                        fontFamily: isSelected ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
+                        fontSize: 13,
                       }}
-                    >
-                      <View className="rounded-full items-center justify-center" style={{ width: 16, height: 16, backgroundColor: w.color }}>
-                        <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={8} color="white" />
-                      </View>
-                      <Text
-                        className={isSelected ? 'text-primary' : 'text-foreground'}
-                        style={{
-                          fontFamily: isSelected ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
-                          fontSize: 13,
-                        }}
-                      >{w.name}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
+                    >{w.name}</Text>
+                  </Pressable>
+                );
+              })}
             </ScrollView>
           </View>
 
