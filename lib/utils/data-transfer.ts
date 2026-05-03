@@ -78,6 +78,22 @@ export interface ImportResult {
   error?: string;
 }
 
+export type ImportPhase = 'wallets' | 'categories' | 'transactions' | 'analysis' | 'aiHistory';
+
+export interface ImportProgress {
+  /** Items processed so far across all phases. */
+  current: number;
+  /** Total items to process across all phases. */
+  total: number;
+  /** Current phase. */
+  phase: ImportPhase;
+  /** Per-phase counter — useful for "ธุรกรรม 12/45" UI. */
+  phaseCurrent: number;
+  phaseTotal: number;
+}
+
+export type ImportProgressCallback = (progress: ImportProgress) => void;
+
 // ─── Helpers ───
 
 function emptyResult(error: string): ImportResult {
@@ -109,7 +125,7 @@ async function queryAllData() {
   };
 }
 
-async function importParsedData(data: ExportData['data']): Promise<ImportResult> {
+async function importParsedData(data: ExportData['data'], onProgress?: ImportProgressCallback): Promise<ImportResult> {
   const db = getDb();
   let walletsImported = 0;
   let walletsRenamed = 0;
@@ -120,6 +136,19 @@ async function importParsedData(data: ExportData['data']): Promise<ImportResult>
   let aiHistoryImported = 0;
   let settingsRestored = false;
 
+  // Total items across all phases — used for the overall progress bar.
+  const wTotal = (data.wallets ?? []).length;
+  const cTotal = (data.categories ?? []).length;
+  const tTotal = (data.transactions ?? []).length;
+  const aTotal = (data.analysis ?? []).length;
+  const hTotal = (data.aiHistory ?? []).length;
+  const grandTotal = wTotal + cTotal + tTotal + aTotal + hTotal;
+  let cursor = 0;
+  const tick = (phase: ImportPhase, phaseCurrent: number, phaseTotal: number) => {
+    if (!onProgress) return;
+    onProgress({ current: cursor, total: grandTotal, phase, phaseCurrent, phaseTotal });
+  };
+
   // Drain any lingering transaction left behind by a prior interrupted
   // operation. ROLLBACK errors silently if no transaction is active.
   await db.execAsync('ROLLBACK').catch(() => {});
@@ -127,10 +156,12 @@ async function importParsedData(data: ExportData['data']): Promise<ImportResult>
   try {
     await db.withTransactionAsync(async () => {
       // 1. Wallets
+      tick('wallets', 0, wTotal);
       const walletIdMap = new Map<string, string>();
       const existingWallets = await db.getAllAsync<{ id: string; name: string }>('SELECT id, name FROM wallets');
       const existingNames = new Set(existingWallets.map(w => w.name));
 
+      let wIdx = 0;
       for (const w of data.wallets ?? []) {
         let name = w.name;
         if (existingNames.has(name)) {
@@ -149,16 +180,20 @@ async function importParsedData(data: ExportData['data']): Promise<ImportResult>
         );
         walletNames.push(name);
         walletsImported++;
+        cursor++; wIdx++;
+        tick('wallets', wIdx, wTotal);
       }
 
       // 2. Categories
+      tick('categories', 0, cTotal);
       const categoryIdMap = new Map<string, string>();
       const existingCatIds = new Set(
         (await db.getAllAsync<{ id: string }>('SELECT id FROM categories')).map(c => c.id),
       );
+      let cIdx = 0;
       for (const c of data.categories ?? []) {
-        if (existingCatIds.has(c.id)) { categoryIdMap.set(c.id, c.id); continue; }
-        if (c.is_custom !== 1) { categoryIdMap.set(c.id, c.id); continue; }
+        if (existingCatIds.has(c.id)) { categoryIdMap.set(c.id, c.id); cursor++; cIdx++; tick('categories', cIdx, cTotal); continue; }
+        if (c.is_custom !== 1) { categoryIdMap.set(c.id, c.id); cursor++; cIdx++; tick('categories', cIdx, cTotal); continue; }
         const newId = generateId();
         categoryIdMap.set(c.id, newId);
         await db.runAsync(
@@ -166,9 +201,13 @@ async function importParsedData(data: ExportData['data']): Promise<ImportResult>
           [newId, c.name, c.icon, c.color, c.type, c.is_custom, c.sort_order],
         );
         categoriesImported++;
+        cursor++; cIdx++;
+        tick('categories', cIdx, cTotal);
       }
 
       // 3. Transactions
+      tick('transactions', 0, tTotal);
+      let tIdx = 0;
       for (const t of data.transactions ?? []) {
         const newId = generateId();
         const walletId = walletIdMap.get(t.wallet_id) ?? t.wallet_id ?? 'wallet-cash';
@@ -178,9 +217,13 @@ async function importParsedData(data: ExportData['data']): Promise<ImportResult>
           [newId, t.type, t.amount, categoryId, t.note, t.date, t.created_at, walletId],
         );
         transactionsImported++;
+        cursor++; tIdx++;
+        tick('transactions', tIdx, tTotal);
       }
 
       // 4. Analysis
+      tick('analysis', 0, aTotal);
+      let aIdx = 0;
       for (const a of data.analysis ?? []) {
         const newId = generateId();
         const walletId = walletIdMap.get(a.wallet_id) ?? a.wallet_id;
@@ -191,9 +234,13 @@ async function importParsedData(data: ExportData['data']): Promise<ImportResult>
           [newId, walletId, a.type, categoryId, a.amount, a.note, a.match_type, a.count, a.last_transaction_id ?? '', a.created_at, a.updated_at],
         );
         analysisImported++;
+        cursor++; aIdx++;
+        tick('analysis', aIdx, aTotal);
       }
 
       // 5. AI History
+      tick('aiHistory', 0, hTotal);
+      let hIdx = 0;
       for (const h of data.aiHistory ?? []) {
         const newId = generateId();
         const walletId = h.wallet_id ? (walletIdMap.get(h.wallet_id) ?? h.wallet_id) : null;
@@ -202,6 +249,8 @@ async function importParsedData(data: ExportData['data']): Promise<ImportResult>
           [newId, walletId, h.prompt_type, h.year, h.response_type, h.response_data, h.created_at],
         );
         aiHistoryImported++;
+        cursor++; hIdx++;
+        tick('aiHistory', hIdx, hTotal);
       }
     });
 
@@ -273,7 +322,7 @@ export async function exportAllData(): Promise<void> {
 
 // ─── Import TXT (JSON) ───
 
-export async function pickAndImportData(): Promise<ImportResult> {
+export async function pickAndImportData(onProgress?: ImportProgressCallback): Promise<ImportResult> {
   const result = await DocumentPicker.getDocumentAsync({ type: 'text/plain', copyToCacheDirectory: true });
   if (result.canceled || !result.assets?.length) return emptyResult('ยกเลิกการเลือกไฟล์');
 
@@ -284,7 +333,7 @@ export async function pickAndImportData(): Promise<ImportResult> {
   try { parsed = JSON.parse(content); } catch { return emptyResult('ไฟล์ไม่ถูกต้อง ไม่สามารถอ่านข้อมูล JSON ได้'); }
   if (parsed.app !== 'CeasFlow' || !parsed.data) return emptyResult('ไฟล์นี้ไม่ใช่ข้อมูลที่ส่งออกจาก CeasFlow');
 
-  return importParsedData(parsed.data);
+  return importParsedData(parsed.data, onProgress);
 }
 
 // ─── Export Excel (full data) ───
@@ -389,7 +438,7 @@ export async function exportAllDataExcel(): Promise<void> {
 
 // ─── Import Excel (full data) ───
 
-export async function pickAndImportDataExcel(): Promise<ImportResult> {
+export async function pickAndImportDataExcel(onProgress?: ImportProgressCallback): Promise<ImportResult> {
   const result = await DocumentPicker.getDocumentAsync({
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     copyToCacheDirectory: true,
@@ -453,7 +502,7 @@ export async function pickAndImportDataExcel(): Promise<ImportResult> {
     });
   }
 
-  return importParsedData({ wallets, categories, transactions, analysis, aiHistory, settings, alertSettings, theme });
+  return importParsedData({ wallets, categories, transactions, analysis, aiHistory, settings, alertSettings, theme }, onProgress);
 }
 
 // ─── CSV Export (transaction-only, used by analytics) ───
@@ -671,7 +720,7 @@ const DEFAULT_CUSTOM_COLORS: Record<TransactionType, string> = {
   expense: '#F5A185',
 };
 
-async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<ImportResult> {
+async function importParsedSpecialData(parsed: ParsedSpecialData, onProgress?: ImportProgressCallback): Promise<ImportResult> {
   const db = getDb();
   let walletsImported = 0;
   let walletsRenamed = 0;
@@ -680,6 +729,16 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
   let transactionsImported = 0;
   let analysisImported = 0;
 
+  const wTotal = parsed.wallets.length;
+  const cTotal = parsed.categories.length;
+  const tTotal = parsed.transactions.length;
+  const grandTotal = wTotal + cTotal + tTotal;
+  let cursor = 0;
+  const tick = (phase: ImportPhase, phaseCurrent: number, phaseTotal: number) => {
+    if (!onProgress) return;
+    onProgress({ current: cursor, total: grandTotal, phase, phaseCurrent, phaseTotal });
+  };
+
   // Drain any lingering transaction left behind by a prior interrupted
   // operation. ROLLBACK errors silently if no transaction is active.
   await db.execAsync('ROLLBACK').catch(() => {});
@@ -687,6 +746,7 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
   try {
     await db.withTransactionAsync(async () => {
       // 1. Wallets — match by name, otherwise create (rename on collision)
+      tick('wallets', 0, wTotal);
       const existingWallets = await db.getAllAsync<{ id: string; name: string }>('SELECT id, name FROM wallets');
       const walletNameToId = new Map<string, string>();
       const existingNames = new Set<string>();
@@ -695,8 +755,9 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
         existingNames.add(w.name);
       }
 
+      let wIdx = 0;
       for (const w of parsed.wallets) {
-        if (walletNameToId.has(w.name)) continue;
+        if (walletNameToId.has(w.name)) { cursor++; wIdx++; tick('wallets', wIdx, wTotal); continue; }
         let name = w.name;
         if (existingNames.has(name)) {
           let suffix = 2;
@@ -714,6 +775,8 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
         );
         walletNames.push(name);
         walletsImported++;
+        cursor++; wIdx++;
+        tick('wallets', wIdx, wTotal);
       }
 
       // 2. Categories — match existing by (type|name), otherwise create custom
@@ -750,8 +813,12 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
         return id;
       };
 
+      tick('categories', 0, cTotal);
+      let cIdx = 0;
       for (const c of parsed.categories) {
         await ensureCategory(c.name, c.type, c.icon);
+        cursor++; cIdx++;
+        tick('categories', cIdx, cTotal);
       }
 
       // 3. Transactions — fall back to first known wallet if name unknown
@@ -773,6 +840,8 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
       // then upsertAnalysis() so each imported row goes through the same code
       // path as a manual add via TransactionForm. createdAt is preserved from
       // the source file so historical sort order stays intact.
+      tick('transactions', 0, tTotal);
+      let tIdx = 0;
       for (const t of parsed.transactions) {
         const walletId = walletNameToId.get(t.walletName) ?? fallbackWalletId;
         const categoryId = await ensureCategory(t.categoryName, t.type, null);
@@ -803,6 +872,8 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
           seenAnalysisKeys.add(key);
           analysisImported++;
         }
+        cursor++; tIdx++;
+        tick('transactions', tIdx, tTotal);
       }
     });
 
@@ -822,7 +893,7 @@ async function importParsedSpecialData(parsed: ParsedSpecialData): Promise<Impor
   }
 }
 
-export async function pickAndImportSpecialData(): Promise<ImportResult> {
+export async function pickAndImportSpecialData(onProgress?: ImportProgressCallback): Promise<ImportResult> {
   const result = await DocumentPicker.getDocumentAsync({
     type: ['text/plain', '*/*'],
     copyToCacheDirectory: true,
@@ -840,5 +911,5 @@ export async function pickAndImportSpecialData(): Promise<ImportResult> {
   const parsed = parsePayFlowText(content);
   if (!parsed) return emptyResult('ไฟล์นี้ไม่ใช่รูปแบบ Pay Flow ที่รองรับ');
 
-  return importParsedSpecialData(parsed);
+  return importParsedSpecialData(parsed, onProgress);
 }

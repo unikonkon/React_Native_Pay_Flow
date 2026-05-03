@@ -24,6 +24,7 @@ import {
   pickAndImportDataExcel,
   pickAndImportSpecialData,
   type ExportCounts,
+  type ImportProgress,
   type ImportResult,
 } from '@/lib/utils/data-transfer';
 import { formatCurrency } from '@/lib/utils/format';
@@ -1084,6 +1085,132 @@ function HistoryModal({
   );
 }
 
+// ===== Import/Export progress overlay =====
+
+const PHASE_LABEL_TH: Record<ImportProgress['phase'], string> = {
+  wallets: 'กระเป๋าเงิน',
+  categories: 'หมวดหมู่',
+  transactions: 'ธุรกรรม',
+  analysis: 'รายการที่ใช้บ่อย',
+  aiHistory: 'ประวัติ AI',
+};
+
+function ImportProgressOverlay({
+  visible,
+  mode,
+  progress,
+}: {
+  visible: boolean;
+  mode: 'import' | 'export';
+  progress: ImportProgress | null;
+}) {
+  if (!visible) return null;
+  const isImport = mode === 'import';
+  const overallPct = progress && progress.total > 0
+    ? Math.min(100, Math.round((progress.current / progress.total) * 100))
+    : 0;
+  const phaseLabel = progress ? PHASE_LABEL_TH[progress.phase] : null;
+
+  return (
+    <View
+      pointerEvents="auto"
+      className="absolute inset-0 items-center justify-center bg-black/50"
+      style={{ zIndex: 50 }}
+    >
+      <View
+        className="bg-card border border-border"
+        style={{
+          width: '86%', maxWidth: 360,
+          borderRadius: 22, paddingHorizontal: 20, paddingVertical: 22,
+          alignItems: 'center',
+        }}
+      >
+        {/* Header */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+          <Ionicons
+            name={isImport ? 'cloud-download-outline' : 'cloud-upload-outline'}
+            size={22}
+            color="#E87A3D"
+          />
+          <Text
+            className="text-foreground"
+            style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16 }}
+          >
+            {isImport ? 'กำลังนำเข้าข้อมูล' : 'กำลังส่งออกข้อมูล'}
+          </Text>
+        </View>
+
+        <PawLoading size={26} color="#E87A3D" count={4} gap={6} zigzag={5} />
+
+        {/* Progress detail (import only — export has no granular progress) */}
+        {isImport && progress && progress.total > 0 ? (
+          <View style={{ width: '100%', marginTop: 16 }}>
+            {/* Phase row */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <Text
+                style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }}
+                className="text-foreground"
+              >
+                {phaseLabel}
+              </Text>
+              <Text
+                style={{ fontFamily: 'Inter_700Bold', fontSize: 13, fontVariant: ['tabular-nums'], color: '#E87A3D' }}
+              >
+                {progress.phaseCurrent} / {progress.phaseTotal}
+              </Text>
+            </View>
+
+            {/* Overall progress bar */}
+            <View
+              className="bg-secondary"
+              style={{ width: '100%', height: 8, borderRadius: 4, overflow: 'hidden' }}
+            >
+              <View
+                style={{
+                  width: `${overallPct}%`, height: '100%',
+                  backgroundColor: '#E87A3D', borderRadius: 4,
+                }}
+              />
+            </View>
+
+            {/* Total summary */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+              <Text
+                style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }}
+                className="text-muted-foreground"
+              >
+                นำเข้าแล้ว
+              </Text>
+              <Text
+                style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, fontVariant: ['tabular-nums'] }}
+                className="text-foreground"
+              >
+                {progress.current} / {progress.total} รายการ ({overallPct}%)
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <Text
+            style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginTop: 10 }}
+          >
+            {isImport ? 'กำลังเตรียมข้อมูล กรุณารอสักครู่' : 'ไฟล์กำลังถูกสร้าง กรุณารอสักครู่'}
+          </Text>
+        )}
+
+        {/* Warning */}
+        <Text
+          style={{
+            fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11,
+            color: '#B66B13', marginTop: 14, textAlign: 'center',
+          }}
+        >
+          ห้ามปิดแอปจนกว่าจะดำเนินการเสร็จ
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 // ===== Data Transfer Tab =====
 
 function DataTransferTab() {
@@ -1091,6 +1218,7 @@ function DataTransferTab() {
   const [format, setFormat] = useState<DataFormat>('txt');
   const [counts, setCounts] = useState<ExportCounts | null>(null);
   const [loading, setLoading] = useState(false);
+  const [importProgress, setImportProgress] = useState<ImportProgress | null>(null);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [exportDone, setExportDone] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -1135,8 +1263,11 @@ function DataTransferTab() {
   const handleImport = useCallback(async () => {
     setLoading(true);
     setImportResult(null);
+    setImportProgress(null);
     try {
-      const result = format === 'txt' ? await pickAndImportData() : await pickAndImportDataExcel();
+      const result = format === 'txt'
+        ? await pickAndImportData(setImportProgress)
+        : await pickAndImportDataExcel(setImportProgress);
       setImportResult(result);
       if (result.success) await reloadAllStores();
     } catch {
@@ -1147,6 +1278,7 @@ function DataTransferTab() {
       });
     } finally {
       setLoading(false);
+      setImportProgress(null);
     }
   }, [format, reloadAllStores]);
 
@@ -1387,26 +1519,11 @@ function DataTransferTab() {
       )}
 
       {/* Loading overlay */}
-      {loading && (
-        <View pointerEvents="auto" className="absolute inset-0 items-center justify-center bg-black/40" style={{ zIndex: 50 }}>
-          <View className="bg-card rounded-2xl px-8 py-6 items-center border border-border min-w-[240px]">
-            <View className="flex-row items-center" style={{ marginBottom: 8 }}>
-              <Ionicons
-                name={dataTab === 'export' ? 'cloud-upload-outline' : 'cloud-download-outline'}
-                size={22}
-                color="#E87A3D"
-              />
-              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, marginLeft: 8 }}>
-                {dataTab === 'export' ? 'กำลังส่งออกข้อมูล' : 'กำลังนำเข้าข้อมูล'}
-              </Text>
-            </View>
-            <PawLoading size={28} color="#E87A3D" count={4} gap={6} zigzag={5} />
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginTop: 4 }}>
-              รูปแบบ {format === 'txt' ? '.txt (JSON)' : '.xlsx (Excel)'} · กรุณารอสักครู่
-            </Text>
-          </View>
-        </View>
-      )}
+      <ImportProgressOverlay
+        visible={loading}
+        mode={dataTab === 'export' ? 'export' : 'import'}
+        progress={importProgress}
+      />
     </View>
   );
 }
@@ -1440,13 +1557,15 @@ function ResultRow({ label, count, extra }: { label: string; count: number; extr
 
 function SpecialImportSection({ onSuccess }: { onSuccess: () => void | Promise<void> }) {
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState<ImportProgress | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
 
   const handleImport = useCallback(async () => {
     setLoading(true);
     setResult(null);
+    setProgress(null);
     try {
-      const r = await pickAndImportSpecialData();
+      const r = await pickAndImportSpecialData(setProgress);
       setResult(r);
       if (r.success) await onSuccess();
     } catch {
@@ -1457,6 +1576,7 @@ function SpecialImportSection({ onSuccess }: { onSuccess: () => void | Promise<v
       });
     } finally {
       setLoading(false);
+      setProgress(null);
     }
   }, [onSuccess]);
 
@@ -1563,22 +1683,7 @@ function SpecialImportSection({ onSuccess }: { onSuccess: () => void | Promise<v
       </Pressable>
 
       {/* Special import loading overlay */}
-      {loading && (
-        <View pointerEvents="auto" className="absolute inset-0 items-center justify-center bg-black/40" style={{ zIndex: 50 }}>
-          <View className="bg-card rounded-2xl px-8 py-6 items-center border border-border min-w-[240px]">
-            <View className="flex-row items-center" style={{ marginBottom: 8 }}>
-              <Ionicons name="cloud-download-outline" size={22} color="#E87A3D" />
-              <Text className="text-foreground" style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, marginLeft: 8 }}>
-                กำลังนำเข้าข้อมูล
-              </Text>
-            </View>
-            <PawLoading size={28} color="#E87A3D" count={4} gap={6} zigzag={5} />
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', marginTop: 4 }}>
-              ไฟล์ Pay Flow (.txt) · กรุณารอสักครู่
-            </Text>
-          </View>
-        </View>
-      )}
+      <ImportProgressOverlay visible={loading} mode="import" progress={progress} />
     </View>
   );
 }
