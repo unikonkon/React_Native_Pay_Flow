@@ -321,10 +321,12 @@ function MonthChip({ sublabel, label, color, align, onPress }: {
       })}
       hitSlop={6}
     >
-      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, color }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>  
+      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color }}>
         {sublabel} · {label}
       </Text>
-      <Ionicons name="chevron-down" size={11} color={color} />
+      <Ionicons name="chevron-down" size={16} color={color} />
+      </View>
     </Pressable>
   );
 }
@@ -354,7 +356,7 @@ function TotalsCard({ monthA, monthB, totalA, totalB, delta, deltaPct, onPickA, 
     <View
       className="mx-4 bg-card"
       style={{
-        borderRadius: 20, padding: 18,
+        borderRadius: 20, paddingTop: 18, paddingHorizontal: 18, paddingBottom: 8, marginTop: 8,
         shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
         elevation: 2,
       }}
@@ -426,7 +428,7 @@ function TotalsCard({ monthA, monthB, totalA, totalB, delta, deltaPct, onPickA, 
       <View
         style={{
           flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-          marginTop: 14, paddingTop: 12,
+          marginTop: 14, paddingTop: 8,
           borderTopWidth: 0.5, borderTopColor: 'rgba(42,35,32,0.08)',
         }}
       >
@@ -455,7 +457,8 @@ function CategoryCompareRow({ row, isFirst, labelA, labelB }: { row: CompareRow;
   const isIncrease = row.delta > 0;
   const isDecrease = row.delta < 0;
   const deltaColor = isIncrease ? '#C65A4E' : isDecrease ? '#3E8B68' : '#A39685';
-  const maxAmount = Math.max(row.amountA, row.amountB, 1);
+  const deltaVerb = isIncrease ? 'ใช้เกิน' : isDecrease ? 'ใช้น้อยกว่า' : 'เท่าเดิม';
+  const deltaIcon: keyof typeof Ionicons.glyphMap = isIncrease ? 'arrow-up' : isDecrease ? 'arrow-down' : 'remove';
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -464,7 +467,8 @@ function CategoryCompareRow({ row, isFirst, labelA, labelB }: { row: CompareRow;
         onPress={() => { Haptics.selectionAsync(); setExpanded(e => !e); }}
         style={({ pressed }) => ({ paddingHorizontal: 16, paddingVertical: 12, opacity: pressed ? 0.7 : 1 })}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+        {/* Header — icon + name + count + chevron */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
           <View style={{ marginRight: 10 }}>
             <CatCategoryIcon
               kind={catIcon}
@@ -479,23 +483,80 @@ function CategoryCompareRow({ row, isFirst, labelA, labelB }: { row: CompareRow;
               {row.countA} → {row.countB} รายการ
             </Text>
           </View>
-          {row.delta !== 0 && (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, backgroundColor: deltaColor + '15', marginRight: 6 }}>
-              <Ionicons name={isIncrease ? 'arrow-up' : 'arrow-down'} size={11} color={deltaColor} />
-              <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 11, fontVariant: ['tabular-nums'], color: deltaColor }}>
-                {formatCurrency(Math.abs(row.delta))}
-              </Text>
-              <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 10, fontVariant: ['tabular-nums'], color: deltaColor, opacity: 0.75 }}>
-                ({Math.abs(row.deltaPct).toFixed(0)}%)
-              </Text>
-            </View>
-          )}
           <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={16} color="#A39685" />
         </View>
 
-        <View style={{ gap: 6, paddingLeft: 42 }}>
-          <CompareBar label="ก่อน" amount={row.amountA} maxAmount={maxAmount} color="#8AC5C5" />
-          <CompareBar label="หลัง" amount={row.amountB} maxAmount={maxAmount} color="#E87A3D" />
+        {/* Side-by-side amount comparison */}
+        <View
+          style={{
+            flexDirection: 'row', alignItems: 'center', gap: 10,
+            paddingLeft: 42, paddingRight: 4,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 10, color: '#8AC5C5' }} numberOfLines={1}>
+              ก่อน · {labelA}
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'Inter_700Bold', fontSize: 15, fontVariant: ['tabular-nums'],
+                marginTop: 1, letterSpacing: -0.3,
+              }}
+              className="text-foreground"
+            >
+              {formatCurrency(row.amountA)}
+            </Text>
+          </View>
+          <Ionicons name="arrow-forward" size={14} color="#A39685" />
+          <View style={{ flex: 1, alignItems: 'flex-end' }}>
+            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 10, color: '#E87A3D' }} numberOfLines={1}>
+              หลัง · {labelB}
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'Inter_700Bold', fontSize: 15, fontVariant: ['tabular-nums'],
+                marginTop: 1, letterSpacing: -0.3,
+              }}
+              className="text-foreground"
+            >
+              {formatCurrency(row.amountB)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Delta summary pill */}
+        <View
+          style={{
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+            marginTop: 10, marginLeft: 42,
+            paddingVertical: 7, paddingHorizontal: 10, borderRadius: 10,
+            backgroundColor: deltaColor + '14',
+          }}
+        >
+          <Ionicons name={deltaIcon} size={13} color={deltaColor} />
+          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 12, color: deltaColor }}>
+            {deltaVerb}
+          </Text>
+          {row.delta !== 0 && (
+            <Text
+              style={{
+                fontFamily: 'Inter_700Bold', fontSize: 13, fontVariant: ['tabular-nums'],
+                color: deltaColor,
+              }}
+            >
+              {formatCurrency(Math.abs(row.delta))}
+            </Text>
+          )}
+          {row.delta !== 0 && row.amountA > 0 && (
+            <Text
+              style={{
+                fontFamily: 'Inter_600SemiBold', fontSize: 11, fontVariant: ['tabular-nums'],
+                color: deltaColor, opacity: 0.85,
+              }}
+            >
+              ({isIncrease ? '+' : '−'}{Math.abs(row.deltaPct).toFixed(0)}%)
+            </Text>
+          )}
         </View>
       </Pressable>
 
@@ -537,21 +598,6 @@ function TxGroup({ label, sublabel, color, txs }: { label: string; sublabel: str
           </View>
         ))
       )}
-    </View>
-  );
-}
-
-function CompareBar({ label, amount, maxAmount, color }: { label: string; amount: number; maxAmount: number; color: string }) {
-  const pct = amount > 0 ? (amount / maxAmount) * 100 : 0;
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 10, color, width: 28 }}>{label}</Text>
-      <View className="bg-secondary" style={{ flex: 1, height: 12, borderRadius: 6, overflow: 'hidden' }}>
-        <View style={{ width: `${pct}%`, height: '100%', backgroundColor: color, borderRadius: 6 }} />
-      </View>
-      <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 11, fontVariant: ['tabular-nums'], minWidth: 64, textAlign: 'right' }} className="text-foreground">
-        {formatCurrency(amount)}
-      </Text>
     </View>
   );
 }
