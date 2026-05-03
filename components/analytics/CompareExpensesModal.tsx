@@ -40,6 +40,21 @@ function monthLabel(m: MonthKey, full = false): string {
   return `${label} ${buddhist}`;
 }
 
+function daysInMonth(m: MonthKey): number {
+  // Day-0 of next month = last day of current month
+  return new Date(m.year, m.month + 1, 0).getDate();
+}
+
+// Days that contribute to "spending so far" in the given month. For the
+// current calendar month we only count elapsed days so the daily-rate
+// reflects actual pace, not a future projection.
+function spendingDays(m: MonthKey): number {
+  const now = new Date();
+  const isCurrent = m.year === now.getFullYear() && m.month === now.getMonth();
+  if (isCurrent) return Math.max(1, now.getDate());
+  return daysInMonth(m);
+}
+
 function defaultMonths(): { a: MonthKey; b: MonthKey } {
   const now = new Date();
   const b: MonthKey = { year: now.getFullYear(), month: now.getMonth() };
@@ -197,23 +212,6 @@ export function CompareExpensesModal({ visible, onClose, walletId }: Props) {
           </View>
         </View>
 
-        {/* Month selectors */}
-        <View className="flex-row gap-6 px-6 py-3 items-center justify-center">
-          <MonthPill
-            label={monthLabel(monthA)}
-            sublabel="ก่อนหน้า"
-            color="#8AC5C5"
-            onPress={() => { Haptics.selectionAsync(); setPickerOpen('A'); }}
-          />
-          <Ionicons name="swap-horizontal" size={22} color="#A39685" />
-          <MonthPill
-            label={monthLabel(monthB)}
-            sublabel="ปัจจุบัน"
-            color="#E87A3D"
-            onPress={() => { Haptics.selectionAsync(); setPickerOpen('B'); }}
-          />
-        </View>
-
         {loading ? (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" color="#E87A3D" />
@@ -221,12 +219,14 @@ export function CompareExpensesModal({ visible, onClose, walletId }: Props) {
         ) : (
           <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
             <TotalsCard
+              monthA={monthA}
+              monthB={monthB}
               totalA={comparison.totalA}
               totalB={comparison.totalB}
-              labelA={monthLabel(monthA)}
-              labelB={monthLabel(monthB)}
               delta={comparison.totalDelta}
               deltaPct={comparison.totalDeltaPct}
+              onPickA={() => { Haptics.selectionAsync(); setPickerOpen('A'); }}
+              onPickB={() => { Haptics.selectionAsync(); setPickerOpen('B'); }}
             />
 
             {comparison.rows.length > 0 ? (
@@ -300,42 +300,44 @@ interface CompareRow {
   transactionsB: Transaction[];
 }
 
-function MonthPill({ label, sublabel, color, onPress }: {
-  label: string;
+function MonthChip({ sublabel, label, color, align, onPress }: {
   sublabel: string;
+  label: string;
   color: string;
+  align: 'flex-start' | 'flex-end';
   onPress: () => void;
 }) {
   return (
     <Pressable
       onPress={onPress}
-      className="bg-card py-2 px-3 rounded-2xl"
       style={({ pressed }) => ({
-        flex: 1,
-        borderRadius: 16,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        borderWidth: 1.5,
-        borderColor: color,
+        flexDirection: 'row', alignItems: 'center', gap: 4,
+        paddingHorizontal: 10, paddingVertical: 5,
+        borderRadius: 999,
+        borderWidth: 1, borderColor: color,
+        backgroundColor: color + '14',
+        alignSelf: align,
         opacity: pressed ? 0.7 : 1,
       })}
+      hitSlop={6}
     >
-      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color, opacity: 0.85 }}>{sublabel}</Text>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 }}>
-        <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15 }} className="text-foreground">{label}</Text>
-        <Ionicons name="chevron-down" size={14} color="#A39685" />
-      </View>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 11, color }}>
+        {sublabel} · {label}
+      </Text>
+      <Ionicons name="chevron-down" size={11} color={color} />
     </Pressable>
   );
 }
 
-function TotalsCard({ totalA, totalB, labelA, labelB, delta, deltaPct }: {
+function TotalsCard({ monthA, monthB, totalA, totalB, delta, deltaPct, onPickA, onPickB }: {
+  monthA: MonthKey;
+  monthB: MonthKey;
   totalA: number;
   totalB: number;
-  labelA: string;
-  labelB: string;
   delta: number;
   deltaPct: number;
+  onPickA: () => void;
+  onPickB: () => void;
 }) {
   const isIncrease = delta > 0;
   const isDecrease = delta < 0;
@@ -343,25 +345,98 @@ function TotalsCard({ totalA, totalB, labelA, labelB, delta, deltaPct }: {
   const deltaIcon = isIncrease ? 'arrow-up' : isDecrease ? 'arrow-down' : 'remove';
   const deltaText = isIncrease ? 'เพิ่มขึ้น' : isDecrease ? 'ลดลง' : 'เท่าเดิม';
 
+  const daysA = spendingDays(monthA);
+  const daysB = spendingDays(monthB);
+  const dailyA = daysA > 0 ? totalA / daysA : 0;
+  const dailyB = daysB > 0 ? totalB / daysB : 0;
+
   return (
-    <View className="mx-4 bg-card" style={{ borderRadius: 20, padding: 20, shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 }}>
+    <View
+      className="mx-4 bg-card"
+      style={{
+        borderRadius: 20, padding: 18,
+        shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+        elevation: 2,
+      }}
+    >
       <View style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#8AC5C5' }}>{labelA}</Text>
-          <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 22, fontVariant: ['tabular-nums'], letterSpacing: -0.5, marginTop: 2 }} className="text-foreground">
+        {/* Side A — left aligned */}
+        <View style={{ flex: 1, gap: 6 }}>
+          <MonthChip
+            sublabel="ก่อนหน้า"
+            label={monthLabel(monthA)}
+            color="#8AC5C5"
+            align="flex-start"
+            onPress={onPickA}
+          />
+          <Text
+            style={{
+              fontFamily: 'Inter_700Bold', fontSize: 22, fontVariant: ['tabular-nums'],
+              letterSpacing: -0.5,
+            }}
+            className="text-foreground"
+          >
             {formatCurrency(totalA)}
           </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Ionicons name="calendar-outline" size={11} color="#A39685" />
+            <Text
+              style={{
+                fontFamily: 'Inter_600SemiBold', fontSize: 11, fontVariant: ['tabular-nums'],
+              }}
+              className="text-muted-foreground"
+            >
+              {formatCurrency(dailyA)}/วัน
+            </Text>
+          </View>
         </View>
-        <View style={{ flex: 1, alignItems: 'flex-end' }}>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#E87A3D' }}>{labelB}</Text>
-          <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 22, fontVariant: ['tabular-nums'], letterSpacing: -0.5, marginTop: 2 }} className="text-foreground">
+
+        {/* Side B — right aligned */}
+        <View style={{ flex: 1, alignItems: 'flex-end', gap: 6 }}>
+          <MonthChip
+            sublabel="ปัจจุบัน"
+            label={monthLabel(monthB)}
+            color="#E87A3D"
+            align="flex-end"
+            onPress={onPickB}
+          />
+          <Text
+            style={{
+              fontFamily: 'Inter_700Bold', fontSize: 22, fontVariant: ['tabular-nums'],
+              letterSpacing: -0.5,
+            }}
+            className="text-foreground"
+          >
             {formatCurrency(totalB)}
           </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Ionicons name="calendar-outline" size={11} color="#A39685" />
+            <Text
+              style={{
+                fontFamily: 'Inter_600SemiBold', fontSize: 11, fontVariant: ['tabular-nums'],
+              }}
+              className="text-muted-foreground"
+            >
+              {formatCurrency(dailyB)}/วัน
+            </Text>
+          </View>
         </View>
       </View>
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 14, paddingTop: 12, borderTopWidth: 0.5, borderTopColor: 'rgba(42,35,32,0.08)' }}>
-        <View style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: deltaColor + '18', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+      <View
+        style={{
+          flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+          marginTop: 14, paddingTop: 12,
+          borderTopWidth: 0.5, borderTopColor: 'rgba(42,35,32,0.08)',
+        }}
+      >
+        <View
+          style={{
+            paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999,
+            backgroundColor: deltaColor + '18',
+            flexDirection: 'row', alignItems: 'center', gap: 4,
+          }}
+        >
           <Ionicons name={deltaIcon} size={14} color={deltaColor} />
           <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: deltaColor }}>
             {deltaText} {formatCurrency(Math.abs(delta))} ({Math.abs(deltaPct).toFixed(1)}%)
@@ -572,8 +647,8 @@ function MonthPickerModal({ visible, title, options, selected, onSelect, onClose
                     style={{
                       fontFamily: 'IBMPlexSansThai_600SemiBold',
                       fontSize: 13,
-                      color: isActive ? '#fff' : '#2B2118',
                     }}
+                    className={isActive ? 'text-white' : 'text-foreground'}
                   >
                     {y + 543}
                   </Text>
@@ -608,8 +683,8 @@ function MonthPickerModal({ visible, title, options, selected, onSelect, onClose
                       style={{
                         fontFamily: 'IBMPlexSansThai_600SemiBold',
                         fontSize: 14,
-                        color: isSelected ? '#fff' : enabled ? '#2B2118' : '#A39685',
                       }}
+                      className={isSelected ? 'text-foreground' : enabled ? 'text-foreground' : 'text-muted-foreground'}
                     >
                       {THAI_MONTHS_FULL[m]}
                     </Text>
