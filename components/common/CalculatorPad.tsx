@@ -253,7 +253,7 @@ export function CalculatorPad({
           onPress={() => handlePress('00')}
           android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
           className="flex-1 items-center justify-center bg-card"
-          style={{ marginHorizontal: 4, paddingVertical: 8, borderRadius: 12, overflow: 'hidden' }}
+          style={{ marginHorizontal: 4, paddingVertical: 5.5, borderRadius: 12, overflow: 'hidden' }}
         >
           <Text className="text-foreground" style={{ fontFamily: 'Inter_400Regular', fontSize: 20 }}>00</Text>
           {activeBtn === '00' && (
