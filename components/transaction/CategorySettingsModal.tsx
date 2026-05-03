@@ -60,12 +60,14 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
   type CatMode = 'reorder' | 'delete';
   const [catMode, setCatMode] = useState<CatMode>('reorder');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [deleteIds, setDeleteIds] = useState<Set<string>>(() => new Set());
   const [addVisible, setAddVisible] = useState(false);
 
   // Reset transient state every time the sheet is reopened
   useEffect(() => {
     if (visible) {
       setSelectedId(null);
+      setDeleteIds(new Set());
       setCatMode('reorder');
     }
   }, [visible]);
@@ -74,6 +76,7 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
     if (next === catMode) return;
     Haptics.selectionAsync();
     setSelectedId(null);
+    setDeleteIds(new Set());
     setCatMode(next);
   }, [catMode]);
 
@@ -125,43 +128,64 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
     }
   };
 
-  const handleDeleteCategory = useCallback(async (cat: Category) => {
+  // Toggle a category in/out of the delete-selection set. Default (non-custom)
+  // categories cannot be deleted — surface an Alert so the user knows why.
+  const toggleDeleteId = useCallback((cat: Category) => {
     if (!cat.isCustom) {
-      Alert.alert('ไม่สามารถลบได้', 'หมวดหมู่เริ่มต้นไม่สามารถลบได้');
+      Alert.alert('ลบไม่ได้', 'หมวดหมู่เริ่มต้นไม่สามารถลบได้');
       return;
     }
+    Haptics.selectionAsync();
+    setDeleteIds(prev => {
+      const next = new Set(prev);
+      if (next.has(cat.id)) next.delete(cat.id);
+      else next.add(cat.id);
+      return next;
+    });
+  }, []);
+
+  const handleBulkDelete = useCallback(async () => {
+    if (deleteIds.size === 0) return;
+    const cats = allCommonCats.filter(c => deleteIds.has(c.id) && c.isCustom);
+    if (cats.length === 0) return;
+
+    // Sum affected transactions across all selected categories in one query.
     const db = getDb();
+    const placeholders = cats.map(() => '?').join(',');
     const row = await db.getFirstAsync<{ count: number }>(
-      'SELECT COUNT(*) as count FROM transactions WHERE category_id = ?',
-      [cat.id],
+      `SELECT COUNT(*) as count FROM transactions WHERE category_id IN (${placeholders})`,
+      cats.map(c => c.id),
     );
     const txCount = row?.count ?? 0;
     const message = txCount > 0
-      ? `ต้องการลบ "${cat.name}" ?\nรายการที่ใช้หมวดหมู่นี้ ${txCount} รายการจะถูกลบด้วย`
-      : `ต้องการลบ "${cat.name}" ?`;
+      ? `ต้องการลบ ${cats.length} หมวดหมู่ที่เลือก?\nรายการที่ใช้หมวดหมู่เหล่านี้ ${txCount} รายการจะถูกลบด้วย`
+      : `ต้องการลบ ${cats.length} หมวดหมู่ที่เลือก?`;
+
     Alert.alert('ลบหมวดหมู่', message, [
       { text: 'ยกเลิก', style: 'cancel' },
       {
-        text: 'ลบ', style: 'destructive',
+        text: 'ลบทั้งหมด', style: 'destructive',
         onPress: async () => {
-          await deleteCategory(cat.id);
+          for (const cat of cats) {
+            await deleteCategory(cat.id);
+          }
           await reloadTransactions();
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          setSelectedId(null);
+          setDeleteIds(new Set());
         },
       },
     ]);
-  }, [deleteCategory, reloadTransactions]);
+  }, [deleteIds, allCommonCats, deleteCategory, reloadTransactions]);
 
-  // Long-press routes by mode: reorder → select; delete → confirm-and-delete directly.
+  // Long-press routes by mode: reorder → select; delete → toggle multi-select.
   const handleLongPress = useCallback((cat: Category) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (catMode === 'delete') {
-      handleDeleteCategory(cat);
+      toggleDeleteId(cat);
       return;
     }
     setSelectedId(cat.id);
-  }, [catMode, handleDeleteCategory]);
+  }, [catMode, toggleDeleteId]);
 
   const handleTapItem = useCallback((targetId: string) => {
     if (!selectedId || selectedId === targetId) {
@@ -579,7 +603,9 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                         ) : (
                           <Fragment>
                             <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#D04040', marginBottom: 2, textAlign: 'center' }}>
-                              กดค้างที่หมวดหมู่ที่ต้องการลบ
+                              {deleteIds.size > 0
+                                ? `เลือกแล้ว ${deleteIds.size} หมวดหมู่ — กดเพิ่มหรือกด "ลบ" ด้านล่าง`
+                                : 'แตะหมวดหมู่ที่ต้องการลบ (เลือกได้หลายหมวด)'}
                             </Text>
                             <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', textAlign: 'center' }}>
                               (หมวดหมู่เริ่มต้นลบไม่ได้)
@@ -597,20 +623,23 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                           const isTarget = isReorderMode && selectedId !== null && selectedId !== cat.id;
                           const isDeletable = isDeleteMode && cat.isCustom;
                           const isLocked = isDeleteMode && !cat.isCustom;
+                          const isCheckedForDelete = isDeletable && deleteIds.has(cat.id);
                           const ringColor = isSelected
                             ? '#E87A3D'
                             : isTarget
                               ? 'rgba(232,122,61,0.3)'
-                              : isDeletable
-                                ? 'rgba(208,64,64,0.45)'
-                                : 'transparent';
+                              : isCheckedForDelete
+                                ? '#D04040'
+                                : isDeletable
+                                  ? 'rgba(208,64,64,0.45)'
+                                  : 'transparent';
                           return (
                             <Pressable
                               key={cat.id}
                               onLongPress={() => handleLongPress(cat)}
                               onPress={() => {
                                 if (catMode === 'delete') {
-                                  // In delete mode, tap is a no-op — long-press is the trigger
+                                  toggleDeleteId(cat);
                                   return;
                                 }
                                 if (selectedId) handleTapItem(cat.id);
@@ -621,7 +650,7 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                               <View style={{ position: 'relative' }}>
                                 <View style={{
                                   padding: isSelected || isDeletable ? 2 : 0, borderRadius: 999,
-                                  borderWidth: 2,
+                                  borderWidth: isCheckedForDelete ? 2.5 : 2,
                                   borderColor: ringColor,
                                 }}>
                                   <View style={{
@@ -635,18 +664,28 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                                     />
                                   </View>
                                 </View>
-                                {/* Delete-mode badge: trash on deletable, lock on default */}
+                                {/* Delete-mode badge: check when selected, trash on deletable, lock on default */}
                                 {isDeleteMode && (
                                   <View style={{
                                     position: 'absolute', top: -3, right: -3,
                                     width: 18, height: 18, borderRadius: 9,
                                     alignItems: 'center', justifyContent: 'center',
-                                    backgroundColor: isDeletable ? '#D04040' : '#9A8D80',
+                                    backgroundColor: isCheckedForDelete
+                                      ? '#D04040'
+                                      : isDeletable
+                                        ? 'rgba(208,64,64,0.85)'
+                                        : '#9A8D80',
                                     borderWidth: 1.5, borderColor: sheetBg,
                                   }}>
                                     <Ionicons
-                                      name={isDeletable ? 'trash' : 'lock-closed'}
-                                      size={10}
+                                      name={
+                                        isCheckedForDelete
+                                          ? 'checkmark'
+                                          : isDeletable
+                                            ? 'trash'
+                                            : 'lock-closed'
+                                      }
+                                      size={isCheckedForDelete ? 12 : 10}
                                       color="#fff"
                                     />
                                   </View>
@@ -655,15 +694,17 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                               <Text
                                 style={{
                                   width: 66, textAlign: 'center',
-                                  fontFamily: isSelected ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
+                                  fontFamily: isSelected || isCheckedForDelete ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
                                   fontSize: 11,
                                   color: isSelected
                                     ? '#E87A3D'
-                                    : isDeletable
+                                    : isCheckedForDelete
                                       ? '#D04040'
-                                      : isLocked
-                                        ? '#C5BAB0'
-                                        : (isVisible ? (isTarget ? '#2A2320' : '#9A8D80') : '#C5BAB0'),
+                                      : isDeletable
+                                        ? '#D04040'
+                                        : isLocked
+                                          ? '#C5BAB0'
+                                          : (isVisible ? (isTarget ? '#2A2320' : '#9A8D80') : '#C5BAB0'),
                                 }}
                                 numberOfLines={1}
                                 ellipsizeMode="tail"
@@ -721,6 +762,37 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                             }}
                           >
                             <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#6B5F52' }}>ยกเลิกการเลือก</Text>
+                          </Pressable>
+                        </View>
+                      )}
+
+                      {catMode === 'delete' && deleteIds.size > 0 && (
+                        <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+                          <Pressable
+                            onPress={() => setDeleteIds(new Set())}
+                            style={{
+                              flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10,
+                              backgroundColor: 'rgba(42,35,32,0.05)',
+                            }}
+                          >
+                            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#6B5F52' }}>
+                              ยกเลิก
+                            </Text>
+                          </Pressable>
+                          <Pressable
+                            onPress={handleBulkDelete}
+                            style={{
+                              flex: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                              paddingVertical: 10, borderRadius: 10,
+                              backgroundColor: '#D04040',
+                              shadowColor: '#D04040', shadowOpacity: 0.3, shadowRadius: 8, shadowOffset: { width: 0, height: 3 },
+                              elevation: 4,
+                            }}
+                          >
+                            <Ionicons name="trash" size={14} color="#fff" />
+                            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 13, color: '#fff' }}>
+                              ลบ ({deleteIds.size})
+                            </Text>
                           </Pressable>
                         </View>
                       )}
