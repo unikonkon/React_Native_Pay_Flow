@@ -57,6 +57,8 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
     easing: Easing.out(Easing.cubic),
   });
 
+  type CatMode = 'reorder' | 'delete';
+  const [catMode, setCatMode] = useState<CatMode>('reorder');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addVisible, setAddVisible] = useState(false);
 
@@ -64,8 +66,16 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
   useEffect(() => {
     if (visible) {
       setSelectedId(null);
+      setCatMode('reorder');
     }
   }, [visible]);
+
+  const switchMode = useCallback((next: CatMode) => {
+    if (next === catMode) return;
+    Haptics.selectionAsync();
+    setSelectedId(null);
+    setCatMode(next);
+  }, [catMode]);
 
   const allCommonCats = useMemo(
     () => allCategories.filter(c => c.type === type),
@@ -115,11 +125,6 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
     }
   };
 
-  const handleLongPress = useCallback((id: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setSelectedId(id);
-  }, []);
-
   const handleDeleteCategory = useCallback(async (cat: Category) => {
     if (!cat.isCustom) {
       Alert.alert('ไม่สามารถลบได้', 'หมวดหมู่เริ่มต้นไม่สามารถลบได้');
@@ -147,6 +152,16 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
       },
     ]);
   }, [deleteCategory, reloadTransactions]);
+
+  // Long-press routes by mode: reorder → select; delete → confirm-and-delete directly.
+  const handleLongPress = useCallback((cat: Category) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (catMode === 'delete') {
+      handleDeleteCategory(cat);
+      return;
+    }
+    setSelectedId(cat.id);
+  }, [catMode, handleDeleteCategory]);
 
   const handleTapItem = useCallback((targetId: string) => {
     if (!selectedId || selectedId === targetId) {
@@ -515,63 +530,140 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                       </View>
                     </View>
 
-                    {/* Reorder grid */}
+                    {/* Reorder/Delete grid */}
                     <View style={{ borderRadius: 12, padding: 8 }}>
-                      {selectedId ? (
-                        <View style={{ marginBottom: 8, paddingHorizontal: 2 }}>
-                          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#E87A3D', marginBottom: 2, textAlign: 'center' }}>
-                            กดอีกตัวเพื่อสลับตำแหน่ง
-                          </Text>
-                          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9D3A1D', textAlign: 'center' }}>
-                            หรือเลื่อนไปด้านล่างเพื่อลบ (หมวดหมู่เริ่มต้นลบไม่ได้)
-                          </Text>
-                        </View>
-                      ) : (
-                        <View style={{ marginBottom: 8, paddingHorizontal: 2 }}>
-                          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#E87A3D', marginBottom: 2, textAlign: 'center' }}>
-                            กดค้างเพื่อเลือกสลับตำแหน่ง
-                          </Text>
-                          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#B66B13', textAlign: 'center' }}>
-                            หรือกดค้างเพื่อลบหมวดหมู่
-                          </Text>
-                        </View>
-                      )}
+                      {/* Mode toggle pills */}
+                      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
+                        {([
+                          { key: 'reorder', icon: 'swap-horizontal' as const, label: 'สลับตำแหน่ง', activeBg: '#E87A3D', dimBg: 'rgba(232,122,61,0.12)', activeFg: '#fff', dimFg: '#C85F28' },
+                          { key: 'delete',  icon: 'trash-outline' as const, label: 'ลบหมวดหมู่', activeBg: '#D04040', dimBg: 'rgba(208,64,64,0.10)',  activeFg: '#fff', dimFg: '#D04040' },
+                        ] as const).map(opt => {
+                          const active = catMode === opt.key;
+                          return (
+                            <Pressable
+                              key={opt.key}
+                              onPress={() => switchMode(opt.key)}
+                              style={{
+                                flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                paddingVertical: 9, borderRadius: 10,
+                                backgroundColor: active ? opt.activeBg : opt.dimBg,
+                              }}
+                            >
+                              <Ionicons name={opt.icon} size={14} color={active ? opt.activeFg : opt.dimFg} />
+                              <Text style={{
+                                fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 13,
+                                color: active ? opt.activeFg : opt.dimFg,
+                              }}>{opt.label}</Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+
+                      {/* Help text per mode */}
+                      <View style={{ marginBottom: 8, paddingHorizontal: 2 }}>
+                        {catMode === 'reorder' ? (
+                          selectedId ? (
+                            <Fragment>
+                              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#E87A3D', marginBottom: 2, textAlign: 'center' }}>
+                                กดอีกตัวเพื่อสลับตำแหน่ง
+                              </Text>
+                              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#B66B13', textAlign: 'center' }}>
+                                หรือกดยกเลิกด้านล่าง
+                              </Text>
+                            </Fragment>
+                          ) : (
+                            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#E87A3D', textAlign: 'center' }}>
+                              กดค้างที่หมวดหมู่ที่ต้องการ แล้วกดอีกตัวเพื่อสลับตำแหน่ง
+                            </Text>
+                          )
+                        ) : (
+                          <Fragment>
+                            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#D04040', marginBottom: 2, textAlign: 'center' }}>
+                              กดค้างที่หมวดหมู่ที่ต้องการลบ
+                            </Text>
+                            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', textAlign: 'center' }}>
+                              (หมวดหมู่เริ่มต้นลบไม่ได้)
+                            </Text>
+                          </Fragment>
+                        )}
+                      </View>
 
                       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
                         {allCommonCats.map((cat, idx) => {
                           const isVisible = idx < commonCategoryLimit;
-                          const isSelected = selectedId === cat.id;
-                          const isTarget = selectedId !== null && selectedId !== cat.id;
+                          const isReorderMode = catMode === 'reorder';
+                          const isDeleteMode = catMode === 'delete';
+                          const isSelected = isReorderMode && selectedId === cat.id;
+                          const isTarget = isReorderMode && selectedId !== null && selectedId !== cat.id;
+                          const isDeletable = isDeleteMode && cat.isCustom;
+                          const isLocked = isDeleteMode && !cat.isCustom;
+                          const ringColor = isSelected
+                            ? '#E87A3D'
+                            : isTarget
+                              ? 'rgba(232,122,61,0.3)'
+                              : isDeletable
+                                ? 'rgba(208,64,64,0.45)'
+                                : 'transparent';
                           return (
                             <Pressable
                               key={cat.id}
-                              onLongPress={() => handleLongPress(cat.id)}
-                              onPress={() => selectedId ? handleTapItem(cat.id) : undefined}
+                              onLongPress={() => handleLongPress(cat)}
+                              onPress={() => {
+                                if (catMode === 'delete') {
+                                  // In delete mode, tap is a no-op — long-press is the trigger
+                                  return;
+                                }
+                                if (selectedId) handleTapItem(cat.id);
+                              }}
                               delayLongPress={300}
                               style={{ width: 66, alignItems: 'center', gap: 2, padding: 2 }}
                             >
-                              <View style={{
-                                padding: isSelected ? 2 : 0, borderRadius: 999,
-                                borderWidth: 2,
-                                borderColor: isSelected ? '#E87A3D' : (isTarget ? 'rgba(232,122,61,0.3)' : 'transparent'),
-                              }}>
+                              <View style={{ position: 'relative' }}>
                                 <View style={{
-                                  opacity: isSelected ? 1 : (isVisible ? (isTarget ? 0.85 : 1) : 0.5),
+                                  padding: isSelected || isDeletable ? 2 : 0, borderRadius: 999,
+                                  borderWidth: 2,
+                                  borderColor: ringColor,
                                 }}>
-                                  <CatCategoryIcon
-                                    kind={cat.icon}
-                                    bg={isVisible ? cat.color : '#D1C7BC'}
-                                    size={40}
-                                    strokeColor={isVisible ? '#FFFFFF' : '#F5F0E8'}
-                                  />
+                                  <View style={{
+                                    opacity: isSelected ? 1 : isLocked ? 0.4 : (isVisible ? (isTarget ? 0.85 : 1) : 0.5),
+                                  }}>
+                                    <CatCategoryIcon
+                                      kind={cat.icon}
+                                      bg={isVisible ? cat.color : '#D1C7BC'}
+                                      size={40}
+                                      strokeColor={isVisible ? '#FFFFFF' : '#F5F0E8'}
+                                    />
+                                  </View>
                                 </View>
+                                {/* Delete-mode badge: trash on deletable, lock on default */}
+                                {isDeleteMode && (
+                                  <View style={{
+                                    position: 'absolute', top: -3, right: -3,
+                                    width: 18, height: 18, borderRadius: 9,
+                                    alignItems: 'center', justifyContent: 'center',
+                                    backgroundColor: isDeletable ? '#D04040' : '#9A8D80',
+                                    borderWidth: 1.5, borderColor: sheetBg,
+                                  }}>
+                                    <Ionicons
+                                      name={isDeletable ? 'trash' : 'lock-closed'}
+                                      size={10}
+                                      color="#fff"
+                                    />
+                                  </View>
+                                )}
                               </View>
                               <Text
                                 style={{
                                   width: 66, textAlign: 'center',
                                   fontFamily: isSelected ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
                                   fontSize: 11,
-                                  color: isSelected ? '#E87A3D' : (isVisible ? (isTarget ? '#2A2320' : '#9A8D80') : '#C5BAB0'),
+                                  color: isSelected
+                                    ? '#E87A3D'
+                                    : isDeletable
+                                      ? '#D04040'
+                                      : isLocked
+                                        ? '#C5BAB0'
+                                        : (isVisible ? (isTarget ? '#2A2320' : '#9A8D80') : '#C5BAB0'),
                                 }}
                                 numberOfLines={1}
                                 ellipsizeMode="tail"
@@ -619,35 +711,19 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                         </Pressable>
                       </View>
 
-                      {selectedId && (() => {
-                        const selectedCat = allCommonCats.find(c => c.id === selectedId);
-                        return (
-                          <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
-                            <Pressable
-                              onPress={() => setSelectedId(null)}
-                              style={{
-                                flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10,
-                                backgroundColor: 'rgba(42,35,32,0.05)',
-                              }}
-                            >
-                              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#6B5F52' }}>ยกเลิก</Text>
-                            </Pressable>
-                            <Pressable
-                              onPress={() => selectedCat && handleDeleteCategory(selectedCat)}
-                              disabled={!selectedCat?.isCustom}
-                              style={{
-                                flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-                                paddingVertical: 10, borderRadius: 10,
-                                backgroundColor: selectedCat?.isCustom ? 'rgba(208,64,64,0.12)' : 'rgba(208,64,64,0.06)',
-                                opacity: selectedCat?.isCustom ? 1 : 0.5,
-                              }}
-                            >
-                              <Ionicons name="trash-outline" size={14} color="#D04040" />
-                              <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#D04040' }}>ลบหมวดหมู่นี้</Text>
-                            </Pressable>
-                          </View>
-                        );
-                      })()}
+                      {catMode === 'reorder' && selectedId && (
+                        <View style={{ marginTop: 10 }}>
+                          <Pressable
+                            onPress={() => setSelectedId(null)}
+                            style={{
+                              alignItems: 'center', paddingVertical: 10, borderRadius: 10,
+                              backgroundColor: 'rgba(42,35,32,0.05)',
+                            }}
+                          >
+                            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#6B5F52' }}>ยกเลิกการเลือก</Text>
+                          </Pressable>
+                        </View>
+                      )}
                     </View>
                   </Fragment>
                 )}
