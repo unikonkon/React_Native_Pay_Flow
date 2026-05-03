@@ -1,4 +1,5 @@
 import { PawPrintIcon } from '@/components/common/PawPrintIcon';
+import { useSettingsStore } from '@/lib/stores/settings-store';
 import type { TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -59,6 +60,8 @@ export function CalculatorPad({
   saveDisabled,
   onExpressionChange,
 }: CalculatorPadProps) {
+  const calcPadButtonPadding = useSettingsStore(s => s.calcPadButtonPadding);
+
   const [expression, setExpression] = useState(value > 0 ? String(value) : '');
   const [hasOperator, setHasOperator] = useState(false);
   // key + seq — seq bumps on every press so the effect re-fires even when pressing the same button twice.
@@ -210,7 +213,7 @@ export function CalculatorPad({
                 onPress={() => handlePress(btn.label)}
                 android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
                 className={`flex-1 items-center justify-center ${isNumber ? 'bg-card' : 'bg-secondary'}`}
-                style={{ marginHorizontal: 4, paddingVertical: 5.5, borderRadius: 10, overflow: 'hidden' }}
+                style={{ marginHorizontal: 4, paddingVertical: calcPadButtonPadding, borderRadius: 10, overflow: 'hidden' }}
               >
                 {btn.icon ? (
                   <Ionicons name="backspace-outline" size={20} color="#A39685" />
@@ -253,7 +256,7 @@ export function CalculatorPad({
           onPress={() => handlePress('00')}
           android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
           className="flex-1 items-center justify-center bg-card"
-          style={{ marginHorizontal: 4, paddingVertical: 5.5, borderRadius: 12, overflow: 'hidden' }}
+          style={{ marginHorizontal: 4, paddingVertical: calcPadButtonPadding, borderRadius: 12, overflow: 'hidden' }}
         >
           <Text className="text-foreground" style={{ fontFamily: 'Inter_400Regular', fontSize: 20 }}>00</Text>
           {activeBtn === '00' && (
@@ -278,7 +281,7 @@ export function CalculatorPad({
           onPress={() => handlePress('0')}
           android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
           className="flex-1 items-center justify-center bg-card"
-          style={{ marginHorizontal: 4, paddingVertical: 8, borderRadius: 12, overflow: 'hidden' }}
+          style={{ marginHorizontal: 4, paddingVertical: calcPadButtonPadding, borderRadius: 12, overflow: 'hidden' }}
         >
           <Text className="text-foreground" style={{ fontFamily: 'Inter_400Regular', fontSize: 20 }}>0</Text>
           {activeBtn === '0' && (
@@ -304,7 +307,7 @@ export function CalculatorPad({
           disabled={!isEqualsMode && saveDisabled}
           android_ripple={{ color: 'rgba(255,255,255,0.2)' }}
           style={{
-            flex: 2, marginHorizontal: 4, paddingVertical: 8, borderRadius: 14,
+            flex: 2, marginHorizontal: 4, paddingVertical: calcPadButtonPadding, borderRadius: 14,
             alignItems: 'center', justifyContent: 'center',
             backgroundColor: isEqualsMode ? equalsColor : (saveColor ?? '#F8F2E7'),
             opacity: !isEqualsMode && saveDisabled ? 0.5 : 1,

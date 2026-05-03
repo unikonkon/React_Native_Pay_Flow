@@ -75,6 +75,7 @@ export interface Settings {
   commonCategoryLimit: number;
   topCategoryLimit: number;
   addTxSheetHeight: number; // Bottom sheet height (%) for add-transaction modal, range 50–95
+  calcPadButtonPadding: number; // Vertical padding (px) per CalculatorPad button, step 0.5, range 3–12
 }
 
 // ===== Wallet Types =====

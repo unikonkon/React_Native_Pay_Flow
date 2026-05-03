@@ -37,6 +37,7 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
   const commonCategoryLimit = useSettingsStore(s => s.commonCategoryLimit);
   const topCategoryLimit = useSettingsStore(s => s.topCategoryLimit);
   const addTxSheetHeight = useSettingsStore(s => s.addTxSheetHeight);
+  const calcPadButtonPadding = useSettingsStore(s => s.calcPadButtonPadding);
   const updateSettings = useSettingsStore(s => s.updateSettings);
   const reorderCategories = useCategoryStore(s => s.reorderCategories);
   const deleteCategory = useCategoryStore(s => s.deleteCategory);
@@ -101,6 +102,16 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
     if (next !== addTxSheetHeight) {
       Haptics.selectionAsync();
       updateSettings({ addTxSheetHeight: next });
+    }
+  };
+
+  const handleCalcPadPadding = (delta: number) => {
+    // Step 0.5, range 3–1. Round to one decimal to avoid float drift.
+    const raw = calcPadButtonPadding + delta;
+    const next = Math.round(Math.min(13, Math.max(3, raw)) * 2) / 2;
+    if (next !== calcPadButtonPadding) {
+      Haptics.selectionAsync();
+      updateSettings({ calcPadButtonPadding: next });
     }
   };
 
@@ -264,6 +275,51 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                       }}
                     >
                       <Ionicons name="add" size={16} color={addTxSheetHeight >= 95 ? '#D1C7BC' : '#E87A3D'} />
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
+
+              {/* Section: ขนาดปุ่มเครื่องคิดเลข */}
+              <View style={{ marginTop: 14, marginBottom: 10 }}>
+                <View style={{ marginBottom: 8 }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">
+                    ขนาดปุ่มเครื่องคิดเลข
+                  </Text>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">
+                    ปรับความสูงของปุ่มกดเครื่องคิดเลข (3–13)
+                  </Text>
+                </View>
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                  backgroundColor: 'rgba(42,35,32,0.03)', borderRadius: 12, padding: 8,
+                }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground">
+                    ขนาดปัจจุบัน
+                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <Pressable
+                      onPress={() => handleCalcPadPadding(-0.5)}
+                      style={{
+                        width: 38, height: 38, borderRadius: 19,
+                        alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: calcPadButtonPadding <= 3 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                      }}
+                    >
+                      <Ionicons name="remove" size={16} color={calcPadButtonPadding <= 3 ? '#D1C7BC' : '#E87A3D'} />
+                    </Pressable>
+                    <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 18, fontVariant: ['tabular-nums'], minWidth: 46, textAlign: 'center' }} className="text-foreground">
+                      {calcPadButtonPadding}
+                    </Text>
+                    <Pressable
+                      onPress={() => handleCalcPadPadding(0.5)}
+                      style={{
+                        width: 38, height: 38, borderRadius: 19,
+                        alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: calcPadButtonPadding >= 12 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                      }}
+                    >
+                      <Ionicons name="add" size={16} color={calcPadButtonPadding >= 12 ? '#D1C7BC' : '#E87A3D'} />
                     </Pressable>
                   </View>
                 </View>

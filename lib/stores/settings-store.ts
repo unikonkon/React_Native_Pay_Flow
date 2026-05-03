@@ -24,6 +24,7 @@ const DEFAULT_SETTINGS: Settings = {
   commonCategoryLimit: 7,
   topCategoryLimit: 8,
   addTxSheetHeight: 90,
+  calcPadButtonPadding: 6,
 };
 
 interface SettingsStore extends Settings {
@@ -67,6 +68,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       commonCategoryLimit: get().commonCategoryLimit,
       topCategoryLimit: get().topCategoryLimit,
       addTxSheetHeight: get().addTxSheetHeight,
+      calcPadButtonPadding: get().calcPadButtonPadding,
     };
     const updated = { ...current, ...partial };
     await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
