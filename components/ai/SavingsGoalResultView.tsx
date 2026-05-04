@@ -1,7 +1,7 @@
 import { formatCurrency } from '@/lib/utils/format';
 import type { SavingsGoalResult } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
-import { Text, View } from 'react-native';
+import { Text, View, useColorScheme } from 'react-native';
 import { FinancialSummaryCard } from './FinancialSummaryCard';
 
 interface Props {
@@ -54,6 +54,24 @@ function StructuredSavingsView({
   const feasible = data.feasibility?.feasible ?? false;
   const monthlyGap = data.feasibility?.monthlyGap ?? 0;
   const currentSaving = data.feasibility?.currentMonthlySaving ?? 0;
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Theme-aware semantic colors for the feasibility verdict card. The bg/
+  // border tokens are intentionally more saturated than other tinted cards
+  // so the verdict reads as the strongest conclusion on the page. Dark mode
+  // gets brighter hues so the rgba tint stays legible on dark backgrounds.
+  // ────────────────────────────────────────────────────────────────────────
+  const isDark = useColorScheme() === 'dark';
+  const successHue = isDark ? '#38A96B' : '#276449';
+  const dangerHue = isDark ? '#E86450' : '#A64735';
+  const verdictAccent = feasible ? successHue : dangerHue;
+  const verdictBg = feasible
+    ? (isDark ? 'rgba(91,200,137,0.20)' : 'rgba(62,139,104,0.22)')
+    : (isDark ? 'rgba(231,136,120,0.20)' : 'rgba(198,90,78,0.22)');
+  const verdictBorder = feasible
+    ? (isDark ? 'rgba(91,200,137,0.50)' : 'rgba(62,139,104,0.50)')
+    : (isDark ? 'rgba(231,136,120,0.50)' : 'rgba(198,90,78,0.50)');
+  const gapColor = monthlyGap >= 0 ? successHue : dangerHue;
 
   const progressPercent =
     monthlyRequired > 0
@@ -115,11 +133,11 @@ function StructuredSavingsView({
             style={{
               fontFamily: 'IBMPlexSansThai_400Regular',
               fontSize: 11,
-              color: '#9A8D80',
+              color: '#2A2320',
               marginBottom: 4,
             }}
           >
-            ต้องการเก็บเงินภายใน {goalMonths} เดือน
+            ต้องการเก็บเงินภายใน {goalMonths} <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#2A2320' }}>เดือน</Text>
           </Text>
           <Text
             style={{
@@ -144,7 +162,7 @@ function StructuredSavingsView({
               style={{
                 fontFamily: 'IBMPlexSansThai_400Regular',
                 fontSize: 12,
-                color: '#9A8D80',
+                color: '#2A2320',
               }}
             >
               ต้องเก็บเฉลี่ย {formatCurrency(monthlyRequired)} / เดือน
@@ -158,13 +176,14 @@ function StructuredSavingsView({
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
-              marginBottom: 6,
+              alignItems: 'center',
+              marginBottom: 4,
             }}
           >
             <Text
-              style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80' }}
+              style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#2A2320' }}
             >
-              ออมได้ปัจจุบัน คิดจากคงเหลือมาเพิ่ม
+              ออมได้ปัจจุบัน
             </Text>
             <Text
               style={{
@@ -174,9 +193,60 @@ function StructuredSavingsView({
                 fontVariant: ['tabular-nums'],
               }}
             >
-              {formatCurrency(currentSaving)} / {formatCurrency(monthlyRequired)}
+              {formatCurrency(currentSaving)} / {formatCurrency(monthlyRequired)} <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80' }}>/ เดือน</Text>
             </Text>
           </View>
+
+          {/* Source-of-truth row — shows the netSaving from FinancialSummaryCard
+              (signed) so the user sees where "ออมได้ปัจจุบัน" comes from. */}
+          {data.financialSummary && (
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 8,
+                paddingHorizontal: 8,
+                paddingVertical: 5,
+                borderRadius: 8,
+                backgroundColor:
+                  data.financialSummary.netSaving >= 0
+                    ? 'rgba(62,139,104,0.08)'
+                    : 'rgba(198,90,78,0.08)',
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+                <Ionicons
+                  name={data.financialSummary.netSaving >= 0 ? 'wallet-outline' : 'alert-circle-outline'}
+                  size={12}
+                  color={data.financialSummary.netSaving >= 0 ? '#3E8B68' : '#C65A4E'}
+                />
+                <Text
+                  style={{
+                    fontFamily: 'IBMPlexSansThai_400Regular',
+                    fontSize: 11,
+                    color: '#6B5F52',
+                    flexShrink: 1,
+                  }}
+                  numberOfLines={1}
+                >
+                  ยอดคงเหลือจากสรุปการเงินที่นำมาคิด
+                </Text>
+              </View>
+              <Text
+                style={{
+                  fontFamily: 'Inter_700Bold',
+                  fontSize: 12,
+                  fontVariant: ['tabular-nums'],
+                  color: data.financialSummary.netSaving >= 0 ? '#3E8B68' : '#C65A4E',
+                }}
+              >
+                {data.financialSummary.netSaving >= 0 ? '+' : '−'}
+                {formatCurrency(Math.abs(data.financialSummary.netSaving))}
+              </Text>
+            </View>
+          )}
+
           <View
             style={{
               height: 10,
@@ -199,24 +269,24 @@ function StructuredSavingsView({
       {/* Feasibility verdict card */}
       <View
         style={{
-          backgroundColor: feasible ? 'rgba(62,139,104,0.1)' : 'rgba(198,90,78,0.1)',
+          backgroundColor: verdictBg,
           borderRadius: 16,
           padding: 14,
           borderWidth: 1,
-          borderColor: feasible ? 'rgba(62,139,104,0.3)' : 'rgba(198,90,78,0.3)',
+          borderColor: verdictBorder,
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
           <Ionicons
             name={feasible ? 'checkmark-circle' : 'alert-circle'}
             size={20}
-            color={feasible ? '#3E8B68' : '#C65A4E'}
+            color={verdictAccent}
           />
           <Text
             style={{
               fontFamily: 'IBMPlexSansThai_700Bold',
               fontSize: 14,
-              color: feasible ? '#3E8B68' : '#C65A4E',
+              color: verdictAccent,
               marginLeft: 8,
             }}
           >
@@ -231,7 +301,8 @@ function StructuredSavingsView({
           }}
         >
           <Text
-            style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#2A2320' }}
+            className="text-foreground"
+            style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, opacity: 0.85 }}
           >
             ส่วนต่างต่อเดือน
           </Text>
@@ -239,22 +310,29 @@ function StructuredSavingsView({
             style={{
               fontFamily: 'Inter_600SemiBold',
               fontSize: 13,
-              color: monthlyGap >= 0 ? '#3E8B68' : '#C65A4E',
+              color: gapColor,
               fontVariant: ['tabular-nums'],
             }}
           >
             {monthlyGap >= 0 ? '+' : ''}
-            {formatCurrency(monthlyGap)}
+            {formatCurrency(monthlyGap)}{' '}
+            <Text
+              className="text-muted-foreground"
+              style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }}
+            >
+              / เดือน
+            </Text>
           </Text>
         </View>
         {data.feasibility?.message && (
           <Text
+            className="text-foreground"
             style={{
               fontFamily: 'IBMPlexSansThai_400Regular',
               fontSize: 12,
-              color: '#2A2320',
               lineHeight: 18,
               marginTop: 4,
+              opacity: 0.85,
             }}
           >
             {data.feasibility.message}
@@ -310,7 +388,7 @@ function StructuredSavingsView({
                       fontVariant: ['tabular-nums'],
                     }}
                   >
-                    − {formatCurrency(item.suggestedReduction)}
+                    − {formatCurrency(item.suggestedReduction)} <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#9A8D80' }}>/ เดือน</Text>
                   </Text>
                 </View>
 
@@ -352,12 +430,14 @@ function StructuredSavingsView({
 
                 <View style={{ flexDirection: 'row', gap: 12, marginBottom: 4, flexWrap: 'wrap' }}>
                   <Text
-                    style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#9A8D80' }}
+                    style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }}
+                    className="text-foreground"
                   >
                     ปัจจุบัน/เดือน {formatCurrency(item.currentAmount)}
                   </Text>
                   <Text
-                    style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#9A8D80' }}
+                    style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }}
+                    className="text-foreground"
                   >
                     → เป้า/เดือน {formatCurrency(item.targetAmount)}
                   </Text>
@@ -367,8 +447,8 @@ function StructuredSavingsView({
                     style={{
                       fontFamily: 'IBMPlexSansThai_400Regular',
                       fontSize: 12,
-                      color: '#2A2320',
                       lineHeight: 18,
+                      color: '#9A8D80'
                     }}
                   >
                     {item.reason}
@@ -431,9 +511,9 @@ function StructuredSavingsView({
                   style={{
                     fontFamily: 'IBMPlexSansThai_400Regular',
                     fontSize: 12,
-                    color: '#2A2320',
                     lineHeight: 18,
                   }}
+                  className="text-foreground"
                 >
                   {item.description}
                 </Text>
@@ -502,10 +582,10 @@ function StructuredSavingsView({
               style={{
                 fontFamily: 'IBMPlexSansThai_400Regular',
                 fontSize: 12,
-                color: '#2A2320',
                 marginBottom: 4,
                 lineHeight: 18,
               }}
+              className="text-foreground"
             >
               ⚠️ {w}
             </Text>
