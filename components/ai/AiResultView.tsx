@@ -1,7 +1,8 @@
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import type { StructuredResult } from '@/types';
+import type { FullAnalysisResult, StructuredResult } from '@/types';
 import { formatCurrency, formatPercentage } from '@/lib/utils/format';
+import { FinancialSummaryCard } from './FinancialSummaryCard';
 
 interface AiResultViewProps {
   responseType: 'structured' | 'full' | 'text';
@@ -19,18 +20,56 @@ export function AiResultView({ responseType, responseData, periodLabel }: AiResu
     }
   }
 
+  if (responseType === 'full') {
+    // 'full' is now wrapped in JSON ({analysis, financialSummary}). Old history
+    // entries may still be plain text — fall back to TextView in that case.
+    try {
+      const parsed = JSON.parse(responseData) as FullAnalysisResult;
+      if (parsed && typeof parsed === 'object' && typeof parsed.analysis === 'string') {
+        return <FullView data={parsed} periodLabel={periodLabel} />;
+      }
+    } catch {
+      // not JSON — treat as legacy plain text
+    }
+    return <TextView text={responseData} periodLabel={periodLabel} />;
+  }
+
   return <TextView text={responseData} periodLabel={periodLabel} />;
+}
+
+function PeriodChip({ label }: { label: string }) {
+  return (
+    <View
+      style={{
+        backgroundColor: 'rgba(232,122,61,0.1)',
+        borderRadius: 16,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}
+    >
+      <Ionicons name="calendar-outline" size={16} color="#E87A3D" />
+      <Text
+        style={{
+          fontFamily: 'IBMPlexSansThai_600SemiBold',
+          fontSize: 13,
+          color: '#E87A3D',
+          marginLeft: 8,
+        }}
+      >
+        {label}
+      </Text>
+    </View>
+  );
 }
 
 function StructuredView({ data, periodLabel }: { data: StructuredResult; periodLabel?: string }) {
   return (
     <View style={{ gap: 16 }}>
-      {periodLabel && (
-        <View style={{ backgroundColor: 'rgba(232,122,61,0.1)', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center' }}>
-          <Ionicons name="calendar-outline" size={16} color="#E87A3D" />
-          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#E87A3D', marginLeft: 8 }}>{periodLabel}</Text>
-        </View>
-      )}
+      {periodLabel && <PeriodChip label={periodLabel} />}
+
+      {data.financialSummary && <FinancialSummaryCard summary={data.financialSummary} />}
 
       {/* Health Score Card */}
       <View className="bg-card rounded-2xl p-4 border border-border">
@@ -133,6 +172,20 @@ function StructuredView({ data, periodLabel }: { data: StructuredResult; periodL
   );
 }
 
+function FullView({ data, periodLabel }: { data: FullAnalysisResult; periodLabel?: string }) {
+  return (
+    <View style={{ gap: 16 }}>
+      {periodLabel && <PeriodChip label={periodLabel} />}
+      {data.financialSummary && <FinancialSummaryCard summary={data.financialSummary} />}
+      <View className="bg-card rounded-2xl p-4 border border-border">
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#2A2320', lineHeight: 22 }}>
+          {data.analysis}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 }}>
@@ -145,12 +198,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 function TextView({ text, periodLabel }: { text: string; periodLabel?: string }) {
   return (
     <View style={{ gap: 16 }}>
-      {periodLabel && (
-        <View style={{ backgroundColor: 'rgba(232,122,61,0.1)', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center' }}>
-          <Ionicons name="calendar-outline" size={16} color="#E87A3D" />
-          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#E87A3D', marginLeft: 8 }}>{periodLabel}</Text>
-        </View>
-      )}
+      {periodLabel && <PeriodChip label={periodLabel} />}
       <View className="bg-card rounded-2xl p-4 border border-border">
         <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#2A2320', lineHeight: 22 }}>{text}</Text>
       </View>

@@ -1,7 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Text, View } from 'react-native';
 import { formatCurrency } from '@/lib/utils/format';
 import type { SavingsGoalResult } from '@/types';
+import { Ionicons } from '@expo/vector-icons';
+import { Text, View } from 'react-native';
+import { FinancialSummaryCard } from './FinancialSummaryCard';
 
 interface Props {
   responseType: 'savings_goal' | 'text';
@@ -87,6 +88,9 @@ function StructuredSavingsView({
         </View>
       )}
 
+      {/* Financial summary card (shared with structured + full analysis views) */}
+      {data.financialSummary && <FinancialSummaryCard summary={data.financialSummary} />}
+
       {/* Goal summary card */}
       <View className="bg-card rounded-2xl p-4 border border-border">
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
@@ -160,7 +164,7 @@ function StructuredSavingsView({
             <Text
               style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80' }}
             >
-              ออมได้ปัจจุบัน
+              ออมได้ปัจจุบัน คิดจากคงเหลือมาเพิ่ม
             </Text>
             <Text
               style={{

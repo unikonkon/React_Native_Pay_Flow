@@ -1,6 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import type { Transaction } from '@/types';
+import type { FinancialSummary, Transaction } from '@/types';
 import { formatCurrency } from '@/lib/utils/format';
 
 // ===== Config =====
@@ -30,6 +30,58 @@ const THAI_MONTHS = [
 
 export function getThaiMonthName(month: number): string {
   return THAI_MONTHS[month] ?? '';
+}
+
+/**
+ * Computes a normalized FinancialSummary client-side from the raw transactions.
+ * Done locally (not by AI) so the numbers are always correct regardless of
+ * what the model returns. Persists into responseData JSON for history reuse.
+ */
+function computeFinancialSummary(
+  transactions: Transaction[],
+  periodDays: number,
+): FinancialSummary {
+  const totalIncome = transactions
+    .filter(t => t.type === 'income')
+    .reduce((s, t) => s + t.amount, 0);
+  const totalExpense = transactions
+    .filter(t => t.type === 'expense')
+    .reduce((s, t) => s + t.amount, 0);
+
+  // Group by (type | categoryId) so the same category name on income vs expense
+  // doesn't collapse into one row.
+  const catMap = new Map<string, { name: string; type: 'income' | 'expense'; total: number; count: number }>();
+  for (const tx of transactions) {
+    const key = `${tx.type}|${tx.categoryId}`;
+    const existing = catMap.get(key);
+    if (existing) {
+      existing.total += tx.amount;
+      existing.count += 1;
+    } else {
+      catMap.set(key, {
+        name: tx.category?.name ?? 'อื่นๆ',
+        type: tx.type,
+        total: tx.amount,
+        count: 1,
+      });
+    }
+  }
+  const categories = Array.from(catMap.values()).sort((a, b) => b.total - a.total);
+
+  return {
+    totalIncome,
+    totalExpense,
+    netSaving: totalIncome - totalExpense,
+    periodDays,
+    categories,
+  };
+}
+
+function computePeriodDays(year: number, month: number | null): number {
+  if (month) return new Date(year, month, 0).getDate();
+  // Yearly mode — use a calendar-aware count if it ever matters; 365 is plenty
+  // accurate for the day-rate displays.
+  return 365;
 }
 
 function buildTransactionSummary(transactions: Transaction[], periodLabel: string): string {
@@ -212,6 +264,9 @@ export async function analyzeFinances(data: {
     ? `${getThaiMonthName(data.month)} ${buddhistYear}`
     : `ปี ${buddhistYear}`;
 
+  const periodDays = computePeriodDays(data.year, data.month);
+  const financialSummary = computeFinancialSummary(data.transactions, periodDays);
+
   const summary = buildTransactionSummary(data.transactions, periodLabel);
   const prompt = data.promptType === 'structured'
     ? buildStructuredPrompt(summary)
@@ -228,6 +283,8 @@ export async function analyzeFinances(data: {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
+        // Inject the locally-computed summary so the view + history both have it.
+        parsed.financialSummary = financialSummary;
         return { responseType: 'structured', result: JSON.stringify(parsed) };
       }
     } catch {
@@ -236,7 +293,11 @@ export async function analyzeFinances(data: {
     return { responseType: 'text', result: text };
   }
 
-  return { responseType: 'full', result: text };
+  // Full mode — wrap the AI's prose in a JSON envelope alongside summary.
+  return {
+    responseType: 'full',
+    result: JSON.stringify({ analysis: text, financialSummary }),
+  };
 }
 
 // ===== Savings Goal Analyzer =====
@@ -259,6 +320,9 @@ export async function analyzeSavingsGoal(data: {
     ? `${getThaiMonthName(data.month)} ${buddhistYear}`
     : `ปี ${buddhistYear}`;
 
+  const periodDays = computePeriodDays(data.year, data.month);
+  const financialSummary = computeFinancialSummary(data.transactions, periodDays);
+
   const summary = buildTransactionSummary(data.transactions, periodLabel);
   const prompt = buildSavingsGoalPrompt(summary, data.targetAmount, data.targetMonths);
 
@@ -272,6 +336,7 @@ export async function analyzeSavingsGoal(data: {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
+      parsed.financialSummary = financialSummary;
       return { responseType: 'savings_goal', result: JSON.stringify(parsed) };
     }
   } catch {

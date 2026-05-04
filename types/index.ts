@@ -143,6 +143,29 @@ export interface AiHistory {
   targetMonths?: number | null;
 }
 
+/** Shared financial overview displayed across all AI analysis modes. */
+export interface FinancialSummary {
+  totalIncome: number;
+  totalExpense: number;
+  /** totalIncome − totalExpense */
+  netSaving: number;
+  /** Days the source data covers — used for "per day" reasoning downstream. */
+  periodDays: number;
+  categories: {
+    name: string;
+    type: 'income' | 'expense';
+    total: number;
+    count: number;
+  }[];
+}
+
+/** Shape for the 'full' AI mode response after wrapping in JSON. */
+export interface FullAnalysisResult {
+  /** Long-form analysis text from the AI. */
+  analysis: string;
+  financialSummary?: FinancialSummary;
+}
+
 export interface StructuredResult {
   summary: {
     healthScore: string;
@@ -174,6 +197,8 @@ export interface StructuredResult {
   };
   actionPlan: string[];
   warnings: string[];
+  /** Optional shared financial overview rendered above the structured cards. */
+  financialSummary?: FinancialSummary;
 }
 
 export interface SavingsGoalResult {
@@ -206,6 +231,8 @@ export interface SavingsGoalResult {
   }[];
   actionPlan: string[];
   warnings: string[];
+  /** Optional shared financial overview rendered above the goal cards. */
+  financialSummary?: FinancialSummary;
 }
 
 // ===== Alert Settings Types =====
