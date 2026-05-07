@@ -16,6 +16,7 @@ import { useAnalysisStore } from '@/lib/stores/analysis-store';
 import { useAiHistoryStore } from '@/lib/stores/ai-history-store';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useThemeStore } from '@/lib/stores/theme-store';
+import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { getThemeVars } from '@/lib/utils/theme-vars';
 import { requestNotificationPermissions } from '@/lib/utils/notifications';
 import { authenticate, getBiometricEnabled } from '@/lib/utils/auth';
@@ -48,6 +49,7 @@ export default function RootLayout() {
   const loadAiHistories = useAiHistoryStore(s => s.loadHistories);
   const loadAlertSettings = useAlertSettingsStore(s => s.loadAlertSettings);
   const loadTheme = useThemeStore(s => s.loadTheme);
+  const loadSelectedWalletId = useTransactionStore(s => s.loadSelectedWalletId);
   const currentTheme = useThemeStore(s => s.currentTheme);
 
   const [isLocked, setIsLocked] = useState(true);
@@ -62,9 +64,10 @@ export default function RootLayout() {
       loadAiHistories();
       loadAlertSettings();
       loadTheme();
+      loadSelectedWalletId();
       requestNotificationPermissions();
     }
-  }, [isReady, loadCategories, loadSettings, loadWallets, loadAnalysis, loadAiHistories, loadAlertSettings, loadTheme]);
+  }, [isReady, loadCategories, loadSettings, loadWallets, loadAnalysis, loadAiHistories, loadAlertSettings, loadTheme, loadSelectedWalletId]);
 
   useEffect(() => {
     if (!isReady) return;

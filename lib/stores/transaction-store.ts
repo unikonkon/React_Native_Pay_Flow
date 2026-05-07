@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import type { Period, Transaction, TransactionType } from '@/types';
 import {
@@ -15,6 +16,8 @@ import { sendBudgetAlert, sendDailyBudgetAlert } from '@/lib/utils/notifications
 import { getToday } from '@/lib/utils/format';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 
+const SELECTED_WALLET_KEY = 'selected_wallet_id';
+
 interface TransactionStore {
   transactions: Transaction[];
   isLoading: boolean;
@@ -26,6 +29,7 @@ interface TransactionStore {
 
   setCurrentPeriod: (period: Period) => void;
   setSelectedWalletId: (id: string | null) => void;
+  loadSelectedWalletId: () => Promise<void>;
   loadTransactions: (period?: Period) => Promise<void>;
   addTransaction: (data: {
     type: TransactionType;
@@ -58,7 +62,18 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
   },
   setSelectedWalletId: (id) => {
     set({ selectedWalletId: id });
+    AsyncStorage.setItem(SELECTED_WALLET_KEY, id ?? '').catch(() => {});
     get().loadTransactions();
+  },
+  loadSelectedWalletId: async () => {
+    try {
+      const saved = await AsyncStorage.getItem(SELECTED_WALLET_KEY);
+      const id = saved ? saved : null;
+      if (id !== get().selectedWalletId) {
+        set({ selectedWalletId: id });
+        get().loadTransactions();
+      }
+    } catch {}
   },
   setEditingTransaction: (tx) => set({ editingTransaction: tx }),
 
