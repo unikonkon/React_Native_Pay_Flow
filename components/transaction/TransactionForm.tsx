@@ -10,7 +10,7 @@ import { useWalletStore } from '@/lib/stores/wallet-store';
 import { formatCurrency, toLocalDateISO } from '@/lib/utils/format';
 import type { Analysis, Category, Transaction, TransactionType, Wallet } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
-import { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -26,6 +26,7 @@ import { ScrollView as GHScrollView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CategoryGridModal } from './CategoryGridModal';
 import { CategorySettingsModal } from './CategorySettingsModal';
+import { NoteEditorOverlay } from './NoteEditorOverlay';
 
 interface TransactionFormProps {
   editTransaction?: Transaction | null;
@@ -43,8 +44,6 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   const [date, setDate] = useState(new Date());
   const [note, setNote] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [noteFocused, setNoteFocused] = useState(false);
-  const [showPastNotes, setShowPastNotes] = useState(false);
   const [pastNotes, setPastNotes] = useState<string[]>([]);
   const [showGridModal, setShowGridModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -53,6 +52,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   const [walletPopoverOpen, setWalletPopoverOpen] = useState(false);
   const [walletAnchor, setWalletAnchor] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const walletTriggerRef = useRef<View>(null);
+  const [showNoteEditor, setShowNoteEditor] = useState(false);
 
   const isEditMode = !!(editTransaction && editTransaction.id);
   const insets = useSafeAreaInsets();
@@ -263,7 +263,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             )}
           </View>
           {/* Amount display centered */}
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 4, paddingTop: 10 }}>
             {calcHasOperator && calcExpression ? (
               <Text style={{
                 fontFamily: 'Inter_700Bold', fontSize: 16,
@@ -278,7 +278,8 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               fontVariant: ['tabular-nums'], letterSpacing: -0.8,
               color: amountColor, lineHeight: 48,
             }}>
-              {type === 'expense' ? '−' : '+'}{amount > 0 ? amount.toLocaleString('en-US') : '0'}
+              {/* {type === 'expense' ? '−' : '+'} */}
+              {amount > 0 ? amount.toLocaleString('en-US') : '0'}
               <Text style={{ fontSize: 18, fontFamily: 'Inter_400Regular', color: '#9A8D80', marginLeft: 6 }}> ฿</Text>
             </Text>
           </View>
@@ -301,7 +302,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                   return (
                     <Pressable
                       key={cat.id}
-                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setNote(''); setShowPastNotes(true); }}
+                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setNote(''); }}
                       style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
                     >
                       <View style={{
@@ -379,7 +380,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                   return (
                     <Pressable
                       key={cat.id}
-                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setNote(''); setShowPastNotes(true); }}
+                      onPress={() => { Haptics.selectionAsync(); setSelectedCategory(cat); setNote(''); }}
                       style={{ width: CATEGORY_QUICK_ITEM_WIDTH, alignItems: 'center', gap: 1 }}
                     >
                       <View style={{
@@ -581,87 +582,75 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             </Modal>
           )}
 
-          {/* Note input + past notes — fixed */}
-          <View
-            style={{
-              borderRadius: 10,
-              borderWidth: 1,
-              borderColor: 'rgba(42,35,32,0.08)',
-              padding: 10,
-              paddingHorizontal: 14,
-              marginBottom: 4,
-              shadowColor: '#2A2320',
-              shadowOpacity: 0.03,
-              shadowRadius: 2,
-              shadowOffset: { width: 0, height: 1 },
-              gap: 8,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-            className="bg-card"
-          >
-            <BottomSheetTextInput
-              value={note}
-              onChangeText={setNote}
-              placeholder="บันทึก.."
-              placeholderTextColor="#9A8D80"
-              onFocus={() => setNoteFocused(true)}
-              onBlur={() => setTimeout(() => setNoteFocused(false), 150)}
+          {/* Note trigger (narrow) + past notes (horizontal scroll) */}
+          <View className="flex-row items-center" style={{ gap: 8, marginBottom: 4 }}>
+            <Pressable
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowNoteEditor(true); }}
               style={{
-                flex: 1,
-                fontFamily: 'IBMPlexSansThai_400Regular',
-                fontSize: 15,
-                color: '#2A2320',
-                paddingVertical: 0,
-                paddingRight: 6,
-                maxHeight: 16,
-                minWidth: 56,
+                flexShrink: 1,
+                maxWidth: '55%',
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: 'rgba(42,35,32,0.08)',
+                paddingVertical: 3,
+                paddingHorizontal: 12,
+                shadowColor: '#2A2320',
+                shadowOpacity: 0.03,
+                shadowRadius: 2,
+                shadowOffset: { width: 0, height: 1 },
+                gap: 6,
+                flexDirection: 'row',
+                alignItems: 'center',
               }}
-            />
-            {(noteFocused || showPastNotes) &&
-              pastNotes.filter(n => !note || n.toLowerCase().includes(note.toLowerCase())).length > 0 && (
-                <GHScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  keyboardShouldPersistTaps="handled"
-                  contentContainerStyle={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}
-                  style={{ flexShrink: 1, flexGrow: 0, minHeight: 24, marginLeft: 2 }}
-                >
-                  {pastNotes
-                    .filter(n => !note || n.toLowerCase().includes(note.toLowerCase()))
-                    .map(n => (
-                      <Pressable
-                        key={n}
-                        onPress={() => { setNote(n); setNoteFocused(false); setShowPastNotes(false); Haptics.selectionAsync(); }}
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          gap: 4,
-                          paddingHorizontal: 10,
-                          paddingVertical: 5,
-                          borderRadius: 999,
-                          backgroundColor: 'rgba(42,35,32,0.05)',
-                          maxWidth: 120,
-                        }}
-                      >
-                        <Ionicons name="time-outline" size={11} color="#9A8D80" />
-                        <Text
-                          style={{
-                            fontFamily: 'IBMPlexSansThai_400Regular',
-                            fontSize: 12,
-                            color: '#2A2320',
-                            maxWidth: 90,
-                          }}
-                          numberOfLines={1}
-                          ellipsizeMode="tail"
-                        >
-                          {n}
-                        </Text>
-                      </Pressable>
-                    ))}
-                </GHScrollView>
-              )
-            }
+              className="bg-card"
+            >
+              <Ionicons name="create-outline" size={15} color="#A39685" />
+              <Text
+                numberOfLines={1}
+                style={{
+                  flexShrink: 1,
+                  fontFamily: 'IBMPlexSansThai_400Regular',
+                  fontSize: 14,
+                  color: note ? '#2A2320' : '#9A8D80',
+                }}
+              >
+                {note || 'บันทึก..'}
+              </Text>
+            </Pressable>
+
+            {pastNotes.length > 0 && (
+              <GHScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                nestedScrollEnabled
+                directionalLockEnabled
+                style={{ flex: 1, minWidth: 0 }}
+                contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 2 }}
+              >
+                {pastNotes.map(n => (
+                  <Pressable
+                    key={n}
+                    onPress={() => { Haptics.selectionAsync(); setNote(n); }}
+                    style={{
+                      flexDirection: 'row', alignItems: 'center', gap: 4,
+                      paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999,
+                      backgroundColor: 'rgba(42,35,32,0.05)',
+                    }}
+                  >
+                    <Ionicons name="time-outline" size={11} color="#9A8D80" />
+                    <Text
+                      style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, maxWidth: 100 }}
+                      className="text-foreground"
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {n}
+                    </Text>
+                  </Pressable>
+                ))}
+              </GHScrollView>
+            )}
           </View>
 
           {/* Calculator */}
@@ -701,6 +690,13 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           if (w) setSelectedWallet(w);
         }}
         onClose={() => setWalletPopoverOpen(false)}
+      />
+      <NoteEditorOverlay
+        visible={showNoteEditor}
+        value={note}
+        onChangeText={setNote}
+        pastNotes={pastNotes}
+        onClose={() => setShowNoteEditor(false)}
       />
     </View>
   );
