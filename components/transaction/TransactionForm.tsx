@@ -1,6 +1,7 @@
 import { CalculatorPad } from '@/components/common/CalculatorPad';
 import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { PawPrintIcon } from '@/components/common/PawPrintIcon';
+import { WalletPickerPopover } from '@/components/wallet/WalletPickerPopover';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import { getDb, getDistinctNotesByCategory, getFrequentAmountsByWallet, getTopCategoryIdsByWallet } from '@/lib/stores/db';
 import { useSettingsStore } from '@/lib/stores/settings-store';
@@ -12,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Modal,
@@ -49,6 +50,9 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [topCategoryIds, setTopCategoryIds] = useState<string[]>([]);
   const [topAnalyses, setTopAnalyses] = useState<Analysis[]>([]);
+  const [walletPopoverOpen, setWalletPopoverOpen] = useState(false);
+  const [walletAnchor, setWalletAnchor] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const walletTriggerRef = useRef<View>(null);
 
   const isEditMode = !!(editTransaction && editTransaction.id);
   const insets = useSafeAreaInsets();
@@ -497,54 +501,58 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             </View>
           )}
 
-          {/* Date + Wallet chips — fixed */}
-          <View className="flex-row items-center" style={{ gap: 8, overflow: 'hidden', marginBottom: 6, marginTop: 4 }}>
+          {/* Date + Wallet chips — fixed (50/50 split) */}
+          <View className="flex-row items-center" style={{ gap: 8, marginBottom: 6, marginTop: 4 }}>
             <Pressable
               onPress={() => setShowDatePicker(true)}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 5, padding: 4, flexShrink: 0 }}
+              style={{
+                flex: 1, minWidth: 0, height: 32, paddingHorizontal: 12,
+                borderRadius: 10, flexDirection: 'row', alignItems: 'center', gap: 6,
+                backgroundColor: 'rgba(42,35,32,0.03)',
+              }}
             >
-              <Ionicons name="calendar-outline" size={16} color="#A39685" />
-              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14, fontVariant: ['tabular-nums'] }} className="text-foreground">
+              <Ionicons name="calendar-outline" size={14} color="#A39685" />
+              <Text
+                className="text-foreground"
+                style={{ flex: 1, fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, fontVariant: ['tabular-nums'] }}
+                numberOfLines={1}
+              >
                 {date.toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}
               </Text>
+              <Ionicons name="chevron-down" size={14} color="#A39685" />
             </Pressable>
 
-            <GHScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              nestedScrollEnabled
-              directionalLockEnabled
-              style={{ flex: 1, minWidth: 0 }}
-              contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingRight: 4 }}
+            <Pressable
+              ref={walletTriggerRef}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                walletTriggerRef.current?.measureInWindow((x, y, width, height) => {
+                  setWalletAnchor({ x, y, width, height });
+                  setWalletPopoverOpen(true);
+                });
+              }}
+              style={{
+                flex: 1, minWidth: 0, height: 32, paddingHorizontal: 12,
+                borderRadius: 10, flexDirection: 'row', alignItems: 'center', gap: 6,
+                backgroundColor: 'rgba(232,122,61,0.06)',
+              }}
             >
-              {wallets.map(w => {
-                const isSelected = w.id === selectedWallet?.id;
-                return (
-                  <Pressable
-                    key={w.id}
-                    onPress={() => { Haptics.selectionAsync(); setSelectedWallet(w); }}
-                    style={{
-                      height: 30, paddingHorizontal: 12, borderRadius: 999, flexShrink: 0,
-                      flexDirection: 'row', alignItems: 'center', gap: 6,
-                      borderWidth: isSelected ? 1.5 : 1,
-                      borderColor: isSelected ? '#E87A3D' : 'rgba(42,35,32,0.08)',
-                    }}
-                  >
-                    <View className="rounded-full items-center justify-center" style={{ width: 16, height: 16, backgroundColor: w.color }}>
-                      <Ionicons name={w.icon as keyof typeof Ionicons.glyphMap} size={8} color="white" />
-                    </View>
-                    <Text
-                      className={isSelected ? 'text-primary' : 'text-foreground'}
-                      style={{
-                        fontFamily: isSelected ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
-                        fontSize: 13,
-                      }}
-                    >{w.name}</Text>
-                  </Pressable>
-                );
-              })}
-            </GHScrollView>
+              {selectedWallet ? (
+                <>
+                  <View className="rounded-full items-center justify-center" style={{ width: 18, height: 18, backgroundColor: selectedWallet.color }}>
+                    <Ionicons name={selectedWallet.icon as keyof typeof Ionicons.glyphMap} size={10} color="white" />
+                  </View>
+                  <Text
+                    className="text-primary"
+                    style={{ flex: 1, fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }}
+                    numberOfLines={1}
+                  >{selectedWallet.name}</Text>
+                </>
+              ) : (
+                <Text style={{ flex: 1, fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 13, color: '#A39685' }}>เลือกกระเป๋า</Text>
+              )}
+              <Ionicons name="chevron-down" size={14} color="#E87A3D" />
+            </Pressable>
           </View>
 
           {/* Date picker modals */}
@@ -576,7 +584,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
           {/* Note input + past notes — fixed */}
           <View
             style={{
-              borderRadius: 14,
+              borderRadius: 10,
               borderWidth: 1,
               borderColor: 'rgba(42,35,32,0.08)',
               padding: 10,
@@ -683,6 +691,16 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
         type={type}
         categories={filteredCategories}
         onClose={() => setShowSettingsModal(false)}
+      />
+      <WalletPickerPopover
+        visible={walletPopoverOpen}
+        anchor={walletAnchor}
+        selectedWalletId={selectedWallet?.id ?? null}
+        onSelect={(id) => {
+          const w = wallets.find(x => x.id === id);
+          if (w) setSelectedWallet(w);
+        }}
+        onClose={() => setWalletPopoverOpen(false)}
       />
     </View>
   );
