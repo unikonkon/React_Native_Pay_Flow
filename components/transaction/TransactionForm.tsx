@@ -18,10 +18,10 @@ import {
   Modal,
   Platform,
   Pressable,
-  ScrollView,
   Text,
   View,
 } from 'react-native';
+import { ScrollView as GHScrollView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CategoryGridModal } from './CategoryGridModal';
 import { CategorySettingsModal } from './CategorySettingsModal';
@@ -455,7 +455,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                   {selectedCategory ? `รายการ ${selectedCategory.name} ที่ใช้บ่อย` : 'รายการที่ใช้บ่อย'}
                 </Text>
               </View>
-              <ScrollView
+              <GHScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
@@ -493,7 +493,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                     </Pressable>
                   );
                 })}
-              </ScrollView>
+              </GHScrollView>
             </View>
           )}
 
@@ -509,7 +509,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
               </Text>
             </Pressable>
 
-            <ScrollView
+            <GHScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
@@ -544,7 +544,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                   </Pressable>
                 );
               })}
-            </ScrollView>
+            </GHScrollView>
           </View>
 
           {/* Date picker modals */}
@@ -612,7 +612,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
             />
             {(noteFocused || showPastNotes) &&
               pastNotes.filter(n => !note || n.toLowerCase().includes(note.toLowerCase())).length > 0 && (
-                <ScrollView
+                <GHScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   keyboardShouldPersistTaps="handled"
@@ -651,7 +651,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                         </Text>
                       </Pressable>
                     ))}
-                </ScrollView>
+                </GHScrollView>
               )
             }
           </View>
