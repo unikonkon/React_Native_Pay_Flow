@@ -147,6 +147,21 @@ const CREATE_ANALYSIS_TABLE = `
 const CREATE_WALLETS_INDEX =
   "CREATE INDEX IF NOT EXISTS idx_wallets_type ON wallets(type);";
 
+// Curated suggestion list per category. Independent of transactions:
+// editing here never touches saved transaction notes.
+const CREATE_NOTE_SUGGESTIONS_TABLE = `
+  CREATE TABLE IF NOT EXISTS note_suggestions (
+    id          TEXT PRIMARY KEY,
+    category_id TEXT NOT NULL,
+    note        TEXT NOT NULL,
+    created_at  TEXT NOT NULL,
+    UNIQUE(category_id, note)
+  );
+`;
+
+const CREATE_NOTE_SUGGESTIONS_INDEX =
+  "CREATE INDEX IF NOT EXISTS idx_note_suggestions_cat ON note_suggestions(category_id, created_at DESC);";
+
 // ===== Fix 7 — Shared row type + mapTransactionRow helper =====
 
 type RawTransactionRow = {
@@ -246,6 +261,8 @@ async function migrateDatabase(db: SQLiteDatabase) {
   await db.execAsync(CREATE_WALLETS_TABLE);
   await db.execAsync(CREATE_AI_HISTORY_TABLE);
   await db.execAsync(CREATE_ANALYSIS_TABLE);
+  await db.execAsync(CREATE_NOTE_SUGGESTIONS_TABLE);
+  await db.execAsync(CREATE_NOTE_SUGGESTIONS_INDEX);
   await db.execAsync(CREATE_WALLETS_INDEX);
 
   // wallet_id column must exist before creating indexes that reference it
@@ -266,6 +283,30 @@ async function migrateDatabase(db: SQLiteDatabase) {
   await seedDefaultWallet(db);
   await migrateAiHistoryMonth(db);
   await migrateWalletSortOrder(db);
+  await backfillNoteSuggestions(db);
+}
+
+// Seeds note_suggestions from distinct transaction notes the first time
+// the table is created so existing users keep their suggestion history.
+async function backfillNoteSuggestions(db: SQLiteDatabase) {
+  const existing = await db.getFirstAsync<{ count: number }>(
+    "SELECT COUNT(*) as count FROM note_suggestions",
+  );
+  if (existing && existing.count > 0) return;
+
+  const rows = await db.getAllAsync<{ category_id: string; note: string; created_at: string }>(
+    `SELECT category_id, note, MIN(created_at) as created_at
+     FROM transactions
+     WHERE note IS NOT NULL AND note != ''
+     GROUP BY category_id, note`,
+  );
+  for (const r of rows) {
+    await db.runAsync(
+      `INSERT OR IGNORE INTO note_suggestions (id, category_id, note, created_at)
+       VALUES (?, ?, ?, ?)`,
+      [generateId(), r.category_id, r.note, r.created_at],
+    );
+  }
 }
 
 async function seedDefaultCategories(db: SQLiteDatabase) {
@@ -493,6 +534,10 @@ export async function insertTransaction(
     ],
   );
 
+  if (data.note && data.note.trim()) {
+    await addNoteSuggestion(db, data.categoryId, data.note);
+  }
+
   return id;
 }
 
@@ -543,6 +588,10 @@ export async function updateTransaction(
     `UPDATE transactions SET ${sets.join(", ")} WHERE id = ?`,
     values,
   );
+
+  if (data.note && data.note.trim() && data.categoryId) {
+    await addNoteSuggestion(db, data.categoryId, data.note);
+  }
 }
 
 export async function deleteTransaction(db: SQLiteDatabase, id: string) {
@@ -1333,4 +1382,47 @@ export async function getDistinctNotesByCategory(
     [categoryId, limit],
   );
   return rows.map((r) => r.note);
+}
+
+// ===== Note suggestions (curated, decoupled from transactions) =====
+
+export interface NoteSuggestion {
+  id: string;
+  note: string;
+}
+
+export async function getNoteSuggestions(
+  db: SQLiteDatabase,
+  categoryId: string,
+  limit: number = 50,
+): Promise<NoteSuggestion[]> {
+  const rows = await db.getAllAsync<{ id: string; note: string }>(
+    `SELECT id, note FROM note_suggestions
+     WHERE category_id = ?
+     ORDER BY created_at DESC
+     LIMIT ?`,
+    [categoryId, limit],
+  );
+  return rows.map((r) => ({ id: r.id, note: r.note }));
+}
+
+export async function addNoteSuggestion(
+  db: SQLiteDatabase,
+  categoryId: string,
+  note: string,
+): Promise<void> {
+  const trimmed = note.trim();
+  if (!trimmed) return;
+  await db.runAsync(
+    `INSERT OR IGNORE INTO note_suggestions (id, category_id, note, created_at)
+     VALUES (?, ?, ?, ?)`,
+    [generateId(), categoryId, trimmed, new Date().toISOString()],
+  );
+}
+
+export async function deleteNoteSuggestion(
+  db: SQLiteDatabase,
+  id: string,
+): Promise<void> {
+  await db.runAsync("DELETE FROM note_suggestions WHERE id = ?", [id]);
 }

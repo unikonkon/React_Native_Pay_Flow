@@ -3,7 +3,7 @@ import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { PawPrintIcon } from '@/components/common/PawPrintIcon';
 import { WalletPickerPopover } from '@/components/wallet/WalletPickerPopover';
 import { useCategoryStore } from '@/lib/stores/category-store';
-import { getDb, getDistinctNotesByCategory, getFrequentAmountsByWallet, getTopCategoryIdsByWallet } from '@/lib/stores/db';
+import { addNoteSuggestion, deleteNoteSuggestion, getDb, getFrequentAmountsByWallet, getNoteSuggestions, getTopCategoryIdsByWallet, type NoteSuggestion } from '@/lib/stores/db';
 import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import { useWalletStore } from '@/lib/stores/wallet-store';
@@ -44,7 +44,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
   const [date, setDate] = useState(new Date());
   const [note, setNote] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [pastNotes, setPastNotes] = useState<string[]>([]);
+  const [pastNotes, setPastNotes] = useState<NoteSuggestion[]>([]);
   const [showGridModal, setShowGridModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [topCategoryIds, setTopCategoryIds] = useState<string[]>([]);
@@ -98,11 +98,27 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
     }
   }, [editTransaction, filteredCategories, selectedCategory]);
 
-  // Load past notes
-  useEffect(() => {
+  // Load past notes (curated suggestions, decoupled from transactions)
+  const refreshSuggestions = useCallback(async () => {
     if (!selectedCategory) { setPastNotes([]); return; }
-    getDistinctNotesByCategory(getDb(), selectedCategory.id).then(setPastNotes);
+    const list = await getNoteSuggestions(getDb(), selectedCategory.id);
+    setPastNotes(list);
   }, [selectedCategory]);
+
+  useEffect(() => {
+    refreshSuggestions();
+  }, [refreshSuggestions]);
+
+  const handleAddSuggestion = useCallback(async (n: string) => {
+    if (!selectedCategory) return;
+    await addNoteSuggestion(getDb(), selectedCategory.id, n);
+    await refreshSuggestions();
+  }, [selectedCategory, refreshSuggestions]);
+
+  const handleDeleteSuggestion = useCallback(async (id: string) => {
+    await deleteNoteSuggestion(getDb(), id);
+    await refreshSuggestions();
+  }, [refreshSuggestions]);
 
   // Default wallet
   useEffect(() => {
@@ -628,10 +644,10 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                 style={{ flex: 1, minWidth: 0 }}
                 contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 2 }}
               >
-                {pastNotes.map(n => (
+                {pastNotes.map(s => (
                   <Pressable
-                    key={n}
-                    onPress={() => { Haptics.selectionAsync(); setNote(n); }}
+                    key={s.id}
+                    onPress={() => { Haptics.selectionAsync(); setNote(s.note); }}
                     style={{
                       flexDirection: 'row', alignItems: 'center', gap: 4,
                       paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999,
@@ -645,7 +661,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                       numberOfLines={1}
                       ellipsizeMode="tail"
                     >
-                      {n}
+                      {s.note}
                     </Text>
                   </Pressable>
                 ))}
@@ -696,6 +712,8 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
         value={note}
         onChangeText={setNote}
         pastNotes={pastNotes}
+        onAddSuggestion={handleAddSuggestion}
+        onDeleteSuggestion={handleDeleteSuggestion}
         onClose={() => setShowNoteEditor(false)}
       />
     </View>
