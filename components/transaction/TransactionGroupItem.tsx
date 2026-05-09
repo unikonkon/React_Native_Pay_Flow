@@ -66,23 +66,23 @@ export function TransactionGroupItem({
       onPress={handleHeadPress}
       onLongPress={handleHeadLongPress}
       android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
-      className="flex-row items-center bg-card"
+      className="flex-row items-center border-b border-border"
       style={{
-        paddingVertical: 6, paddingHorizontal: 12, gap: 11,
+        paddingVertical: 5, paddingHorizontal: 12, gap: 11,
         borderRadius: 16,
         shadowColor: '#2A2320', shadowOpacity: 0.04, shadowRadius: 13, shadowOffset: { width: 0, height: 3 },
         elevation: 2,
       }}
     >
-      <CatCategoryIcon kind={icon} size={45} bg={color} />
+      <CatCategoryIcon kind={icon} size={41} bg={color} />
 
       <View className="flex-1" style={{ minWidth: 0 }}>
         <View className="flex-row items-center" style={{ gap: 7 }}>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 16 }} className="text-foreground" numberOfLines={1}>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground" numberOfLines={1}>
             {head.category?.name ?? 'ไม่ระบุ'}
           </Text>
           {isGroup && (
-            <View style={{ paddingHorizontal: 5, paddingVertical: 1, borderRadius: 999, backgroundColor: '#F0D0CB' }}>
+            <View style={{ paddingHorizontal: 6, paddingVertical: 1, borderRadius: 999, backgroundColor: '#F0D0CB' }}>
               <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 10, fontVariant: ['tabular-nums'], color: '#C65A4E' }}>×{count}</Text>
             </View>
           )}
@@ -95,12 +95,12 @@ export function TransactionGroupItem({
       </View>
 
       <View className="items-end">
-        <Text style={{ fontFamily: 'Inter_700SemiBold', fontSize: 15, fontVariant: ['tabular-nums'], letterSpacing: -0.2 }} className={isIncome ? 'text-income' : 'text-expense'}>
+        <Text style={{ fontFamily: 'Inter_700SemiBold', fontSize: 14, fontVariant: ['tabular-nums'], letterSpacing: -0.2 }} className={isIncome ? 'text-income' : 'text-expense'}>
           {isIncome ? '+' : '-'}{formatCurrency(total)}
         </Text>
         <View className="flex-row items-center">
           {!isGroup && (
-            <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">{formatTime(head.createdAt)}</Text>
+            <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 10, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">{formatTime(head.createdAt)}</Text>
           )}
           {isGroup && (
             <Ionicons
@@ -117,7 +117,7 @@ export function TransactionGroupItem({
   );
 
   return (
-    <View style={{ marginHorizontal: 12, marginVertical: 2 }}>
+    <View style={{ marginHorizontal: 12, marginVertical: 1 }}>
       <SwipeableRow
         onDelete={() => {
           if (isGroup) {

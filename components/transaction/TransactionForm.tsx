@@ -520,10 +520,45 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
 
           {/* Date + Wallet chips — fixed (50/50 split) */}
           <View className="flex-row items-center" style={{ gap: 8, marginBottom: 6, marginTop: 4 }}>
+       
+            <Pressable
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowNoteEditor(true); }}
+              style={{
+                flexShrink: 1,
+                maxWidth: '55%',
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: 'rgba(42,35,32,0.08)',
+                paddingVertical: 5,
+                paddingHorizontal: 12,
+                shadowColor: '#2A2320',
+                shadowOpacity: 0.03,
+                shadowRadius: 2,
+                shadowOffset: { width: 0, height: 1 },
+                gap: 6,
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+              className="bg-card"
+            >
+              <Ionicons name="create-outline" size={15} color="#A39685" />
+              <Text
+                numberOfLines={1}
+                style={{
+                  flexShrink: 1,
+                  fontFamily: 'IBMPlexSansThai_400Regular',
+                  fontSize: 14,
+                  color: note ? '#2A2320' : '#9A8D80',
+                }}
+              >
+                {note || 'บันทึก..'}
+              </Text>
+            </Pressable>
+
             <Pressable
               onPress={() => setShowDatePicker(true)}
               style={{
-                flex: 1, minWidth: 0, height: 32, paddingHorizontal: 12,
+                flex: 1, minWidth: 0, height: 36, paddingHorizontal: 12,
                 borderRadius: 10, flexDirection: 'row', alignItems: 'center', gap: 6,
                 backgroundColor: 'rgba(42,35,32,0.03)',
               }}
@@ -549,7 +584,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
                 });
               }}
               style={{
-                flex: 1, minWidth: 0, height: 32, paddingHorizontal: 12,
+                flex: 1, minWidth: 0, height: 36, paddingHorizontal: 12,
                 borderRadius: 10, flexDirection: 'row', alignItems: 'center', gap: 6,
                 backgroundColor: 'rgba(232,122,61,0.06)',
               }}
@@ -600,39 +635,7 @@ export function TransactionForm({ editTransaction, onClose }: TransactionFormPro
 
           {/* Note trigger (narrow) + past notes (horizontal scroll) */}
           <View className="flex-row items-center" style={{ gap: 8, marginBottom: 4 }}>
-            <Pressable
-              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowNoteEditor(true); }}
-              style={{
-                flexShrink: 1,
-                maxWidth: '55%',
-                borderRadius: 10,
-                borderWidth: 1,
-                borderColor: 'rgba(42,35,32,0.08)',
-                paddingVertical: 3,
-                paddingHorizontal: 12,
-                shadowColor: '#2A2320',
-                shadowOpacity: 0.03,
-                shadowRadius: 2,
-                shadowOffset: { width: 0, height: 1 },
-                gap: 6,
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-              className="bg-card"
-            >
-              <Ionicons name="create-outline" size={15} color="#A39685" />
-              <Text
-                numberOfLines={1}
-                style={{
-                  flexShrink: 1,
-                  fontFamily: 'IBMPlexSansThai_400Regular',
-                  fontSize: 14,
-                  color: note ? '#2A2320' : '#9A8D80',
-                }}
-              >
-                {note || 'บันทึก..'}
-              </Text>
-            </Pressable>
+
 
             {pastNotes.length > 0 && (
               <GHScrollView

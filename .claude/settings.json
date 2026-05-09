@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(node -e \"try { const E = require\\('exceljs'\\); console.log\\('default:', typeof E, Object.keys\\(E\\).slice\\(0,5\\)\\); console.log\\('Workbook:', typeof E.Workbook\\); } catch\\(e\\) { console.log\\('error:', e.message\\); }\")",
-      "Bash(wc -l \"/Users/macbook3lf1/web work/React_Native_Pay_Flow\"/app/**/*.tsx \"/Users/macbook3lf1/web work/React_Native_Pay_Flow\"/app/_layout.tsx \"/Users/macbook3lf1/web work/React_Native_Pay_Flow\"/app/+not-found.tsx)"
+      "Bash(wc -l \"/Users/macbook3lf1/web work/React_Native_Pay_Flow\"/app/**/*.tsx \"/Users/macbook3lf1/web work/React_Native_Pay_Flow\"/app/_layout.tsx \"/Users/macbook3lf1/web work/React_Native_Pay_Flow\"/app/+not-found.tsx)",
+      "Bash(ls -d docs)",
+      "Bash(ls *.md)"
     ]
   }
 }
