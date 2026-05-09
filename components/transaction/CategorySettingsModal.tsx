@@ -100,30 +100,56 @@ function HomeFrequentPreview({ rows }: { rows: number }) {
   );
 }
 
-// One quick-row inside the form preview — N icons + optional "+N" overflow
-// chip + dashed "เพิ่ม" affordance, mirroring TransactionForm's quick rows.
-function MiniCategoryRow({ items, overflow }: { items: Category[]; overflow: number }) {
+// One quick-row block inside the form preview — chunks `items` into rows of
+// 5 (mimicking how TransactionForm wraps its actual quick rows) and tacks the
+// dashed "+ เพิ่ม" affordance onto the very last slot.
+const PREVIEW_ITEMS_PER_ROW = 5;
+
+function MiniCategoryRow({ items }: { items: Category[] }) {
+  // Build a flat slot list (real items + a single "+เพิ่ม" tail slot), then
+  // chunk into rows of PREVIEW_ITEMS_PER_ROW. This way every data row stays
+  // exactly 5 items wide; "+เพิ่ม" overflows to a new row when the last data
+  // row is full.
+  type Slot = { kind: 'cat'; cat: Category } | { kind: 'add' };
+  const slots: Slot[] = [
+    ...items.map(cat => ({ kind: 'cat' as const, cat })),
+    { kind: 'add' as const },
+  ];
+  const rows: Slot[][] = [];
+  for (let i = 0; i < slots.length; i += PREVIEW_ITEMS_PER_ROW) {
+    rows.push(slots.slice(i, i + PREVIEW_ITEMS_PER_ROW));
+  }
+
   return (
-    <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
-      {items.map(cat => (
-        <CatCategoryIcon key={cat.id} kind={cat.icon} bg={cat.color} size={22} />
-      ))}
-      {overflow > 0 && (
-        <View style={{
-          width: 22, height: 22, borderRadius: 11,
-          alignItems: 'center', justifyContent: 'center',
-          backgroundColor: 'rgba(42,35,32,0.08)',
-        }}>
-          <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 9, color: '#6B5F52' }}>+{overflow}</Text>
+    <View style={{ gap: 4, alignItems: 'center' }}>
+      {rows.map((row, ri) => (
+        <View key={ri} style={{ flexDirection: 'row', gap: 4, alignItems: 'center', justifyContent: 'center' }}>
+          {row.map((slot, ci) => {
+            if (slot.kind === 'add') {
+              return (
+                <View
+                  key={`add-${ri}-${ci}`}
+                  style={{
+                    width: 22, height: 22, borderRadius: 11,
+                    alignItems: 'center', justifyContent: 'center',
+                    borderWidth: 1, borderStyle: 'dashed', borderColor: '#E87A3D',
+                  }}
+                >
+                  <Ionicons name="add" size={12} color="#E87A3D" />
+                </View>
+              );
+            }
+            return (
+              <CatCategoryIcon
+                key={slot.cat.id}
+                kind={slot.cat.icon}
+                bg={slot.cat.color}
+                size={22}
+              />
+            );
+          })}
         </View>
-      )}
-      <View style={{
-        width: 22, height: 22, borderRadius: 11,
-        alignItems: 'center', justifyContent: 'center',
-        borderWidth: 1, borderStyle: 'dashed', borderColor: '#E87A3D',
-      }}>
-        <Ionicons name="add" size={12} color="#E87A3D" />
-      </View>
+      ))}
     </View>
   );
 }
@@ -146,11 +172,10 @@ function TransactionFormPreview({
   showFrequentPills: boolean;
   categories: Category[];
 }) {
-  const ROW_CAP = 7;
-  const commonOverflow = Math.max(0, commonCategoryLimit - ROW_CAP);
-  const topOverflow = Math.max(0, topCategoryLimit - ROW_CAP);
-  const commonVisible = categories.slice(0, Math.min(commonCategoryLimit, ROW_CAP));
-  const topVisible = categories.slice(0, Math.min(topCategoryLimit, ROW_CAP));
+  // Materialize the full sets up to the user's chosen limit — no truncation,
+  // because `MiniCategoryRow` now wraps onto multiple rows-of-5 by itself.
+  const commonItems = categories.slice(0, commonCategoryLimit);
+  const topItems = categories.slice(0, topCategoryLimit);
   const anyOn = showCommonCategories || showTopCategories || showFrequentPills;
 
   return (
@@ -175,11 +200,15 @@ function TransactionFormPreview({
           ฟอร์มเพิ่มรายการ
         </Text>
       </View>
+      {/* Mini-frame mimicking the TransactionForm — `alignItems: 'center'`
+          keeps every internal row centered horizontally regardless of how
+          many items are visible. */}
       <View style={{
         backgroundColor: '#FBF7F0',
         borderRadius: 10,
         borderWidth: 1, borderColor: 'rgba(42,35,32,0.10)',
         padding: 10, gap: 10,
+        alignItems: 'center',
       }}>
         {/* Mock amount header — anchors the preview as a TransactionForm */}
         <View style={{ alignItems: 'center', paddingTop: 2, paddingBottom: 2 }}>
@@ -195,14 +224,16 @@ function TransactionFormPreview({
         )}
 
         {showCommonCategories && (
-          <MiniCategoryRow items={commonVisible} overflow={commonOverflow} />
+          <MiniCategoryRow items={commonItems} />
         )}
         {showTopCategories && (
-          <MiniCategoryRow items={topVisible} overflow={topOverflow} />
+          <MiniCategoryRow items={topItems} />
         )}
+        {/* Frequent pills — single centered row tacked onto the bottom when
+            the toggle is on, mirroring TransactionForm's bottom pill strip. */}
         {showFrequentPills && (
-          <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center', flexWrap: 'wrap' }}>
-            {[120, 250, 80, 60].map((amt, i) => (
+          <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+            {[120, 250, 80, 60, 200].map((amt, i) => (
               <View key={i} style={{
                 paddingHorizontal: 8, paddingVertical: 4,
                 borderRadius: 8,
