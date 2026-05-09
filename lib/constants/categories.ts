@@ -160,16 +160,16 @@ export const SUGGESTED_EXPENSE_CATEGORIES: {
   { name: "การศึกษา", icon: "school", color: "#B5A8DB" },
   { name: "สัตว์เลี้ยง", icon: "paw", color: "#F5A185" },
   { name: "ค่าซ่อมแซม/บำรุงรักษา", icon: "construct", color: "#4A7FC1" },
-  { name: "ทำบุญ/บริจาค", icon: "donate", color: "#F5A185" },
+  { name: "ทำบุญ/บริจาค", icon: "heart-circle", color: "#F5A185" },
   { name: "ค่าทางด่วน/ที่จอดรถ", icon: "car-sport", color: "#8AC5C5" },
   { name: "ค่าดูแลบุตร/เด็ก", icon: "body", color: "#F59FB8" },
-  { name: "ซักผ้า", icon: "laundry", color: "#8AC5C5" },
+  { name: "ซักผ้า", icon: "shirt-outline", color: "#8AC5C5" },
   { name: "เงินเดือน", icon: "salary", color: "#F0A830" },
-  { name: "Amway", icon: "network", color: "#B5A8DB" },
+  { name: "Amway", icon: "share-social", color: "#B5A8DB" },
   { name: "ออมเงิน", icon: "savings", color: "#FFB3C7" },
-  { name: "ออมทอง", icon: "gold-coin", color: "#E8B547" },
+  { name: "ออมทอง", icon: "diamond", color: "#E8B547" },
   { name: "หนังสือ", icon: "notebook", color: "#B5A8DB" },
-  { name: "อยากสวย", icon: "beauty", color: "#F59FB8" },
+  { name: "อยากสวย", icon: "rose", color: "#F59FB8" },
 ];
 
 // 14 Income Categories (ตามเอกสาร MOBILE-APP-ARCHITECTURE.md section 9.2)

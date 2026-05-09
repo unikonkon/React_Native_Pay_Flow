@@ -1370,6 +1370,151 @@ function renderGlyph(kind: string, stroke: string) {
         </G>
       );
 
+    // ───────── SUGGESTED EXTRAS (shirt-outline, share-social, diamond, rose) ─────────
+
+    // ซักผ้า — clean shirt hanging on a hanger with sparkles + bubbles
+    case 'shirt-outline':
+      return (
+        <G>
+          {/* Hanger hook */}
+          <Path d="M22 8 q-2 -4 -5 -2" stroke="#2A2320" strokeWidth={1.8} fill="none" strokeLinecap="round" />
+          <Circle cx={22} cy={9} r={1} fill="#2A2320" stroke="none" />
+          {/* Hanger triangle bar */}
+          <Path d="M22 11 L9 19 L35 19 Z" fill="none" stroke="#2A2320" strokeWidth={1.6} strokeLinejoin="round" />
+          {/* Shirt body */}
+          <Path
+            d="M9 19 L13 17 L16 21 Q22 23 28 21 L31 17 L35 19 L33 25 Q31 25 30 24 V36 Q30 37 29 37 H15 Q14 37 14 36 V24 Q13 25 11 25 Z"
+            {...f}
+          />
+          {/* V-neck */}
+          <Path
+            d="M16 21 Q22 23 28 21 L25 26 Q22 27 19 26 Z"
+            fill="#FFFFFF"
+            stroke="#2A2320"
+            strokeWidth={1.1}
+          />
+          {/* Cat ears at collar */}
+          <Path d="M17 21 L15 16 L20 19 Z" {...f} />
+          <Path d="M27 21 L29 16 L24 19 Z" {...f} />
+          {/* Bubble accents (clean) */}
+          <Circle cx={22} cy={32} r={1.4} fill="none" stroke="#2A2320" strokeWidth={1} />
+          <Circle cx={25.5} cy={34} r={0.9} fill="none" stroke="#2A2320" strokeWidth={0.9} />
+          {/* Sparkles */}
+          <Path d="M6 22 l0.5 1.4 1.4 0.5 -1.4 0.5 -0.5 1.4 -0.5 -1.4 -1.4 -0.5 1.4 -0.5 z" {...tint('#FFE08A')} />
+          <Path d="M37 26 l0.5 1.4 1.4 0.5 -1.4 0.5 -0.5 1.4 -0.5 -1.4 -1.4 -0.5 1.4 -0.5 z" {...tint('#FFE08A')} />
+        </G>
+      );
+
+    // Amway — central cat node connected to 3 satellite cat nodes (network)
+    case 'share-social':
+      return (
+        <G>
+          {/* Connection lines (drawn first so nodes overlay) */}
+          <Path
+            d="M22 22 L11 11 M22 22 L33 11 M22 22 L22 35"
+            stroke="#2A2320"
+            strokeWidth={2}
+            fill="none"
+            strokeLinecap="round"
+            opacity={0.7}
+          />
+          {/* Top-left satellite node */}
+          <Circle cx={11} cy={11} r={5} {...tint('#5B8FB9')} />
+          <Path d="M8 9 L7 5 L11 7 Z" {...tint('#5B8FB9')} />
+          <Path d="M14 9 L15 5 L11 7 Z" {...tint('#5B8FB9')} />
+          <Circle cx={9.5} cy={11} r={0.6} fill="#2A2320" stroke="none" />
+          <Circle cx={12.5} cy={11} r={0.6} fill="#2A2320" stroke="none" />
+          {/* Top-right satellite node */}
+          <Circle cx={33} cy={11} r={5} {...tint('#FFD24A')} />
+          <Path d="M30 9 L29 5 L33 7 Z" {...tint('#FFD24A')} />
+          <Path d="M36 9 L37 5 L33 7 Z" {...tint('#FFD24A')} />
+          <Circle cx={31.5} cy={11} r={0.6} fill="#2A2320" stroke="none" />
+          <Circle cx={34.5} cy={11} r={0.6} fill="#2A2320" stroke="none" />
+          {/* Bottom satellite node */}
+          <Circle cx={22} cy={35} r={5} {...tint('#3E8B68')} />
+          <Path d="M19 33 L18 29 L22 31 Z" {...tint('#3E8B68')} />
+          <Path d="M25 33 L26 29 L22 31 Z" {...tint('#3E8B68')} />
+          <Circle cx={20.5} cy={35} r={0.6} fill="#2A2320" stroke="none" />
+          <Circle cx={23.5} cy={35} r={0.6} fill="#2A2320" stroke="none" />
+          {/* Center hub node — the user/cat */}
+          <Circle cx={22} cy={22} r={6.5} {...f} />
+          <Path d="M18 18 L16.5 13 L21 16 Z" {...f} />
+          <Path d="M26 18 L27.5 13 L23 16 Z" {...f} />
+          <Circle cx={19.5} cy={22} r={0.9} fill="#2A2320" stroke="none" />
+          <Circle cx={24.5} cy={22} r={0.9} fill="#2A2320" stroke="none" />
+          <Path d="M20.5 24.5 q1.5 1.2 3 0" stroke="#2A2320" strokeWidth={1.1} fill="none" strokeLinecap="round" />
+        </G>
+      );
+
+    // ออมทอง — geometric gem with facets, cat-ear top corners, sparkles
+    case 'diamond':
+      return (
+        <G>
+          {/* Top trapezoid (lighter top) */}
+          <Path d="M11 18 L16 9 H28 L33 18 Z" {...tint('#9BD7E8')} />
+          {/* Bottom triangle (darker depth) */}
+          <Path d="M11 18 H33 L22 37 Z" {...tint('#5BA8D2')} />
+          {/* Top facet ridge lines */}
+          <Path
+            d="M16 9 L19 18 L22 9 L25 18 L28 9"
+            stroke="#2A2320"
+            strokeWidth={1.3}
+            fill="none"
+            strokeLinejoin="round"
+            opacity={0.6}
+          />
+          {/* Bottom facet ridge lines */}
+          <Path
+            d="M19 18 L22 37 L25 18"
+            stroke="#2A2320"
+            strokeWidth={1.3}
+            fill="none"
+            strokeLinejoin="round"
+            opacity={0.55}
+          />
+          {/* Cat-ear accents on top corners */}
+          <Path d="M14 11 L13 6 L17 8 Z" {...tint('#9BD7E8')} />
+          <Path d="M30 11 L31 6 L27 8 Z" {...tint('#9BD7E8')} />
+          {/* Shimmer highlights */}
+          <Path d="M16 13 H18.5" stroke="#FFFFFF" strokeWidth={1.6} strokeLinecap="round" opacity={0.85} />
+          <Path d="M20.5 24 L22 30" stroke="#FFFFFF" strokeWidth={1} strokeLinecap="round" opacity={0.55} />
+          {/* Sparkles */}
+          <Path d="M5 14 l0.6 1.4 1.4 0.6 -1.4 0.6 -0.6 1.4 -0.6 -1.4 -1.4 -0.6 1.4 -0.6 z" {...tint('#FFE08A')} />
+          <Path d="M37 22 l0.6 1.4 1.4 0.6 -1.4 0.6 -0.6 1.4 -0.6 -1.4 -1.4 -0.6 1.4 -0.6 z" {...tint('#FFE08A')} />
+        </G>
+      );
+
+    // อยากสวย — chubby rose flower with stem, leaf, cat-ear outer petals
+    case 'rose':
+      return (
+        <G>
+          {/* Stem */}
+          <Path d="M22 22 V38" stroke="#3E8B68" strokeWidth={2.6} fill="none" strokeLinecap="round" />
+          {/* Leaf (left, bigger) */}
+          <Path d="M22 30 Q13 30 11 36 Q18 38 22 33 Z" {...tint('#5CB88A')} />
+          {/* Leaf vein */}
+          <Path d="M14 33 Q18 33 21 32" stroke="#2A2320" strokeWidth={0.8} fill="none" strokeLinecap="round" opacity={0.45} />
+          {/* Outer petals — chunky double-lobe with cat-ear tufts */}
+          <Path
+            d="M22 23 Q10 19 11 11 Q14 8 19 10 Q22 5 25 10 Q30 8 33 11 Q34 19 22 23 Z"
+            {...tint('#E54B5C')}
+          />
+          {/* Cat-ear outer petals at top */}
+          <Path d="M16 8 L15 4 L19 6 Z" {...tint('#E54B5C')} />
+          <Path d="M28 8 L29 4 L25 6 Z" {...tint('#E54B5C')} />
+          {/* Inner petal ring */}
+          <Path
+            d="M22 20 Q15 18 16 12 Q18 10 21 11 Q22 8 23 11 Q26 10 28 12 Q29 18 22 20 Z"
+            {...tint('#F08599')}
+          />
+          {/* Center bud */}
+          <Circle cx={22} cy={14} r={2.4} fill="#FFFFFF" stroke="#2A2320" strokeWidth={1} />
+          <Circle cx={22} cy={14} r={1.1} {...tint('#E54B5C')} />
+          {/* Sparkle (beauty) */}
+          <Path d="M37 13 l0.5 1.2 1.2 0.5 -1.2 0.5 -0.5 1.2 -0.5 -1.2 -1.2 -0.5 1.2 -0.5 z" {...tint('#FFE08A')} />
+        </G>
+      );
+
     case 'ellipsis-horizontal':
     default:
       return <FatCatFace stroke={stroke} />;
@@ -1417,19 +1562,19 @@ export const CAT_CATEGORY_ICON_KEYS = [
   // Home & utilities
   'home', 'bulb', 'water', 'wifi', 'flame', 'phone-portrait', 'laundry',
   // Shopping & lifestyle
-  'cart', 'basket', 'shirt', 'bag', 'pricetag', 'beauty', 'gift',
+  'cart', 'basket', 'shirt', 'shirt-outline', 'bag', 'pricetag', 'beauty', 'rose', 'gift',
   // Health & body
   'medkit', 'barbell', 'body',
   // Entertainment
   'film', 'game-controller', 'tv', 'sparkles', 'star',
   // People, pets & relationships
-  'people', 'heart', 'paw', 'donate', 'heart-hand',
+  'people', 'heart', 'heart-circle', 'heart-hand', 'paw', 'donate', 'share-social',
   // Education
   'school', 'book', 'notebook',
   // Work & business
   'briefcase', 'business', 'salary', 'storefront', 'laptop', 'time', 'network',
   // Money & savings
-  'cash', 'wallet', 'card', 'receipt', 'piggy-bank', 'savings', 'gold-bars', 'gold-coin',
+  'cash', 'wallet', 'card', 'receipt', 'piggy-bank', 'savings', 'gold-bars', 'gold-coin', 'diamond',
   // Investment & analytics
   'trending-up', 'stats-chart', 'analytics', 'shield-checkmark', 'trophy',
   // Tools & misc

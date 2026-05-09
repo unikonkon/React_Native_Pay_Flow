@@ -1,3 +1,8 @@
+import {
+  DEFAULT_EXPENSE_CATEGORIES,
+  DEFAULT_INCOME_CATEGORIES,
+  SUGGESTED_EXPENSE_CATEGORIES,
+} from '@/lib/constants/categories';
 import { getDb, insertTransaction, upsertAnalysis } from '@/lib/stores/db';
 import { generateId } from '@/lib/utils/id';
 import type { Transaction, TransactionType, WalletType } from '@/types';
@@ -6,6 +11,32 @@ import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system/next';
 import * as Sharing from 'expo-sharing';
 import ExcelJS from 'exceljs';
+
+// ─── Category constants lookup ───
+//
+// During import we may receive categories whose names match a curated entry in
+// `lib/constants/categories.ts`. When that happens we adopt the constant's
+// icon+color so the imported transaction renders with the same look as the
+// app's defaults — instead of the source file's emoji or a fallback color.
+
+interface CategoryMeta { icon: string; color: string }
+
+const CATEGORY_META_LOOKUP: Record<TransactionType, Map<string, CategoryMeta>> = (() => {
+  const expense = new Map<string, CategoryMeta>();
+  const income = new Map<string, CategoryMeta>();
+  for (const c of DEFAULT_EXPENSE_CATEGORIES) expense.set(c.name, { icon: c.icon, color: c.color });
+  for (const c of DEFAULT_INCOME_CATEGORIES) income.set(c.name, { icon: c.icon, color: c.color });
+  // SUGGESTED is expense-only (per the constant's name); only fill gaps so
+  // DEFAULT entries always win on collision.
+  for (const c of SUGGESTED_EXPENSE_CATEGORIES) {
+    if (!expense.has(c.name)) expense.set(c.name, { icon: c.icon, color: c.color });
+  }
+  return { expense, income };
+})();
+
+function lookupCategoryMeta(name: string, type: TransactionType): CategoryMeta | null {
+  return CATEGORY_META_LOOKUP[type].get(name) ?? null;
+}
 
 // ─── Raw DB Types ───
 
@@ -187,18 +218,65 @@ async function importParsedData(data: ExportData['data'], onProgress?: ImportPro
       // 2. Categories
       tick('categories', 0, cTotal);
       const categoryIdMap = new Map<string, string>();
-      const existingCatIds = new Set(
-        (await db.getAllAsync<{ id: string }>('SELECT id FROM categories')).map(c => c.id),
+      const existingCats = await db.getAllAsync<{ id: string; name: string; type: string }>(
+        'SELECT id, name, type FROM categories',
       );
+      const existingCatIds = new Set(existingCats.map(c => c.id));
+      // Name+type → existing id, used to dedupe imported custom categories
+      // against an already-seeded default with the same name (e.g. an export
+      // from another device that has "อาหาร" as is_custom=1).
+      const existingCatByNameType = new Map<string, string>();
+      for (const c of existingCats) existingCatByNameType.set(`${c.type}|${c.name}`, c.id);
+
+      // Refresh icon+color on existing categories whose name+type matches a
+      // curated entry in `categories.ts`. This is what fixes legacy rows
+      // imported with an emoji icon (which Ionicons can't render) — they get
+      // overwritten with the constant's Ionicons name and palette color.
+      const refreshedIds = new Set<string>();
+      const refreshExistingFromConstants = async (id: string, name: string, type: TransactionType) => {
+        if (refreshedIds.has(id)) return;
+        refreshedIds.add(id);
+        const meta = lookupCategoryMeta(name, type);
+        if (!meta) return;
+        await db.runAsync(
+          'UPDATE categories SET icon = ?, color = ? WHERE id = ?',
+          [meta.icon, meta.color, id],
+        );
+      };
+
       let cIdx = 0;
       for (const c of data.categories ?? []) {
-        if (existingCatIds.has(c.id)) { categoryIdMap.set(c.id, c.id); cursor++; cIdx++; tick('categories', cIdx, cTotal); continue; }
+        if (existingCatIds.has(c.id)) {
+          categoryIdMap.set(c.id, c.id);
+          await refreshExistingFromConstants(c.id, c.name, c.type as TransactionType);
+          cursor++; cIdx++; tick('categories', cIdx, cTotal);
+          continue;
+        }
         if (c.is_custom !== 1) { categoryIdMap.set(c.id, c.id); cursor++; cIdx++; tick('categories', cIdx, cTotal); continue; }
+
+        // Reuse an existing category (default or custom) that already has the
+        // same name+type — avoids creating "อาหาร" twice when importing across
+        // devices.
+        const matchedId = existingCatByNameType.get(`${c.type}|${c.name}`);
+        if (matchedId) {
+          categoryIdMap.set(c.id, matchedId);
+          await refreshExistingFromConstants(matchedId, c.name, c.type as TransactionType);
+          cursor++; cIdx++; tick('categories', cIdx, cTotal);
+          continue;
+        }
+
+        // New custom category — adopt icon/color from the curated constants
+        // when the name matches, otherwise keep what the source file shipped.
+        const meta = lookupCategoryMeta(c.name, c.type as TransactionType);
+        const icon = meta?.icon ?? c.icon;
+        const color = meta?.color ?? c.color;
+
         const newId = generateId();
         categoryIdMap.set(c.id, newId);
+        existingCatByNameType.set(`${c.type}|${c.name}`, newId);
         await db.runAsync(
           `INSERT INTO categories (id, name, icon, color, type, is_custom, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [newId, c.name, c.icon, c.color, c.type, c.is_custom, c.sort_order],
+          [newId, c.name, icon, color, c.type, c.is_custom, c.sort_order],
         );
         categoriesImported++;
         cursor++; cIdx++;
@@ -793,6 +871,11 @@ async function importParsedSpecialData(parsed: ParsedSpecialData, onProgress?: I
       let incSort = maxIncSort + 1;
       let expSort = maxExpSort + 1;
 
+      // Tracks which existing categories we've already refreshed in this run,
+      // so the per-transaction calls to ensureCategory don't fire UPDATE
+      // hundreds of times for the same row.
+      const refreshedIds = new Set<string>();
+
       const ensureCategory = async (
         name: string,
         type: TransactionType,
@@ -800,14 +883,36 @@ async function importParsedSpecialData(parsed: ParsedSpecialData, onProgress?: I
       ): Promise<string> => {
         const key = `${type}|${name}`;
         const existing = catKeyToId.get(key);
-        if (existing) return existing;
+        if (existing) {
+          // Refresh the existing category's icon+color from the curated
+          // constants so legacy rows that landed with an emoji icon (which
+          // Ionicons can't render) get rewritten to a proper Ionicons name.
+          if (!refreshedIds.has(existing)) {
+            refreshedIds.add(existing);
+            const meta = lookupCategoryMeta(name, type);
+            if (meta) {
+              await db.runAsync(
+                'UPDATE categories SET icon = ?, color = ? WHERE id = ?',
+                [meta.icon, meta.color, existing],
+              );
+            }
+          }
+          return existing;
+        }
         const id = generateId();
         catKeyToId.set(key, id);
         const sortOrder = type === 'income' ? incSort++ : expSort++;
+        // Prefer the curated constants (matching name+type) so "ค่าไฟ", "เกม",
+        // "เงินเดือน" etc. land with the same icon/color as the seeded
+        // defaults. Fall back to the file's emoji + brand color when there's
+        // no match.
+        const meta = lookupCategoryMeta(name, type);
+        const finalIcon = meta?.icon ?? icon ?? 'ellipsis-horizontal';
+        const finalColor = meta?.color ?? DEFAULT_CUSTOM_COLORS[type];
         await db.runAsync(
           `INSERT INTO categories (id, name, icon, color, type, is_custom, sort_order)
            VALUES (?, ?, ?, ?, ?, 1, ?)`,
-          [id, name, icon || 'ellipsis-horizontal', DEFAULT_CUSTOM_COLORS[type], type, sortOrder],
+          [id, name, finalIcon, finalColor, type, sortOrder],
         );
         categoriesImported++;
         return id;
