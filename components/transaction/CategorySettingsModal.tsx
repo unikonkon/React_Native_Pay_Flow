@@ -14,7 +14,7 @@ import BottomSheet, {
   type BottomSheetBackdropProps,
 } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Modal, Pressable, Switch, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Easing } from 'react-native-reanimated';
@@ -23,41 +23,9 @@ import { AddCategoryModal } from './AddCategoryModal';
 
 // ===== Live previews =====
 //
-// Each settings section gets a tiny preview card that re-renders whenever the
+// Each settings section gets a tiny preview that re-renders whenever the
 // underlying store value changes — the user sees how their tweak will affect
 // the actual UI without having to dismiss the modal first.
-
-function PreviewCard({ children, hint }: { children: ReactNode; hint?: string }) {
-  return (
-    <View style={{
-      flexDirection: 'row', alignItems: 'center', gap: 12,
-      backgroundColor: 'rgba(42,35,32,0.04)',
-      borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 10,
-      borderWidth: 1, borderColor: 'rgba(42,35,32,0.06)',
-    }}>
-      <View style={{
-        paddingHorizontal: 6, paddingVertical: 2,
-        backgroundColor: 'rgba(232,122,61,0.12)',
-        borderRadius: 4,
-      }}>
-        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 10, color: '#C85F28' }}>
-          ตัวอย่าง
-        </Text>
-      </View>
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        {children}
-      </View>
-      {hint !== undefined && (
-        <Text style={{
-          fontFamily: 'Inter_600SemiBold', fontSize: 10, color: '#6B5F52',
-          minWidth: 32, textAlign: 'right',
-        }}>
-          {hint}
-        </Text>
-      )}
-    </View>
-  );
-}
 
 // Mini phone outline + bottom sheet rectangle filled to the chosen %.
 function SheetHeightPreview({ percent }: { percent: number }) {
@@ -68,7 +36,7 @@ function SheetHeightPreview({ percent }: { percent: number }) {
       backgroundColor: '#FBF7F0', overflow: 'hidden', position: 'relative',
     }}>
       {/* Top notch indicator */}
-      <View style={{ alignSelf: 'center', width: 18, height: 3, borderRadius: 1.5, backgroundColor: '#9A8D80', marginTop: 3 }} />
+      {/* <View style={{ alignSelf: 'center', width: 18, height: 3, borderRadius: 1.5, backgroundColor: '#9A8D80', marginTop: 3 }} /> */}
       {/* Sheet rises from the bottom, height scales with `percent` */}
       <View style={{
         position: 'absolute', left: 0, right: 0, bottom: 0,
@@ -109,40 +77,6 @@ function CalcPadPreview({ padding }: { padding: number }) {
   );
 }
 
-// Row of mini category icons — first `count` slots are filled (real cat
-// icons), rest are dimmed placeholder dots so the user can see the limit
-// shrink/grow live.
-function TopCategoriesPreview({ count, categories }: { count: number; categories: Category[] }) {
-  const slots = Math.min(8, Math.max(count, 6));
-  const overflow = count - slots;
-  return (
-    <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center', justifyContent: 'center' }}>
-      {Array.from({ length: slots }).map((_, i) => {
-        const cat = categories[i];
-        const isShown = i < count;
-        if (!cat) {
-          return (
-            <View key={i} style={{
-              width: 22, height: 22, borderRadius: 11,
-              backgroundColor: isShown ? 'rgba(232,122,61,0.20)' : 'rgba(42,35,32,0.05)',
-            }} />
-          );
-        }
-        return (
-          <View key={cat.id} style={{ opacity: isShown ? 1 : 0.22 }}>
-            <CatCategoryIcon kind={cat.icon} bg={cat.color} size={22} />
-          </View>
-        );
-      })}
-      {overflow > 0 && (
-        <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 9, color: '#9A8D80', marginLeft: 2 }}>
-          +{overflow}
-        </Text>
-      )}
-    </View>
-  );
-}
-
 // Mini "home frequent list" — N rows, each with 3 pill-shaped placeholders
 // to suggest the layout density without rendering real transactions.
 function HomeFrequentPreview({ rows }: { rows: number }) {
@@ -166,41 +100,123 @@ function HomeFrequentPreview({ rows }: { rows: number }) {
   );
 }
 
-// Mini frequent-pills row — small rounded pills suggesting the in-form
-// frequent picker. Static row, just to convey "pills will appear".
-function FrequentPillsPreview() {
+// One quick-row inside the form preview — N icons + optional "+N" overflow
+// chip + dashed "เพิ่ม" affordance, mirroring TransactionForm's quick rows.
+function MiniCategoryRow({ items, overflow }: { items: Category[]; overflow: number }) {
   return (
-    <View style={{ flexDirection: 'row', gap: 4, justifyContent: 'center' }}>
-      {[26, 30, 24, 28].map((w, i) => (
-        <View key={i} style={{
-          width: w, height: 10, borderRadius: 5,
-          backgroundColor: 'rgba(232,122,61,0.30)',
-        }} />
+    <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
+      {items.map(cat => (
+        <CatCategoryIcon key={cat.id} kind={cat.icon} bg={cat.color} size={22} />
       ))}
+      {overflow > 0 && (
+        <View style={{
+          width: 22, height: 22, borderRadius: 11,
+          alignItems: 'center', justifyContent: 'center',
+          backgroundColor: 'rgba(42,35,32,0.08)',
+        }}>
+          <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 9, color: '#6B5F52' }}>+{overflow}</Text>
+        </View>
+      )}
+      <View style={{
+        width: 22, height: 22, borderRadius: 11,
+        alignItems: 'center', justifyContent: 'center',
+        borderWidth: 1, borderStyle: 'dashed', borderColor: '#E87A3D',
+      }}>
+        <Ionicons name="add" size={12} color="#E87A3D" />
+      </View>
     </View>
   );
 }
 
-// Mini category-picker grid — first `count` real icons, capped at 12 to keep
-// the preview compact. Shows a "+N" pill when count exceeds the cap.
-function CommonCategoriesPreview({ count, categories }: { count: number; categories: Category[] }) {
-  const cap = 12;
-  const visible = categories.slice(0, Math.min(count, cap));
-  const overflow = count - cap;
+// Unified preview for the in-form surface. Mirrors `TransactionForm` so the
+// three quick-row toggles (common, top, frequent pills) update together
+// instead of each section owning its own little preview.
+function TransactionFormPreview({
+  showCommonCategories,
+  commonCategoryLimit,
+  showTopCategories,
+  topCategoryLimit,
+  showFrequentPills,
+  categories,
+}: {
+  showCommonCategories: boolean;
+  commonCategoryLimit: number;
+  showTopCategories: boolean;
+  topCategoryLimit: number;
+  showFrequentPills: boolean;
+  categories: Category[];
+}) {
+  const ROW_CAP = 7;
+  const commonOverflow = Math.max(0, commonCategoryLimit - ROW_CAP);
+  const topOverflow = Math.max(0, topCategoryLimit - ROW_CAP);
+  const commonVisible = categories.slice(0, Math.min(commonCategoryLimit, ROW_CAP));
+  const topVisible = categories.slice(0, Math.min(topCategoryLimit, ROW_CAP));
+  const anyOn = showCommonCategories || showTopCategories || showFrequentPills;
+
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
-      {visible.map(cat => (
-        <CatCategoryIcon key={cat.id} kind={cat.icon} bg={cat.color} size={20} />
-      ))}
-      {overflow > 0 && (
+    <View style={{
+      backgroundColor: 'rgba(42,35,32,0.04)',
+      borderRadius: 12,
+      padding: 12,
+      borderWidth: 1, borderColor: 'rgba(42,35,32,0.06)',
+      marginBottom: 16,
+    }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <View style={{
-          width: 20, height: 20, borderRadius: 10,
-          alignItems: 'center', justifyContent: 'center',
-          backgroundColor: 'rgba(42,35,32,0.08)',
+          paddingHorizontal: 6, paddingVertical: 2,
+          backgroundColor: 'rgba(232,122,61,0.12)',
+          borderRadius: 4,
         }}>
-          <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 8, color: '#6B5F52' }}>+{overflow}</Text>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 10, color: '#C85F28' }}>
+            ตัวอย่าง
+          </Text>
         </View>
-      )}
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#9A8D80' }}>
+          ฟอร์มเพิ่มรายการ
+        </Text>
+      </View>
+      <View style={{
+        backgroundColor: '#FBF7F0',
+        borderRadius: 10,
+        borderWidth: 1, borderColor: 'rgba(42,35,32,0.10)',
+        padding: 10, gap: 10,
+      }}>
+        {/* Mock amount header — anchors the preview as a TransactionForm */}
+        <View style={{ alignItems: 'center', paddingTop: 2, paddingBottom: 2 }}>
+          <Text style={{ fontFamily: 'Inter_900Black', fontSize: 22, color: '#C65A4E', letterSpacing: -0.5 }}>
+            991<Text style={{ fontSize: 11, color: '#9A8D80', fontFamily: 'Inter_400Regular' }}> ฿</Text>
+          </Text>
+        </View>
+
+        {!anyOn && (
+          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#9A8D80', textAlign: 'center', paddingVertical: 6 }}>
+            (ปิดการแสดงผลทุกตัวเลือก)
+          </Text>
+        )}
+
+        {showCommonCategories && (
+          <MiniCategoryRow items={commonVisible} overflow={commonOverflow} />
+        )}
+        {showTopCategories && (
+          <MiniCategoryRow items={topVisible} overflow={topOverflow} />
+        )}
+        {showFrequentPills && (
+          <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center', flexWrap: 'wrap' }}>
+            {[120, 250, 80, 60].map((amt, i) => (
+              <View key={i} style={{
+                paddingHorizontal: 8, paddingVertical: 4,
+                borderRadius: 8,
+                borderWidth: 1, borderColor: 'rgba(42,35,32,0.08)',
+                backgroundColor: '#FFFFFF',
+              }}>
+                <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 11, color: '#C65A4E' }}>
+                  {amt}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -295,7 +311,7 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
   };
 
   const handleSheetHeight = (delta: number) => {
-    const next = Math.min(95, Math.max(50, addTxSheetHeight + delta));
+    const next = Math.min(100, Math.max(50, addTxSheetHeight + delta));
     if (next !== addTxSheetHeight) {
       Haptics.selectionAsync();
       updateSettings({ addTxSheetHeight: next });
@@ -465,7 +481,7 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                   ความสูงของหน้าต่าง
                 </Text>
                 <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">
-                  ปรับความสูงของหน้าต่างเพิ่มรายการ (50–95%)
+                  ปรับความสูงของหน้าต่างเพิ่มรายการ (50–100%)
                 </Text>
               </View>
               <View style={{
@@ -517,10 +533,10 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                         style={{
                           width: 50, height: 50, borderRadius: 25,
                           alignItems: 'center', justifyContent: 'center',
-                          backgroundColor: addTxSheetHeight >= 95 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                          backgroundColor: addTxSheetHeight >= 100 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
                         }}
                       >
-                        <Ionicons name="add" size={18} color={addTxSheetHeight >= 95 ? '#D1C7BC' : '#E87A3D'} />
+                        <Ionicons name="add" size={18} color={addTxSheetHeight >= 100 ? '#D1C7BC' : '#E87A3D'} />
                       </Pressable>
                     </View>
                   </View>
@@ -599,6 +615,74 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
 
             <View style={{ height: 1, backgroundColor: 'rgba(42,35,32,0.08)', marginBottom: 20 }} />
 
+            {/* Unified TransactionForm preview — shared across the next 3 sections
+                (หมวดหมู่ที่ใช้บ่อย, รายการที่ใช้บ่อย ในฟอร์ม, หมวดหมู่ในกระเป๋า). */}
+            <TransactionFormPreview
+              showCommonCategories={showCommonCategories}
+              commonCategoryLimit={commonCategoryLimit}
+              showTopCategories={showTopCategories}
+              topCategoryLimit={topCategoryLimit}
+              showFrequentPills={showFrequentPills}
+              categories={allCommonCats}
+            />
+
+            {/* Section: หมวดหมู่ในกระเป๋า */}
+            <View style={{ marginBottom: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">
+                    หมวดหมู่ในกระเป๋า
+                  </Text>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">
+                    แสดงหมวดหมู่เริ่มต้นที่มีอยู่ในระบบ
+                  </Text>
+                </View>
+                <Switch
+                  value={showCommonCategories}
+                  onValueChange={(v) => handleToggle('showCommonCategories', v)}
+                  trackColor={{ false: '#A89888', true: '#E87A3D' }}
+                  thumbColor="#E5DCC9"
+                />
+              </View>
+              {showCommonCategories && (
+                <Fragment>
+                  <View style={{
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                    backgroundColor: 'rgba(42,35,32,0.03)', borderRadius: 12, padding: 12, marginBottom: 10,
+                  }}>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground">
+                      จำนวนที่แสดง
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                      <Pressable
+                        onPress={() => handleCount('commonCategoryLimit', -1)}
+                        style={{
+                          width: 32, height: 32, borderRadius: 16,
+                          alignItems: 'center', justifyContent: 'center',
+                          backgroundColor: commonCategoryLimit <= 3 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                        }}
+                      >
+                        <Ionicons name="remove" size={16} color={commonCategoryLimit <= 3 ? '#D1C7BC' : '#E87A3D'} />
+                      </Pressable>
+                      <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 18, fontVariant: ['tabular-nums'], minWidth: 28, textAlign: 'center' }} className="text-foreground">
+                        {commonCategoryLimit}
+                      </Text>
+                      <Pressable
+                        onPress={() => handleCount('commonCategoryLimit', 1)}
+                        style={{
+                          width: 32, height: 32, borderRadius: 16,
+                          alignItems: 'center', justifyContent: 'center',
+                          backgroundColor: commonCategoryLimit >= 29 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                        }}
+                      >
+                        <Ionicons name="add" size={16} color={commonCategoryLimit >= 29 ? '#D1C7BC' : '#E87A3D'} />
+                      </Pressable>
+                    </View>
+                  </View>
+                </Fragment>
+              )}
+            </View>
+
             {/* Section: หมวดหมู่ที่ใช้บ่อย */}
             <View style={{ marginBottom: 10 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -619,44 +703,39 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
               </View>
 
               {showTopCategories && (
-                <Fragment>
-                  <PreviewCard hint={`${topCategoryLimit}`}>
-                    <TopCategoriesPreview count={topCategoryLimit} categories={allCommonCats} />
-                  </PreviewCard>
-                  <View style={{
-                    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-                    backgroundColor: 'rgba(42,35,32,0.03)', borderRadius: 12, padding: 12,
-                  }}>
-                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground">
-                      จำนวนที่แสดง
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                  backgroundColor: 'rgba(42,35,32,0.03)', borderRadius: 12, padding: 12,
+                }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground">
+                    จำนวนที่แสดง
+                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <Pressable
+                      onPress={() => handleCount('topCategoryLimit', -1)}
+                      style={{
+                        width: 32, height: 32, borderRadius: 16,
+                        alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: topCategoryLimit <= 3 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                      }}
+                    >
+                      <Ionicons name="remove" size={16} color={topCategoryLimit <= 3 ? '#D1C7BC' : '#E87A3D'} />
+                    </Pressable>
+                    <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 18, fontVariant: ['tabular-nums'], minWidth: 28, textAlign: 'center' }} className="text-foreground">
+                      {topCategoryLimit}
                     </Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                      <Pressable
-                        onPress={() => handleCount('topCategoryLimit', -1)}
-                        style={{
-                          width: 32, height: 32, borderRadius: 16,
-                          alignItems: 'center', justifyContent: 'center',
-                          backgroundColor: topCategoryLimit <= 3 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
-                        }}
-                      >
-                        <Ionicons name="remove" size={16} color={topCategoryLimit <= 3 ? '#D1C7BC' : '#E87A3D'} />
-                      </Pressable>
-                      <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 18, fontVariant: ['tabular-nums'], minWidth: 28, textAlign: 'center' }} className="text-foreground">
-                        {topCategoryLimit}
-                      </Text>
-                      <Pressable
-                        onPress={() => handleCount('topCategoryLimit', 1)}
-                        style={{
-                          width: 32, height: 32, borderRadius: 16,
-                          alignItems: 'center', justifyContent: 'center',
-                          backgroundColor: topCategoryLimit >= 29 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
-                        }}
-                      >
-                        <Ionicons name="add" size={16} color={topCategoryLimit >= 29 ? '#D1C7BC' : '#E87A3D'} />
-                      </Pressable>
-                    </View>
+                    <Pressable
+                      onPress={() => handleCount('topCategoryLimit', 1)}
+                      style={{
+                        width: 32, height: 32, borderRadius: 16,
+                        alignItems: 'center', justifyContent: 'center',
+                        backgroundColor: topCategoryLimit >= 29 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                      }}
+                    >
+                      <Ionicons name="add" size={16} color={topCategoryLimit >= 29 ? '#D1C7BC' : '#E87A3D'} />
+                    </Pressable>
                   </View>
-                </Fragment>
+                </View>
               )}
             </View>
 
@@ -698,14 +777,39 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                 />
               </View>
 
-              {(showFrequentPills || showHomeFrequentList) && (
-                <View style={{ marginTop: 12 }}>
-                  <PreviewCard hint={showHomeFrequentList ? `${homeFrequentRows} แถว` : undefined}>
-                    <View style={{ width: '100%', gap: 6 }}>
-                      {showFrequentPills && <FrequentPillsPreview />}
-                      {showHomeFrequentList && <HomeFrequentPreview rows={homeFrequentRows} />}
+              {/* Pills preview lives in TransactionFormPreview at the top of
+                  this group; the home-list preview stays inline here because
+                  it represents a different surface (home screen). */}
+              {showHomeFrequentList && (
+                <View style={{
+                  backgroundColor: 'rgba(42,35,32,0.04)',
+                  borderRadius: 12,
+                  padding: 12,
+                  borderWidth: 1, borderColor: 'rgba(42,35,32,0.06)',
+                  marginTop: 12,
+                }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <View style={{
+                      paddingHorizontal: 6, paddingVertical: 2,
+                      backgroundColor: 'rgba(232,122,61,0.12)',
+                      borderRadius: 4,
+                    }}>
+                      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 10, color: '#C85F28' }}>
+                        ตัวอย่าง
+                      </Text>
                     </View>
-                  </PreviewCard>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, color: '#9A8D80' }}>
+                      หน้าหลัก · {homeFrequentRows} แถว
+                    </Text>
+                  </View>
+                  <View style={{
+                    backgroundColor: '#FBF7F0',
+                    borderRadius: 10,
+                    borderWidth: 1, borderColor: 'rgba(42,35,32,0.10)',
+                    padding: 10,
+                  }}>
+                    <HomeFrequentPreview rows={homeFrequentRows} />
+                  </View>
                 </View>
               )}
 
@@ -748,310 +852,250 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
 
             <View style={{ height: 1, backgroundColor: 'rgba(42,35,32,0.08)', marginBottom: 20 }} />
 
-            {/* Section: หมวดหมู่ในกระเป๋า */}
-            <View style={{ marginBottom: 10 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">
-                    หมวดหมู่ในกระเป๋า
-                  </Text>
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">
-                    แสดงหมวดหมู่เริ่มต้นที่มีอยู่ในระบบ
-                  </Text>
-                </View>
-                <Switch
-                  value={showCommonCategories}
-                  onValueChange={(v) => handleToggle('showCommonCategories', v)}
-                  trackColor={{ false: '#A89888', true: '#E87A3D' }}
-                  thumbColor="#E5DCC9"
-                />
+            {/* Reorder/Delete grid */}
+            <View style={{ borderRadius: 12, padding: 8 }}>
+              {/* Mode toggle pills */}
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
+                {([
+                  { key: 'reorder', icon: 'swap-horizontal' as const, label: 'สลับตำแหน่ง', activeBg: '#E87A3D', dimBg: 'rgba(232,122,61,0.12)', activeFg: '#fff', dimFg: '#C85F28' },
+                  { key: 'delete', icon: 'trash-outline' as const, label: 'ลบหมวดหมู่', activeBg: '#D04040', dimBg: 'rgba(208,64,64,0.10)', activeFg: '#fff', dimFg: '#D04040' },
+                ] as const).map(opt => {
+                  const active = catMode === opt.key;
+                  return (
+                    <Pressable
+                      key={opt.key}
+                      onPress={() => switchMode(opt.key)}
+                      style={{
+                        flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                        paddingVertical: 9, borderRadius: 10,
+                        backgroundColor: active ? opt.activeBg : opt.dimBg,
+                      }}
+                    >
+                      <Ionicons name={opt.icon} size={14} color={active ? opt.activeFg : opt.dimFg} />
+                      <Text style={{
+                        fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 13,
+                        color: active ? opt.activeFg : opt.dimFg,
+                      }}>{opt.label}</Text>
+                    </Pressable>
+                  );
+                })}
               </View>
 
-              {showCommonCategories && (
-                <Fragment>
-                  <PreviewCard hint={`${commonCategoryLimit}`}>
-                    <CommonCategoriesPreview count={commonCategoryLimit} categories={allCommonCats} />
-                  </PreviewCard>
-                  <View style={{
-                    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-                    backgroundColor: 'rgba(42,35,32,0.03)', borderRadius: 12, padding: 12, marginBottom: 10,
-                  }}>
-                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground">
-                      จำนวนที่แสดง
-                    </Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                      <Pressable
-                        onPress={() => handleCount('commonCategoryLimit', -1)}
-                        style={{
-                          width: 32, height: 32, borderRadius: 16,
-                          alignItems: 'center', justifyContent: 'center',
-                          backgroundColor: commonCategoryLimit <= 3 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
-                        }}
-                      >
-                        <Ionicons name="remove" size={16} color={commonCategoryLimit <= 3 ? '#D1C7BC' : '#E87A3D'} />
-                      </Pressable>
-                      <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 18, fontVariant: ['tabular-nums'], minWidth: 28, textAlign: 'center' }} className="text-foreground">
-                        {commonCategoryLimit}
+              {/* Help text per mode */}
+              <View style={{ marginBottom: 8, paddingHorizontal: 2 }}>
+                {catMode === 'reorder' ? (
+                  selectedId ? (
+                    <Fragment>
+                      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#E87A3D', marginBottom: 2, textAlign: 'center' }}>
+                        กดอีกตัวเพื่อสลับตำแหน่ง
                       </Text>
-                      <Pressable
-                        onPress={() => handleCount('commonCategoryLimit', 1)}
+                      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#B66B13', textAlign: 'center' }}>
+                        หรือกดยกเลิกด้านล่าง
+                      </Text>
+                    </Fragment>
+                  ) : (
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#E87A3D', textAlign: 'center' }}>
+                      กดค้างที่หมวดหมู่ที่ต้องการ แล้วกดอีกตัวเพื่อสลับตำแหน่ง
+                    </Text>
+                  )
+                ) : (
+                  <Fragment>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#D04040', marginBottom: 2, textAlign: 'center' }}>
+                      {deleteIds.size > 0
+                        ? `เลือกแล้ว ${deleteIds.size} หมวดหมู่ — กดเพิ่มหรือกด "ลบ" ด้านล่าง`
+                        : 'แตะหมวดหมู่ที่ต้องการลบ (เลือกได้หลายหมวด)'}
+                    </Text>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', textAlign: 'center' }}>
+                      (หมวดหมู่เริ่มต้นลบไม่ได้)
+                    </Text>
+                  </Fragment>
+                )}
+              </View>
+
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+                {allCommonCats.map((cat, idx) => {
+                  const isVisible = idx < commonCategoryLimit;
+                  const isReorderMode = catMode === 'reorder';
+                  const isDeleteMode = catMode === 'delete';
+                  const isSelected = isReorderMode && selectedId === cat.id;
+                  const isTarget = isReorderMode && selectedId !== null && selectedId !== cat.id;
+                  const isDeletable = isDeleteMode && cat.isCustom;
+                  const isLocked = isDeleteMode && !cat.isCustom;
+                  const isCheckedForDelete = isDeletable && deleteIds.has(cat.id);
+                  const ringColor = isSelected
+                    ? '#E87A3D'
+                    : isTarget
+                      ? 'rgba(232,122,61,0.3)'
+                      : isCheckedForDelete
+                        ? '#D04040'
+                        : isDeletable
+                          ? 'rgba(208,64,64,0.45)'
+                          : 'transparent';
+                  return (
+                    <Pressable
+                      key={cat.id}
+                      onLongPress={() => handleLongPress(cat)}
+                      onPress={() => {
+                        if (catMode === 'delete') {
+                          toggleDeleteId(cat);
+                          return;
+                        }
+                        if (selectedId) handleTapItem(cat.id);
+                      }}
+                      delayLongPress={300}
+                      style={{ width: 66, alignItems: 'center', gap: 2, padding: 2 }}
+                    >
+                      <View style={{ position: 'relative' }}>
+                        <View style={{
+                          padding: isSelected || isDeletable ? 2 : 0, borderRadius: 999,
+                          borderWidth: isCheckedForDelete ? 2.5 : 2,
+                          borderColor: ringColor,
+                        }}>
+                          <View style={{
+                            opacity: isSelected ? 1 : isLocked ? 0.4 : (isVisible ? (isTarget ? 0.85 : 1) : 0.5),
+                          }}>
+                            <CatCategoryIcon
+                              kind={cat.icon}
+                              bg={isVisible ? cat.color : '#D1C7BC'}
+                              size={40}
+                              strokeColor={isVisible ? '#FFFFFF' : '#F5F0E8'}
+                            />
+                          </View>
+                        </View>
+                        {/* Delete-mode badge: check when selected, trash on deletable, lock on default */}
+                        {isDeleteMode && (
+                          <View style={{
+                            position: 'absolute', top: -3, right: -3,
+                            width: 18, height: 18, borderRadius: 9,
+                            alignItems: 'center', justifyContent: 'center',
+                            backgroundColor: isCheckedForDelete
+                              ? '#D04040'
+                              : isDeletable
+                                ? 'rgba(208,64,64,0.85)'
+                                : '#9A8D80',
+                            borderWidth: 1.5, borderColor: sheetBg,
+                          }}>
+                            <Ionicons
+                              name={
+                                isCheckedForDelete
+                                  ? 'checkmark'
+                                  : isDeletable
+                                    ? 'trash'
+                                    : 'lock-closed'
+                              }
+                              size={isCheckedForDelete ? 12 : 10}
+                              color="#fff"
+                            />
+                          </View>
+                        )}
+                      </View>
+                      <Text
                         style={{
-                          width: 32, height: 32, borderRadius: 16,
-                          alignItems: 'center', justifyContent: 'center',
-                          backgroundColor: commonCategoryLimit >= 29 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
-                        }}
-                      >
-                        <Ionicons name="add" size={16} color={commonCategoryLimit >= 29 ? '#D1C7BC' : '#E87A3D'} />
-                      </Pressable>
-                    </View>
-                  </View>
-
-                  {/* Reorder/Delete grid */}
-                  <View style={{ borderRadius: 12, padding: 8 }}>
-                    {/* Mode toggle pills */}
-                    <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
-                      {([
-                        { key: 'reorder', icon: 'swap-horizontal' as const, label: 'สลับตำแหน่ง', activeBg: '#E87A3D', dimBg: 'rgba(232,122,61,0.12)', activeFg: '#fff', dimFg: '#C85F28' },
-                        { key: 'delete', icon: 'trash-outline' as const, label: 'ลบหมวดหมู่', activeBg: '#D04040', dimBg: 'rgba(208,64,64,0.10)', activeFg: '#fff', dimFg: '#D04040' },
-                      ] as const).map(opt => {
-                        const active = catMode === opt.key;
-                        return (
-                          <Pressable
-                            key={opt.key}
-                            onPress={() => switchMode(opt.key)}
-                            style={{
-                              flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-                              paddingVertical: 9, borderRadius: 10,
-                              backgroundColor: active ? opt.activeBg : opt.dimBg,
-                            }}
-                          >
-                            <Ionicons name={opt.icon} size={14} color={active ? opt.activeFg : opt.dimFg} />
-                            <Text style={{
-                              fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 13,
-                              color: active ? opt.activeFg : opt.dimFg,
-                            }}>{opt.label}</Text>
-                          </Pressable>
-                        );
-                      })}
-                    </View>
-
-                    {/* Help text per mode */}
-                    <View style={{ marginBottom: 8, paddingHorizontal: 2 }}>
-                      {catMode === 'reorder' ? (
-                        selectedId ? (
-                          <Fragment>
-                            <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#E87A3D', marginBottom: 2, textAlign: 'center' }}>
-                              กดอีกตัวเพื่อสลับตำแหน่ง
-                            </Text>
-                            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#B66B13', textAlign: 'center' }}>
-                              หรือกดยกเลิกด้านล่าง
-                            </Text>
-                          </Fragment>
-                        ) : (
-                          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#E87A3D', textAlign: 'center' }}>
-                            กดค้างที่หมวดหมู่ที่ต้องการ แล้วกดอีกตัวเพื่อสลับตำแหน่ง
-                          </Text>
-                        )
-                      ) : (
-                        <Fragment>
-                          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 12, color: '#D04040', marginBottom: 2, textAlign: 'center' }}>
-                            {deleteIds.size > 0
-                              ? `เลือกแล้ว ${deleteIds.size} หมวดหมู่ — กดเพิ่มหรือกด "ลบ" ด้านล่าง`
-                              : 'แตะหมวดหมู่ที่ต้องการลบ (เลือกได้หลายหมวด)'}
-                          </Text>
-                          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, color: '#9A8D80', textAlign: 'center' }}>
-                            (หมวดหมู่เริ่มต้นลบไม่ได้)
-                          </Text>
-                        </Fragment>
-                      )}
-                    </View>
-
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
-                      {allCommonCats.map((cat, idx) => {
-                        const isVisible = idx < commonCategoryLimit;
-                        const isReorderMode = catMode === 'reorder';
-                        const isDeleteMode = catMode === 'delete';
-                        const isSelected = isReorderMode && selectedId === cat.id;
-                        const isTarget = isReorderMode && selectedId !== null && selectedId !== cat.id;
-                        const isDeletable = isDeleteMode && cat.isCustom;
-                        const isLocked = isDeleteMode && !cat.isCustom;
-                        const isCheckedForDelete = isDeletable && deleteIds.has(cat.id);
-                        const ringColor = isSelected
-                          ? '#E87A3D'
-                          : isTarget
-                            ? 'rgba(232,122,61,0.3)'
+                          width: 66, textAlign: 'center',
+                          fontFamily: isSelected || isCheckedForDelete ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
+                          fontSize: 11,
+                          color: isSelected
+                            ? '#E87A3D'
                             : isCheckedForDelete
                               ? '#D04040'
                               : isDeletable
-                                ? 'rgba(208,64,64,0.45)'
-                                : 'transparent';
-                        return (
-                          <Pressable
-                            key={cat.id}
-                            onLongPress={() => handleLongPress(cat)}
-                            onPress={() => {
-                              if (catMode === 'delete') {
-                                toggleDeleteId(cat);
-                                return;
-                              }
-                              if (selectedId) handleTapItem(cat.id);
-                            }}
-                            delayLongPress={300}
-                            style={{ width: 66, alignItems: 'center', gap: 2, padding: 2 }}
-                          >
-                            <View style={{ position: 'relative' }}>
-                              <View style={{
-                                padding: isSelected || isDeletable ? 2 : 0, borderRadius: 999,
-                                borderWidth: isCheckedForDelete ? 2.5 : 2,
-                                borderColor: ringColor,
-                              }}>
-                                <View style={{
-                                  opacity: isSelected ? 1 : isLocked ? 0.4 : (isVisible ? (isTarget ? 0.85 : 1) : 0.5),
-                                }}>
-                                  <CatCategoryIcon
-                                    kind={cat.icon}
-                                    bg={isVisible ? cat.color : '#D1C7BC'}
-                                    size={40}
-                                    strokeColor={isVisible ? '#FFFFFF' : '#F5F0E8'}
-                                  />
-                                </View>
-                              </View>
-                              {/* Delete-mode badge: check when selected, trash on deletable, lock on default */}
-                              {isDeleteMode && (
-                                <View style={{
-                                  position: 'absolute', top: -3, right: -3,
-                                  width: 18, height: 18, borderRadius: 9,
-                                  alignItems: 'center', justifyContent: 'center',
-                                  backgroundColor: isCheckedForDelete
-                                    ? '#D04040'
-                                    : isDeletable
-                                      ? 'rgba(208,64,64,0.85)'
-                                      : '#9A8D80',
-                                  borderWidth: 1.5, borderColor: sheetBg,
-                                }}>
-                                  <Ionicons
-                                    name={
-                                      isCheckedForDelete
-                                        ? 'checkmark'
-                                        : isDeletable
-                                          ? 'trash'
-                                          : 'lock-closed'
-                                    }
-                                    size={isCheckedForDelete ? 12 : 10}
-                                    color="#fff"
-                                  />
-                                </View>
-                              )}
-                            </View>
-                            <Text
-                              style={{
-                                width: 66, textAlign: 'center',
-                                fontFamily: isSelected || isCheckedForDelete ? 'IBMPlexSansThai_600SemiBold' : 'IBMPlexSansThai_400Regular',
-                                fontSize: 11,
-                                color: isSelected
-                                  ? '#E87A3D'
-                                  : isCheckedForDelete
-                                    ? '#D04040'
-                                    : isDeletable
-                                      ? '#D04040'
-                                      : isLocked
-                                        ? '#C5BAB0'
-                                        : (isVisible ? (isTarget ? '#2A2320' : '#9A8D80') : '#C5BAB0'),
-                              }}
-                              numberOfLines={1}
-                              ellipsizeMode="tail"
-                            >
-                              {cat.name}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
-
-                      {/* Add new category button */}
-                      <Pressable
-                        onPress={() => {
-                          if (selectedId) {
-                            setSelectedId(null);
-                            return;
-                          }
-                          Haptics.selectionAsync();
-                          setAddVisible(true);
+                                ? '#D04040'
+                                : isLocked
+                                  ? '#C5BAB0'
+                                  : (isVisible ? (isTarget ? '#2A2320' : '#9A8D80') : '#C5BAB0'),
                         }}
-                        disabled={selectedId !== null}
-                        style={{ width: 66, alignItems: 'center', gap: 2, padding: 2, opacity: selectedId ? 0.4 : 1 }}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
                       >
-                        <View style={{
-                          width: 40, height: 40, borderRadius: 23,
-                          alignItems: 'center', justifyContent: 'center',
-                          backgroundColor: 'rgba(232,122,61,0.12)',
-                          borderWidth: 1.5,
-                          borderColor: 'rgba(232,122,61,0.4)',
-                          borderStyle: 'dashed',
-                        }}>
-                          <Ionicons name="add" size={22} color="#E87A3D" />
-                        </View>
-                        <Text
-                          style={{
-                            width: 66, textAlign: 'center',
-                            fontFamily: 'IBMPlexSansThai_600SemiBold',
-                            fontSize: 11,
-                            color: '#E87A3D',
-                          }}
-                          numberOfLines={1}
-                        >
-                          เพิ่ม
-                        </Text>
-                      </Pressable>
-                    </View>
+                        {cat.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
 
-                    {catMode === 'reorder' && selectedId && (
-                      <View style={{ marginTop: 10 }}>
-                        <Pressable
-                          onPress={() => setSelectedId(null)}
-                          style={{
-                            alignItems: 'center', paddingVertical: 10, borderRadius: 10,
-                            backgroundColor: 'rgba(42,35,32,0.05)',
-                          }}
-                        >
-                          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#6B5F52' }}>ยกเลิกการเลือก</Text>
-                        </Pressable>
-                      </View>
-                    )}
-
-                    {catMode === 'delete' && deleteIds.size > 0 && (
-                      <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
-                        <Pressable
-                          onPress={() => setDeleteIds(new Set())}
-                          style={{
-                            flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10,
-                            backgroundColor: 'rgba(42,35,32,0.05)',
-                          }}
-                        >
-                          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#6B5F52' }}>
-                            ยกเลิก
-                          </Text>
-                        </Pressable>
-                        <Pressable
-                          onPress={handleBulkDelete}
-                          style={{
-                            flex: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-                            paddingVertical: 10, borderRadius: 10,
-                            backgroundColor: '#D04040',
-                            shadowColor: '#D04040', shadowOpacity: 0.3, shadowRadius: 8, shadowOffset: { width: 0, height: 3 },
-                            elevation: 4,
-                          }}
-                        >
-                          <Ionicons name="trash" size={14} color="#fff" />
-                          <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 13, color: '#fff' }}>
-                            ลบ ({deleteIds.size})
-                          </Text>
-                        </Pressable>
-                      </View>
-                    )}
+                {/* Add new category button */}
+                <Pressable
+                  onPress={() => {
+                    if (selectedId) {
+                      setSelectedId(null);
+                      return;
+                    }
+                    Haptics.selectionAsync();
+                    setAddVisible(true);
+                  }}
+                  disabled={selectedId !== null}
+                  style={{ width: 66, alignItems: 'center', gap: 2, padding: 2, opacity: selectedId ? 0.4 : 1 }}
+                >
+                  <View style={{
+                    width: 40, height: 40, borderRadius: 23,
+                    alignItems: 'center', justifyContent: 'center',
+                    backgroundColor: 'rgba(232,122,61,0.12)',
+                    borderWidth: 1.5,
+                    borderColor: 'rgba(232,122,61,0.4)',
+                    borderStyle: 'dashed',
+                  }}>
+                    <Ionicons name="add" size={22} color="#E87A3D" />
                   </View>
-                </Fragment>
+                  <Text
+                    style={{
+                      width: 66, textAlign: 'center',
+                      fontFamily: 'IBMPlexSansThai_600SemiBold',
+                      fontSize: 11,
+                      color: '#E87A3D',
+                    }}
+                    numberOfLines={1}
+                  >
+                    เพิ่ม
+                  </Text>
+                </Pressable>
+              </View>
+
+              {catMode === 'reorder' && selectedId && (
+                <View style={{ marginTop: 10 }}>
+                  <Pressable
+                    onPress={() => setSelectedId(null)}
+                    style={{
+                      alignItems: 'center', paddingVertical: 10, borderRadius: 10,
+                      backgroundColor: 'rgba(42,35,32,0.05)',
+                    }}
+                  >
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#6B5F52' }}>ยกเลิกการเลือก</Text>
+                  </Pressable>
+                </View>
+              )}
+
+              {catMode === 'delete' && deleteIds.size > 0 && (
+                <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+                  <Pressable
+                    onPress={() => setDeleteIds(new Set())}
+                    style={{
+                      flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10,
+                      backgroundColor: 'rgba(42,35,32,0.05)',
+                    }}
+                  >
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, color: '#6B5F52' }}>
+                      ยกเลิก
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={handleBulkDelete}
+                    style={{
+                      flex: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      paddingVertical: 10, borderRadius: 10,
+                      backgroundColor: '#D04040',
+                      shadowColor: '#D04040', shadowOpacity: 0.3, shadowRadius: 8, shadowOffset: { width: 0, height: 3 },
+                      elevation: 4,
+                    }}
+                  >
+                    <Ionicons name="trash" size={14} color="#fff" />
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 13, color: '#fff' }}>
+                      ลบ ({deleteIds.size})
+                    </Text>
+                  </Pressable>
+                </View>
               )}
             </View>
+
           </BottomSheetScrollView>
         </BottomSheet>
       </GestureHandlerRootView>
