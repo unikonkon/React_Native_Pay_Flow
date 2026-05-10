@@ -1,4 +1,4 @@
-import type { Category } from "@/types";
+import type { Category, TransactionType } from "@/types";
 
 // 16 Essential Expense Categories — เลือกเฉพาะที่จำเป็นสำหรับวัยทำงาน
 // (อาหาร, การเดินทาง, ที่อยู่อาศัย/utility, ช้อปปิ้ง, สุขภาพ, บันเทิง,
@@ -307,3 +307,158 @@ export const CATEGORY_COLOR_OPTIONS: string[] = [
   // green / blue / purple / neutral
   '#5CB88A', '#3E8B68', '#8AC5C5', '#4A7FC1', '#B5A8DB', '#6B4A9E',
 ];
+
+// ===== Category groups =====
+// Buckets categories by purpose so UIs (CategoryGridModal, settings, pickers)
+// can show a sectioned/grouped view. Each group lists the `icon` values
+// (CatCategoryIcon `kind`s) that belong to it; categories whose icon doesn't
+// match any list fall into "other".
+//
+// Income categories are forced into the "income" bucket regardless of their
+// icon — that way "gift" / "wallet" / "trophy" etc. read as income on the
+// income picker instead of leaking into the expense buckets.
+
+export type CategoryGroupId =
+  | "food"
+  | "transport"
+  | "home"
+  | "shopping"
+  | "health"
+  | "lifestyle"
+  | "social"
+  | "finance"
+  | "income"
+  | "other";
+
+export interface CategoryGroup {
+  id: CategoryGroupId;
+  /** Thai display name shown in section headers */
+  name: string;
+  /** Ionicons name used as the section header icon */
+  ionicon: string;
+  /** CatCategoryIcon `kind` values that belong to this group */
+  iconNames: string[];
+}
+
+export const CATEGORY_GROUPS: CategoryGroup[] = [
+  {
+    id: "food",
+    name: "อาหาร & เครื่องดื่ม",
+    ionicon: "fast-food",
+    iconNames: ["fast-food", "cafe", "noodles", "dessert", "fruit", "wine"],
+  },
+  {
+    id: "transport",
+    name: "เดินทาง",
+    ionicon: "car",
+    iconNames: ["car", "bus", "car-sport", "flame"],
+  },
+  {
+    id: "home",
+    name: "บ้าน & บิลล์",
+    ionicon: "home",
+    iconNames: ["home", "bulb", "water", "wifi", "phone-portrait"],
+  },
+  {
+    id: "shopping",
+    name: "ช้อปปิ้ง & ของใช้",
+    ionicon: "bag",
+    iconNames: ["bag", "basket", "shirt", "shirt-outline"],
+  },
+  {
+    id: "health",
+    name: "สุขภาพ & ความงาม",
+    ionicon: "medkit",
+    iconNames: ["medkit", "barbell", "rose"],
+  },
+  {
+    id: "lifestyle",
+    name: "บันเทิง & ไลฟ์สไตล์",
+    ionicon: "film",
+    iconNames: ["film", "game-controller", "tv", "heart", "notebook", "airplane"],
+  },
+  {
+    id: "social",
+    name: "ครอบครัว & สังคม",
+    ionicon: "people",
+    iconNames: ["people", "paw", "gift", "heart-circle", "body", "school"],
+  },
+  {
+    id: "finance",
+    name: "การเงิน & ภาษี",
+    ionicon: "card",
+    iconNames: [
+      "shield-checkmark",
+      "card",
+      "business",
+      "savings",
+      "diamond",
+      "construct",
+    ],
+  },
+  {
+    id: "income",
+    name: "รายได้",
+    ionicon: "wallet",
+    iconNames: [
+      "briefcase",
+      "sparkles",
+      "time",
+      "stats-chart",
+      "wallet",
+      "laptop",
+      "storefront",
+      "trending-up",
+      "cash",
+      "analytics",
+      "receipt",
+      "trophy",
+      "salary",
+      "share-social",
+    ],
+  },
+  {
+    id: "other",
+    name: "อื่นๆ",
+    ionicon: "ellipsis-horizontal",
+    iconNames: ["ellipsis-horizontal"],
+  },
+];
+
+/** Lookup map: icon name → group id (built once at module load). */
+const ICON_TO_GROUP: Record<string, CategoryGroupId> = (() => {
+  const m: Record<string, CategoryGroupId> = {};
+  for (const g of CATEGORY_GROUPS) {
+    for (const icon of g.iconNames) m[icon] = g.id;
+  }
+  return m;
+})();
+
+/** Returns the group id for a given category icon name. Defaults to "other". */
+export function getCategoryGroupId(
+  iconName: string,
+  type?: TransactionType,
+): CategoryGroupId {
+  if (type === "income") return "income";
+  return ICON_TO_GROUP[iconName] ?? "other";
+}
+
+/**
+ * Buckets categories into ordered sections following CATEGORY_GROUPS order.
+ * Empty groups are filtered out so UIs only render sections that have items.
+ */
+export function groupCategoriesByType<
+  T extends { icon: string; type?: TransactionType },
+>(cats: T[]): { group: CategoryGroup; items: T[] }[] {
+  const buckets = new Map<CategoryGroupId, T[]>();
+  for (const c of cats) {
+    const id = getCategoryGroupId(c.icon, c.type);
+    const arr = buckets.get(id) ?? [];
+    arr.push(c);
+    buckets.set(id, arr);
+  }
+  return CATEGORY_GROUPS.map((group) => ({
+    group,
+    items: buckets.get(group.id) ?? [],
+  })).filter((s) => s.items.length > 0);
+}

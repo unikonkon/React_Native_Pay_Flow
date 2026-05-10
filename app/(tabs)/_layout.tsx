@@ -5,6 +5,7 @@ import { useThemeStore } from '@/lib/stores/theme-store';
 import { useIsDarkTheme } from '@/lib/utils/theme';
 import { Tabs } from 'expo-router';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 // Cat-themed tab icons — fat-cat solid-fill design language matching
@@ -107,7 +108,7 @@ function TabIcon({ icon, color, focused }: {
     <View style={{ alignItems: 'center' }}>
       {icon}
       {focused && (
-        <View style={{ marginTop: 2 }}>
+        <View >
           <PawPrintIcon size={13} color="#E87A3D" />
         </View>
       )}
@@ -119,6 +120,10 @@ export default function TabLayout() {
   const isDark = useIsDarkTheme();
   const currentTheme = useThemeStore(s => s.currentTheme);
   const tabBg = getTabBarBackgroundColor(currentTheme);
+  const insets = useSafeAreaInsets();
+  // Compact tab bar — 56px usable area, plus the device's bottom safe inset
+  // (home-indicator area on iPhones with no home button).
+  const TAB_CONTENT_HEIGHT = 50;
   return (
     <Tabs
       screenOptions={{
@@ -130,10 +135,16 @@ export default function TabLayout() {
           fontFamily: 'IBMPlexSansThai_400Regular',
           fontSize: 11,
         },
+        tabBarIconStyle: {
+          marginTop: 2,
+        },
         tabBarStyle: {
           backgroundColor: tabBg,
           borderTopWidth: 0.5,
           borderTopColor: isDark ? '#4A3D30' : '#EDE4D3',
+          height: TAB_CONTENT_HEIGHT + insets.bottom,
+          paddingTop: 4,
+          paddingBottom: 4 + insets.bottom,
         },
       }}
     >
