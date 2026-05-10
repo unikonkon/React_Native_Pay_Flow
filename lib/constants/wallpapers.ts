@@ -141,6 +141,48 @@ export const WALLPAPER_PRESETS: WallpaperPreset[] = [
     source: require("@/assets/bg/bg3.png"),
   },
   {
+    id: "assets-app-add11",
+    category: "assets-app",
+    name: "แบบ 11",
+    source: require("@/assets/add/add11.png"),
+  },
+  {
+    id: "assets-app-add12",
+    category: "assets-app",
+    name: "แบบ 12",
+    source: require("@/assets/add/add12.png"),
+  },
+  {
+    id: "assets-app-add13",
+    category: "assets-app",
+    name: "แบบ 13",
+    source: require("@/assets/add/add13.png"),
+  },
+  {
+    id: "assets-app-add14",
+    category: "assets-app",
+    name: "แบบ 14",
+    source: require("@/assets/add/add14.png"),
+  },
+  {
+    id: "assets-app-add15",
+    category: "assets-app",
+    name: "แบบ 15",
+    source: require("@/assets/add/add15.png"),
+  },
+  {
+    id: "assets-app-add16",
+    category: "assets-app",
+    name: "แบบ 16",
+    source: require("@/assets/add/add16.png"),
+  },
+  {
+    id: "assets-app-add17",
+    category: "assets-app",
+    name: "แบบ 17",
+    source: require("@/assets/add/add17.png"),
+  },
+  {
     id: "assets-app-bg-empty",
     category: "assets-app",
     name: "ว่าง",

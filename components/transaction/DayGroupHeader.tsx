@@ -1,3 +1,5 @@
+import { getTabBarBackgroundColor } from '@/lib/constants/themes';
+import { useThemeStore } from '@/lib/stores/theme-store';
 import { formatCurrency, formatRelativeDate } from '@/lib/utils/format';
 import { Text, View } from 'react-native';
 
@@ -12,9 +14,16 @@ export function DayGroupHeader({ date, income, expense }: DayGroupHeaderProps) {
   const balanceSign = balance > 0 ? '+' : balance < 0 ? '−' : '=';
   const balanceColor = balance > 0 ? '#3E8B68' : balance < 0 ? '#C65A4E' : '#6B5F52';
   const hasAny = income > 0 && expense > 0;
+  const currentTheme = useThemeStore(s => s.currentTheme);
+  const tabBg = getTabBarBackgroundColor(currentTheme);
 
   return (
-    <View className="flex-row items-center bg-card rounded-xl" style={{ paddingHorizontal: 18, paddingTop: 3, paddingBottom: 2, marginTop: 8, gap: 10 }}>
+    <View className="flex-row items-center rounded-xl"
+      style={{
+        paddingHorizontal: 18, paddingTop: 3, paddingBottom: 2, marginTop: 8, gap: 10,
+        backgroundColor: tabBg,
+        opacity: 0.93, // ให้จางลงกว่าปกติ
+      }}>
       <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 17, fontVariant: ['tabular-nums'] }} className="text-foreground">
         {formatRelativeDate(date)}
       </Text>
@@ -38,7 +47,7 @@ export function DayGroupHeader({ date, income, expense }: DayGroupHeaderProps) {
             backgroundColor: balanceColor + '15',
           }}
         >
-         = {balanceSign}{formatCurrency(Math.abs(balance))}
+          = {balanceSign}{formatCurrency(Math.abs(balance))}
         </Text>
       )}
     </View>

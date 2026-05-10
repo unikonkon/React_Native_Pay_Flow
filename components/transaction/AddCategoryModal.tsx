@@ -221,11 +221,11 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
                         <Pressable
                           key={ic}
                           onPress={() => setIcon(ic)}
-                          className={`w-10 h-10 rounded-full items-center justify-center border ${active ? 'border-primary bg-primary/10' : 'border-border bg-background'}`}
+                          className={`w-14 h-14 rounded-full items-center justify-center border ${active ? 'border-4 border-primary bg-primary/10' : 'border-border bg-background'}`}
                         >
                           <CatCategoryIcon
                             kind={ic}
-                            size={26}
+                            size={38}
                             strokeColor={active ? '#E87A3D' : '#9A8D80'}
                             bare
                           />

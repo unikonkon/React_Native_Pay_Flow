@@ -149,8 +149,8 @@ export function TransactionGroupItem({
                   onItemLongPress?.(t);
                 }}
                 android_ripple={{ color: 'rgba(0,0,0,0.08)' }}
-                className="flex-row items-center border-b border-border/60 bg-card rounded-xl"
-                style={{ paddingVertical: 7, paddingLeft: 60, paddingRight: 14, gap: 7, borderColor: 'rgba(42,35,32,0.28)' }}
+                className="flex-row items-center border-b border-border bg-card rounded-xl"
+                style={{ paddingVertical: 7, paddingLeft: 60, paddingRight: 14, gap: 7}}
               >
                 <View style={{ width: 8, height: 1 }} className="bg-border" />
                 <View className="flex-1">

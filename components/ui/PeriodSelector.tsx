@@ -167,7 +167,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
 
   return (
     <View className={className}>
-      <View className="flex-row items-center justify-between rounded-full bg-background border border-border">
+      <View className="flex-row items-center justify-between rounded-full">
         <Pressable
           onPress={() => { if (canShift) { Haptics.selectionAsync(); onChange(shiftPeriod(period, -1)); } }}
           disabled={!canShift}

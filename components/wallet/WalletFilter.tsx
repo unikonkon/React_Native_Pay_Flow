@@ -5,7 +5,6 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, Easing, Modal, Pressable, ScrollView, Text, View } from 'react-native';
-import { AddWalletModal } from './AddWalletModal';
 
 interface Props {
   selectedWalletId: string | null;
@@ -27,7 +26,6 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
   const isDark = useIsDarkTheme();
   const wallets = useWalletStore(s => s.wallets);
   const [open, setOpen] = useState(false);
-  const [addVisible, setAddVisible] = useState(false);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const triggerRef = useRef<View>(null);
 
@@ -183,16 +181,6 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
                 <View className="h-px bg-border my-1" />
 
                 <Pressable
-                  onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); closePopover(); setTimeout(() => setAddVisible(true), 110); }}
-                  className="px-3 py-2.5 rounded-xl flex-row items-center"
-                >
-                  <View className="w-7 h-7 rounded-full items-center justify-center mr-2.5 bg-primary/10">
-                    <Ionicons name="add" size={15} color="#E87A3D" />
-                  </View>
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-primary">เพิ่มกระเป๋า</Text>
-                </Pressable>
-
-                <Pressable
                   onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); closePopover(); setTimeout(() => router.push('/settings/wallets'), 110); }}
                   className="px-3 py-2.5 rounded-xl flex-row items-center"
                 >
@@ -207,12 +195,6 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
           </Animated.View>
         </Pressable>
       </Modal>
-
-      <AddWalletModal
-        visible={addVisible}
-        onClose={() => setAddVisible(false)}
-        onCreated={(id) => { if (id) onChange(id); }}
-      />
     </View>
   );
 }

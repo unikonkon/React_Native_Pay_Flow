@@ -19,6 +19,63 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Image, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Circle, Path } from 'react-native-svg';
+
+// Tiny meaningful icons next to each summary label:
+//  • TrendUpIcon — line trending ↗ for "รายรับ" (income)
+//  • TrendDownIcon — line trending ↘ for "รายจ่าย" (expense)
+//  • WalletIcon — wallet silhouette w/ cat-ear flick for "คงเหลือ" (remaining)
+// Color is passed in so the balance icon can flip green/red with its value.
+
+function TrendUpIcon({ size = 13, color }: { size?: number; color: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 16 16">
+      <Path
+        d="M2.5 12 L6.5 7.5 L9 10 L13.5 4.5"
+        stroke={color} strokeWidth={1.8} fill="none"
+        strokeLinecap="round" strokeLinejoin="round"
+      />
+      <Path
+        d="M10.5 4.5 L13.7 4.5 L13.7 7.6"
+        stroke={color} strokeWidth={1.8} fill="none"
+        strokeLinecap="round" strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+function TrendDownIcon({ size = 13, color }: { size?: number; color: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 16 16">
+      <Path
+        d="M2.5 4.5 L6.5 9 L9 6.5 L13.5 12"
+        stroke={color} strokeWidth={1.8} fill="none"
+        strokeLinecap="round" strokeLinejoin="round"
+      />
+      <Path
+        d="M10.5 12 L13.7 12 L13.7 8.9"
+        stroke={color} strokeWidth={1.8} fill="none"
+        strokeLinecap="round" strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+function WalletIcon({ size = 13, color }: { size?: number; color: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 16 16">
+      {/* Cat-ear flick on the wallet's top-left, matching the app's mascot motif */}
+      <Path d="M3 5 L2.4 2.2 L4.8 3.5 Z" fill={color} />
+      {/* Wallet body w/ cut-out for the coin pocket on the right edge */}
+      <Path
+        d="M2 5.2 L2 13 A1 1 0 0 0 3 14 L13 14 A1 1 0 0 0 14 13 L14 9.5 L11 9.5 A1.6 1.6 0 0 1 11 6.3 L14 6.3 L14 5.2 A1 1 0 0 0 13 4.2 L3 4.2 A1 1 0 0 0 2 5.2 Z"
+        fill={color}
+      />
+      {/* Coin highlight inside the pocket */}
+      <Circle cx={11.4} cy={7.9} r={0.7} fill="#FBF7F0" />
+    </Svg>
+  );
+}
 
 export default function TransactionsScreen() {
   const transactions = useTransactionStore(s => s.transactions);
@@ -189,35 +246,53 @@ export default function TransactionsScreen() {
           </View>
         </View>
 
-        {/* Summary row — larger numbers like prototype */}
+        {/* Summary row — larger numbers like prototype, w/ a tiny meaning
+            icon next to each label (trending-up for income, trending-down
+            for expense, wallet for what's left). The balance icon flips
+            green/red along with its number when net dips below zero. */}
         <View className="flex-row justify-around pb-2">
           <View className="items-center flex-1">
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">รายรับ</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <TrendUpIcon size={13} color="#16A34A" />
+              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">รายรับ</Text>
+            </View>
             <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 20, fontVariant: ['tabular-nums'], letterSpacing: -0.4 }} className="text-income">{formatCurrency(totalIncome)}</Text>
           </View>
           <View className="items-center flex-1">
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">รายจ่าย</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <TrendDownIcon size={13} color="#DC2626" />
+              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">รายจ่าย</Text>
+            </View>
             <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 20, fontVariant: ['tabular-nums'], letterSpacing: -0.4 }} className="text-expense">{formatCurrency(totalExpense)}</Text>
           </View>
           <View className="items-center flex-1">
-            <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">คงเหลือ</Text>
-            <Text
-              style={{
-                fontFamily: 'Inter_700Bold', // ใช้น้ำหนักที่เข้มที่สุด
-                fontSize: 20,
-                fontVariant: ['tabular-nums'],
-                letterSpacing: -0.4,
-                color: totalIncome - totalExpense >= 0 ? '#166534' : '#991B1B', // เขียว/แดงเข้มขึ้น
-                textShadowColor: 'rgba(0,0,0,0.09)', // แรเงาเพิ่มความเข้มชัด
-                textShadowOffset: { width: 0, height: 1 },
-                textShadowRadius: 1,
-              }}
-            >
-              {formatCurrency(totalIncome - totalExpense)}
-            </Text>
-       
+            {(() => {
+              const net = totalIncome - totalExpense;
+              const balanceColor = net >= 0 ? '#166534' : '#991B1B';
+              return (
+                <>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <WalletIcon size={13} color={balanceColor} />
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">คงเหลือ</Text>
+                  </View>
+                  <Text
+                    style={{
+                      fontFamily: 'Inter_700Bold',
+                      fontSize: 20,
+                      fontVariant: ['tabular-nums'],
+                      letterSpacing: -0.4,
+                      color: balanceColor,
+                      textShadowColor: 'rgba(0,0,0,0.09)',
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 1,
+                    }}
+                  >
+                    {formatCurrency(net)}
+                  </Text>
+                </>
+              );
+            })()}
           </View>
-     
         </View>
       </View>
 
