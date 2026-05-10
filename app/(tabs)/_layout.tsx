@@ -123,7 +123,7 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   // Compact tab bar — 56px usable area, plus the device's bottom safe inset
   // (home-indicator area on iPhones with no home button).
-  const TAB_CONTENT_HEIGHT = 50;
+  const TAB_CONTENT_HEIGHT = 45;
   return (
     <Tabs
       screenOptions={{
