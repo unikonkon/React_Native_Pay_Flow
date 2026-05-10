@@ -243,7 +243,11 @@ export default function TransactionsScreen() {
         onSelect={handleFrequentSelect}
       />
 
-      <View className="pb-[290px]">
+      {/* `flex-1` is what keeps the SectionList constrained to the
+          remaining space above the bottom tab bar. Without it, the list
+          renders at its natural (unbounded) height and the bottom rows
+          end up hidden under the tab bar from `(tabs)/_layout.tsx`. */}
+      <View className="flex-1">
         <TransactionList
           transactions={transactions}
           onItemPress={handleItemPress}

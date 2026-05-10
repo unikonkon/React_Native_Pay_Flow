@@ -78,6 +78,12 @@ export function TransactionList({
           expense={section.expense}
         />
       )}
+      // Trailing inset so the final rows clear the floating FAB mascot
+      // (~110px tall, anchored bottom-right) instead of rendering behind it
+      // when scrolled to the end. The bottom tab bar itself sits below the
+      // screen's SafeAreaView, so the list's outer height already excludes
+      // it — this padding only handles the FAB overlap.
+      contentContainerStyle={{ paddingBottom: 20 }}
       stickySectionHeadersEnabled={false}
       initialNumToRender={15}
       maxToRenderPerBatch={10}

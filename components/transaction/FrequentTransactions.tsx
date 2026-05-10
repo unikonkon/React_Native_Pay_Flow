@@ -66,7 +66,7 @@ export function FrequentTransactions({ onSelect }: FrequentTransactionsProps) {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 16 }}
         >
-          <View className="flex-row" style={{ gap: 6 }}>
+          <View className="flex-row" style={{ gap: 4 }}>
             {analyses.map((analysis) => {
               const cat = categories.find(c => c.id === analysis.categoryId);
               return (
@@ -127,21 +127,21 @@ function FrequentItem({ analysis, category, onSelect }: FrequentItemProps) {
         pawRef.current?.play();
         onSelect(analysis);
       }}
-      className="items-center  border border-border rounded-lg pt-1 pb-1"
-      style={{ width: 57 }}
+      className="items-center"
+      style={{ width: 62 }}
     >
-        <CatCategoryIcon
-          kind={category?.icon ?? 'ellipsis-horizontal'}
-          bg={category?.color ?? '#999'}
-          size={43}
-        />
-        {/* <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-foreground text-center" numberOfLines={1}>
-          {analysis.note ? analysis.note : category?.name ? category.name : 'อื่นๆ'}
-        </Text> */}
-        <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 15, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">
-          {formatCurrency(analysis.amount)}
-        </Text>
-        <PawPrintTapEffect ref={pawRef} size={32} color="#E87A3D" />
+      <CatCategoryIcon
+        kind={category?.icon ?? 'ellipsis-horizontal'}
+        bg={category?.color ?? '#999'}
+        size={37}
+      />
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-foreground text-center" numberOfLines={1}>
+        {analysis.note ? analysis.note : category?.name ? category.name : 'อื่นๆ'}
+      </Text>
+      <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 15, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">
+        {formatCurrency(analysis.amount)}
+      </Text>
+      <PawPrintTapEffect ref={pawRef} size={32} color="#E87A3D" />
     </Pressable>
   );
 }

@@ -77,25 +77,73 @@ function CalcPadPreview({ padding }: { padding: number }) {
   );
 }
 
-// Mini "home frequent list" — N rows, each with 3 pill-shaped placeholders
-// to suggest the layout density without rendering real transactions.
+// Mini replica of `FrequentTransactions` — each "card" mirrors the real
+// `FrequentItem` layout (icon on top, amount below) but scaled down to
+// ≈60% size so it fits inside the settings preview card.
+const MINI_FREQ_ITEMS: { icon: string; color: string; amount: string }[] = [
+  { icon: 'restaurant', color: '#E87A3D', amount: '120' },
+  { icon: 'cafe', color: '#C65A4E', amount: '65' },
+  { icon: 'cart', color: '#4A90D9', amount: '350' },
+  { icon: 'bus', color: '#6BBF59', amount: '25' },
+  { icon: 'game-controller', color: '#9B59B6', amount: '80' },
+  { icon: 'car', color: '#9B59B6', amount: '80' },
+];
+const MINI_FREQ_PER_ROW = 6;
+
 function HomeFrequentPreview({ rows }: { rows: number }) {
-  return (
-    <View style={{ width: '100%', gap: 3 }}>
-      {Array.from({ length: rows }).map((_, ri) => (
-        <View key={ri} style={{ flexDirection: 'row', gap: 4 }}>
-          {Array.from({ length: 3 }).map((_, ci) => (
-            <View key={ci} style={{
-              flex: 1, height: 12, borderRadius: 6,
-              backgroundColor: ci === 0
-                ? 'rgba(232,122,61,0.30)'
-                : ci === 1
-                  ? 'rgba(232,122,61,0.18)'
-                  : 'rgba(42,35,32,0.08)',
-            }} />
+  const itemCount = rows * MINI_FREQ_PER_ROW;
+  const items = Array.from({ length: itemCount }, (_, i) => MINI_FREQ_ITEMS[i % MINI_FREQ_ITEMS.length]);
+
+  if (rows === 1) {
+    return (
+      <View style={{ width: '100%' }}>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 8, color: '#9A8D80', marginBottom: 3 }}>
+          รายการใช้บ่อย
+        </Text>
+        <View style={{ flexDirection: 'row', gap: 4, justifyContent: 'center' }}>
+          {items.map((item, i) => (
+            <MiniFreqCard key={i} icon={item.icon} color={item.color} amount={item.amount} />
           ))}
         </View>
-      ))}
+      </View>
+    );
+  }
+
+  const chunked: typeof items[] = [];
+  for (let i = 0; i < items.length; i += MINI_FREQ_PER_ROW) {
+    chunked.push(items.slice(i, i + MINI_FREQ_PER_ROW));
+  }
+
+  return (
+    <View style={{ width: '100%' }}>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 8, color: '#9A8D80', marginBottom: 3 }}>
+        รายการใช้บ่อย
+      </Text>
+      <View style={{ gap: 4 }}>
+        {chunked.map((row, ri) => (
+          <View key={ri} style={{ flexDirection: 'row', gap: 4, justifyContent: 'center' }}>
+            {row.map((item, ci) => (
+              <MiniFreqCard key={`${ri}-${ci}`} icon={item.icon} color={item.color} amount={item.amount} />
+            ))}
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function MiniFreqCard({ icon, color, amount }: { icon: string; color: string; amount: string }) {
+  return (
+    <View style={{
+      width: 36, alignItems: 'center',
+      borderWidth: 0.5, borderColor: 'rgba(42,35,32,0.12)',
+      borderRadius: 6, paddingTop: 2, paddingBottom: 2,
+      backgroundColor: '#FFFFFF',
+    }}>
+      <CatCategoryIcon kind={icon} bg={color} size={22} />
+      <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 8, color: '#9A8D80', fontVariant: ['tabular-nums'] }}>
+        {amount}
+      </Text>
     </View>
   );
 }
@@ -153,6 +201,22 @@ function MiniCategoryRow({ items }: { items: Category[] }) {
     </View>
   );
 }
+
+// Shared two-column row geometry for the in-form preview. Every preview
+// row uses these so the labels line up in one column and the UI items
+// line up in the next, regardless of how many items each row renders.
+const previewRowLabelStyle = {
+  width: 101,
+  fontFamily: 'IBMPlexSansThai_400Regular',
+  fontSize: 12,
+  color: '#9A8D80',
+} as const;
+
+const previewRowContentStyle = {
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+} as const;
 
 // Unified preview for the in-form surface. Mirrors `TransactionForm` so the
 // three quick-row toggles (common, top, frequent pills) update together
@@ -223,28 +287,54 @@ function TransactionFormPreview({
           </Text>
         )}
 
+        {/* Each row shares the same two-column layout: a fixed-width label
+            on the left and a flex column on the right with its content
+            centered. This keeps both the labels AND their corresponding
+            UI columns vertically aligned across rows, regardless of how
+            many items each row renders. */}
         {showCommonCategories && (
-          <MiniCategoryRow items={commonItems} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
+            <Text style={previewRowLabelStyle}>
+              หมวดหมู่ในกระเป๋า
+            </Text>
+            <View style={previewRowContentStyle}>
+              <MiniCategoryRow items={commonItems} />
+            </View>
+          </View>
         )}
         {showTopCategories && (
-          <MiniCategoryRow items={topItems} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
+            <Text style={previewRowLabelStyle}>
+              หมวดหมู่ที่ใช้บ่อย
+            </Text>
+            <View style={previewRowContentStyle}>
+              <MiniCategoryRow items={topItems} />
+            </View>
+          </View>
         )}
         {/* Frequent pills — single centered row tacked onto the bottom when
             the toggle is on, mirroring TransactionForm's bottom pill strip. */}
         {showFrequentPills && (
-          <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-            {[120, 250, 80, 60, 200].map((amt, i) => (
-              <View key={i} style={{
-                paddingHorizontal: 8, paddingVertical: 4,
-                borderRadius: 8,
-                borderWidth: 1, borderColor: 'rgba(42,35,32,0.08)',
-                backgroundColor: '#FFFFFF',
-              }}>
-                <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 11, color: '#C65A4E' }}>
-                  {amt}
-                </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
+            <Text style={previewRowLabelStyle}>
+              จำนวนเงินใช้บ่อย
+            </Text>
+            <View style={previewRowContentStyle}>
+              <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+                {[40, 120, 25, 80,].map((amt, i) => (
+                  <View key={i} style={{
+                    paddingHorizontal: 8, paddingVertical: 4,
+                    borderRadius: 8,
+                    borderWidth: 1, borderColor: 'rgba(42,35,32,0.08)',
+                    backgroundColor: '#FFFFFF',
+                  }}>
+                    <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 11, color: '#C65A4E' }}>
+                      {amt}
+                    </Text>
+                  </View>
+                ))}
               </View>
-            ))}
+            </View>
           </View>
         )}
       </View>
@@ -672,7 +762,7 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                   value={showCommonCategories}
                   onValueChange={(v) => handleToggle('showCommonCategories', v)}
                   trackColor={{ false: '#A89888', true: '#E87A3D' }}
-                  thumbColor="#E5DCC9"
+                  thumbColor="#bbb4a4"
                 />
               </View>
               {showCommonCategories && (
@@ -729,7 +819,7 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                   value={showTopCategories}
                   onValueChange={(v) => handleToggle('showTopCategories', v)}
                   trackColor={{ false: '#A89888', true: '#E87A3D' }}
-                  thumbColor="#E5DCC9"
+                  thumbColor="#bbb4a4"
                 />
               </View>
 
@@ -787,7 +877,7 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                   value={showFrequentPills}
                   onValueChange={(v) => handleToggle('showFrequentPills', v)}
                   trackColor={{ false: '#A89888', true: '#E87A3D' }}
-                  thumbColor="#E5DCC9"
+                  thumbColor="#bbb4a4"
                 />
               </View>
 
@@ -804,7 +894,7 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
                   value={showHomeFrequentList}
                   onValueChange={(v) => handleToggle('showHomeFrequentList', v)}
                   trackColor={{ false: '#A89888', true: '#E87A3D' }}
-                  thumbColor="#E5DCC9"
+                  thumbColor="#bbb4a4"
                 />
               </View>
 

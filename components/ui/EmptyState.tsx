@@ -10,7 +10,7 @@ interface EmptyStateProps {
 export function EmptyState({ title, subtitle }: EmptyStateProps) {
   return (
     <View
-      className="flex-1 items-center justify-center py-16 mt-36"
+      className="flex-1 items-center justify-center py-16"
       style={{
         shadowColor: '#2A2320',
         shadowOffset: { width: 0, height: 3 },
