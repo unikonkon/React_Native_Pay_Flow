@@ -345,55 +345,75 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     id: "food",
     name: "อาหาร & เครื่องดื่ม",
     ionicon: "fast-food",
-    iconNames: ["fast-food", "cafe", "noodles", "dessert", "fruit", "wine"],
+    iconNames: [
+      "fast-food", "restaurant", "cafe", "pizza", "ice-cream",
+      "nutrition", "wine", "beer",
+      // CatCategoryIcon-only kinds (no Ionicons equivalent)
+      "noodles", "dessert", "fruit",
+    ],
   },
   {
     id: "transport",
     name: "เดินทาง",
     ionicon: "car",
-    iconNames: ["car", "bus", "car-sport", "flame"],
+    iconNames: [
+      "car", "car-sport", "bus", "train", "bicycle", "airplane", "boat", "flame",
+    ],
   },
   {
     id: "home",
     name: "บ้าน & บิลล์",
     ionicon: "home",
-    iconNames: ["home", "bulb", "water", "wifi", "phone-portrait"],
+    iconNames: [
+      "home", "bed", "bulb", "water", "wifi", "phone-portrait",
+      "construct", "build", "hammer",
+    ],
   },
   {
     id: "shopping",
     name: "ช้อปปิ้ง & ของใช้",
     ionicon: "bag",
-    iconNames: ["bag", "basket", "shirt", "shirt-outline"],
+    iconNames: ["bag", "basket", "cart", "shirt", "shirt-outline", "cut"],
   },
   {
     id: "health",
     name: "สุขภาพ & ความงาม",
     ionicon: "medkit",
-    iconNames: ["medkit", "barbell", "rose"],
+    iconNames: [
+      "medkit", "fitness", "barbell", "pulse", "bandage", "walk",
+      // CatCategoryIcon-only
+      "rose",
+    ],
   },
   {
     id: "lifestyle",
     name: "บันเทิง & ไลฟ์สไตล์",
     ionicon: "film",
-    iconNames: ["film", "game-controller", "tv", "heart", "notebook", "airplane"],
+    iconNames: [
+      "film", "game-controller", "musical-notes", "headset",
+      "book", "library", "camera", "image", "tv", "heart",
+      "map", "compass", "globe", "sunny", "moon", "cloud", "umbrella", "leaf",
+      // CatCategoryIcon-only
+      "notebook",
+    ],
   },
   {
     id: "social",
     name: "ครอบครัว & สังคม",
     ionicon: "people",
-    iconNames: ["people", "paw", "gift", "heart-circle", "body", "school"],
+    iconNames: [
+      "people", "person", "happy", "star", "paw", "heart-circle",
+      "body", "school", "pencil", "reader", "gift",
+    ],
   },
   {
     id: "finance",
     name: "การเงิน & ภาษี",
     ionicon: "card",
     iconNames: [
-      "shield-checkmark",
-      "card",
-      "business",
+      "shield-checkmark", "card", "business", "diamond", "calculator",
+      // CatCategoryIcon-only
       "savings",
-      "diamond",
-      "construct",
     ],
   },
   {
@@ -401,20 +421,11 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     name: "รายได้",
     ionicon: "wallet",
     iconNames: [
-      "briefcase",
-      "sparkles",
-      "time",
-      "stats-chart",
-      "wallet",
-      "laptop",
-      "storefront",
-      "trending-up",
-      "cash",
-      "analytics",
-      "receipt",
-      "trophy",
+      "briefcase", "sparkles", "time", "stats-chart", "wallet", "laptop",
+      "storefront", "trending-up", "cash", "analytics", "receipt", "trophy",
+      "ribbon", "share-social",
+      // CatCategoryIcon-only
       "salary",
-      "share-social",
     ],
   },
   {
@@ -424,6 +435,15 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     iconNames: ["ellipsis-horizontal"],
   },
 ];
+
+/**
+ * Set of `kind` values that have a custom CatCategoryIcon drawing but NO
+ * Ionicons equivalent. UIs that render with Ionicons should skip these;
+ * UIs using CatCategoryIcon (like CategoryGridModal) include them normally.
+ */
+export const NON_IONICON_KINDS: ReadonlySet<string> = new Set([
+  "noodles", "dessert", "fruit", "rose", "notebook", "savings", "salary",
+]);
 
 /** Lookup map: icon name → group id (built once at module load). */
 const ICON_TO_GROUP: Record<string, CategoryGroupId> = (() => {

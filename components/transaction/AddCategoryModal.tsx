@@ -1,5 +1,11 @@
 import { CAT_CATEGORY_ICON_KEYS, CatCategoryIcon } from '@/components/common/CatCategoryIcon';
-import { CATEGORY_COLOR_OPTIONS, SUGGESTED_EXPENSE_CATEGORIES } from '@/lib/constants/categories';
+import {
+  CATEGORY_COLOR_OPTIONS,
+  CATEGORY_GROUPS,
+  SUGGESTED_EXPENSE_CATEGORIES,
+  getCategoryGroupId,
+  type CategoryGroupId,
+} from '@/lib/constants/categories';
 import { useCategoryStore } from '@/lib/stores/category-store';
 import type { TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +24,24 @@ interface Props {
 // UI (this modal, defaults, suggestions) in visual sync.
 const ICON_OPTIONS = CAT_CATEGORY_ICON_KEYS;
 const COLOR_OPTIONS = CATEGORY_COLOR_OPTIONS;
+
+// Group ICON_OPTIONS using the shared CATEGORY_GROUPS classifier so this
+// picker mirrors CategoryGridModal / settings — one source of truth lives in
+// `lib/constants/categories.ts`. Computed once at module load (deps are
+// constant), kinds not matching any group fall into "อื่นๆ".
+const ICON_GROUPS: { group: typeof CATEGORY_GROUPS[number]; icons: string[] }[] = (() => {
+  const buckets = new Map<CategoryGroupId, string[]>();
+  for (const ic of ICON_OPTIONS) {
+    const id = getCategoryGroupId(ic);
+    const arr = buckets.get(id) ?? [];
+    arr.push(ic);
+    buckets.set(id, arr);
+  }
+  return CATEGORY_GROUPS.map((group) => ({
+    group,
+    icons: buckets.get(group.id) ?? [],
+  })).filter((s) => s.icons.length > 0);
+})();
 
 export function AddCategoryModal({ visible, type, onClose }: Props) {
   const addCategory = useCategoryStore(s => s.addCategory);
@@ -170,24 +194,47 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
             />
 
             <Text className="text-foreground font-semibold" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>ไอคอน</Text>
-            <View className="flex-row flex-wrap gap-2 mb-4">
-              {ICON_OPTIONS.map((ic) => {
-                const active = icon === ic;
-                return (
-                  <Pressable
-                    key={ic}
-                    onPress={() => setIcon(ic)}
-                    className={`w-10 h-10 rounded-full items-center justify-center border ${active ? 'border-primary bg-primary/10' : 'border-border bg-background'}`}
-                  >
-                    <CatCategoryIcon
-                      kind={ic}
-                      size={26}
-                      strokeColor={active ? '#E87A3D' : '#9A8D80'}
-                      bare
+            <View className="mb-4">
+              {ICON_GROUPS.map(({ group, icons }) => (
+                <View key={group.id} style={{ marginBottom: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                    <Ionicons
+                      name={group.ionicon as keyof typeof Ionicons.glyphMap}
+                      size={13}
+                      color="#E87A3D"
                     />
-                  </Pressable>
-                );
-              })}
+                    <Text
+                      className="text-muted-foreground"
+                      style={{
+                        fontFamily: 'IBMPlexSansThai_600SemiBold',
+                        fontSize: 12,
+                        marginLeft: 6,
+                      }}
+                    >
+                      {group.name}
+                    </Text>
+                  </View>
+                  <View className="flex-row flex-wrap gap-2">
+                    {icons.map((ic) => {
+                      const active = icon === ic;
+                      return (
+                        <Pressable
+                          key={ic}
+                          onPress={() => setIcon(ic)}
+                          className={`w-10 h-10 rounded-full items-center justify-center border ${active ? 'border-primary bg-primary/10' : 'border-border bg-background'}`}
+                        >
+                          <CatCategoryIcon
+                            kind={ic}
+                            size={26}
+                            strokeColor={active ? '#E87A3D' : '#9A8D80'}
+                            bare
+                          />
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+              ))}
             </View>
 
             <Text className="text-foreground font-semibold mb-2" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>สี</Text>
