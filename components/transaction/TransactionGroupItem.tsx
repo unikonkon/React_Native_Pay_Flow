@@ -1,5 +1,7 @@
 import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { PawPrintTapEffect, type PawPrintTapEffectHandle } from '@/components/ui/PawPrintTapEffect';
+import { getTabBarBackgroundColor } from '@/lib/constants/themes';
+import { useThemeStore } from '@/lib/stores/theme-store';
 import { formatCurrency } from '@/lib/utils/format';
 import type { Transaction } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,6 +38,7 @@ export function TransactionGroupItem({
 }: TransactionGroupItemProps) {
   const [expanded, setExpanded] = useState(false);
   const headPawRef = useRef<PawPrintTapEffectHandle>(null);
+  const currentTheme = useThemeStore(s => s.currentTheme);
 
   if (items.length === 0) return null;
   const head = items[0];
@@ -45,6 +48,8 @@ export function TransactionGroupItem({
   const total = items.reduce((s, t) => s + t.amount, 0);
   const count = items.length;
   const isGroup = count > 1;
+
+  const borderColorBg = getTabBarBackgroundColor(currentTheme);
 
   const handleHeadPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -71,7 +76,6 @@ export function TransactionGroupItem({
         paddingVertical: 5, paddingHorizontal: 12, gap: 11,
         borderRadius: 16,
         shadowColor: '#2A2320', shadowOpacity: 0.04, shadowRadius: 13, shadowOffset: { width: 0, height: 3 },
-        elevation: 2,
       }}
     >
       <CatCategoryIcon kind={icon} size={41} bg={color} />

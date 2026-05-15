@@ -3,10 +3,11 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useRef, useState } from 'react';
 import {
-  Animated,
   Alert,
+  Animated,
   Dimensions,
   Easing,
+  Keyboard,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -35,6 +36,7 @@ export function NoteEditorOverlay({ visible, value, onChangeText, pastNotes, onA
   const [mounted, setMounted] = useState(false);
   const [mode, setMode] = useState<'edit' | 'settings'>('edit');
   const [newSuggestion, setNewSuggestion] = useState('');
+  const [kbHeight, setKbHeight] = useState(0);
   const inputRef = useRef<TextInput>(null);
   const newSuggestionRef = useRef<TextInput>(null);
   const valueRef = useRef(value);
@@ -65,6 +67,16 @@ export function NoteEditorOverlay({ visible, value, onChangeText, pastNotes, onA
       }).start(() => setMounted(false));
     }
   }, [visible, mounted, translateX, screenWidth]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const showSub = Keyboard.addListener('keyboardDidShow', e => setKbHeight(e.endCoordinates.height));
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => setKbHeight(0));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const handleBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -373,7 +385,7 @@ export function NoteEditorOverlay({ visible, value, onChangeText, pastNotes, onA
             style={{
               paddingHorizontal: 16,
               paddingTop: 6,
-              paddingBottom: 8,
+              paddingBottom: Platform.OS === 'android' && kbHeight > 0 ? kbHeight + 26 : 8,
               borderTopWidth: 1,
             }}
           >

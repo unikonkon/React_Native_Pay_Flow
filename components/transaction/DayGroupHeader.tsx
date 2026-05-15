@@ -20,26 +20,23 @@ export function DayGroupHeader({ date, income, expense }: DayGroupHeaderProps) {
   return (
     <View className="flex-row items-center rounded-xl"
       style={{
-        paddingHorizontal: 18, paddingTop: 3, paddingBottom: 2, marginTop: 8, gap: 10,
-        backgroundColor: tabBg,
-        opacity: 0.93, // ให้จางลงกว่าปกติ
+        paddingHorizontal: 18, paddingTop: 3, paddingBottom: 2, marginTop: 8, gap: 6,
       }}>
       <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 17, fontVariant: ['tabular-nums'] }} className="text-foreground">
         {formatRelativeDate(date)}
       </Text>
-      <View style={{ flex: 1 }} />
+      <View/>
       {income > 0 && (
-        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 17, fontVariant: ['tabular-nums'], color: '#3E8B68' }}>+{formatCurrency(income)}</Text>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 17, color: '#3E8B68' }}>+{formatCurrency(income)}</Text>
       )}
       {expense > 0 && (
-        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 17, fontVariant: ['tabular-nums'], color: '#C65A4E' }}>−{formatCurrency(expense)}</Text>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 17, color: '#C65A4E' }}>−{formatCurrency(expense)}</Text>
       )}
       {hasAny && (
         <Text
           style={{
             fontFamily: 'Inter_700Bold',
             fontSize: 17,
-            fontVariant: ['tabular-nums'],
             color: balanceColor,
             paddingHorizontal: 6,
             paddingVertical: 1,

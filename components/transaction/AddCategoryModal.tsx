@@ -6,12 +6,24 @@ import {
   getCategoryGroupId,
   type CategoryGroupId,
 } from '@/lib/constants/categories';
+import { getThemeSwatch } from '@/lib/constants/themes';
 import { useCategoryStore } from '@/lib/stores/category-store';
+import { useThemeStore } from '@/lib/stores/theme-store';
 import type { TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+  BottomSheetTextInput,
+  useBottomSheetTimingConfigs,
+  type BottomSheetBackdropProps,
+} from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
-import { useEffect, useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Easing } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Props {
   visible: boolean;
@@ -25,10 +37,6 @@ interface Props {
 const ICON_OPTIONS = CAT_CATEGORY_ICON_KEYS;
 const COLOR_OPTIONS = CATEGORY_COLOR_OPTIONS;
 
-// Group ICON_OPTIONS using the shared CATEGORY_GROUPS classifier so this
-// picker mirrors CategoryGridModal / settings — one source of truth lives in
-// `lib/constants/categories.ts`. Computed once at module load (deps are
-// constant), kinds not matching any group fall into "อื่นๆ".
 const ICON_GROUPS: { group: typeof CATEGORY_GROUPS[number]; icons: string[] }[] = (() => {
   const buckets = new Map<CategoryGroupId, string[]>();
   for (const ic of ICON_OPTIONS) {
@@ -50,6 +58,19 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
   const [icon, setIcon] = useState<string>(ICON_OPTIONS[0]);
   const [color, setColor] = useState(COLOR_OPTIONS[0]);
   const [saving, setSaving] = useState(false);
+
+  const currentTheme = useThemeStore(s => s.currentTheme);
+  const swatch = getThemeSwatch(currentTheme);
+  const sheetBg = swatch?.bg ?? '#FBF7F0';
+  const indicatorColor = swatch?.border ?? '#EDE4D3';
+
+  const insets = useSafeAreaInsets();
+  const sheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ['90%'], []);
+  const animationConfigs = useBottomSheetTimingConfigs({
+    duration: 220,
+    easing: Easing.out(Easing.cubic),
+  });
 
   useEffect(() => {
     if (visible) {
@@ -75,41 +96,87 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
     setColor(s.color);
   };
 
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        opacity={0.5}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
+  const handleRequestClose = useCallback(() => {
+    sheetRef.current?.close();
+  }, []);
+
+  const handleSheetClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
   const handleSave = async () => {
     const trimmed = name.trim();
     if (!trimmed || saving) return;
     setSaving(true);
     await addCategory({ name: trimmed, icon, color, type });
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    onClose();
+    handleRequestClose();
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable
-        onPress={onClose}
-        className="flex-1 bg-black/40 items-center justify-center"
-      >
-        <Pressable
-          onPress={(e) => e.stopPropagation()}
-          className="w-11/12 max-w-md bg-card rounded-2xl p-4 border border-border"
-          style={{ maxHeight: '89%' }}
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      statusBarTranslucent
+      onRequestClose={handleRequestClose}
+    >
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <BottomSheet
+          ref={sheetRef}
+          index={0}
+          snapPoints={snapPoints}
+          topInset={insets.top}
+          enableDynamicSizing={false}
+          enableOverDrag={false}
+          enablePanDownToClose
+          keyboardBehavior="interactive"
+          keyboardBlurBehavior="restore"
+          android_keyboardInputMode="adjustResize"
+          animationConfigs={animationConfigs}
+          onClose={handleSheetClose}
+          backdropComponent={renderBackdrop}
+          handleIndicatorStyle={{ backgroundColor: indicatorColor, width: 36, height: 4 }}
+          backgroundStyle={{ backgroundColor: sheetBg, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
         >
-          <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-foreground font-bold text-lg" style={{ fontFamily: 'IBMPlexSansThai_600SemiBold' }}>
+          {/* Header */}
+          <View
+            className="flex-row items-center justify-between"
+            style={{ paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8 }}
+          >
+            <Text
+              style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }}
+              className="text-foreground"
+            >
               เพิ่มหมวด{type === 'expense' ? 'รายจ่าย' : 'รายรับ'}
             </Text>
-       
-            <Pressable onPress={onClose} className="p-1">
-              <Ionicons name="close" size={22} color="#6B5F52" />
+            <Pressable
+              onPress={handleRequestClose}
+              style={{ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' }}
+              className="bg-secondary"
+              hitSlop={6}
+            >
+              <Ionicons name="close" size={18} color="#6B5F52" />
             </Pressable>
           </View>
 
-          <ScrollView
-            style={{ flexShrink: 1 }}
-            keyboardShouldPersistTaps="handled"
-            nestedScrollEnabled
+          <BottomSheetScrollView
+            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 + insets.bottom }}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
             {suggestions.length > 0 && (
               <View style={{ marginBottom: 14 }}>
@@ -179,22 +246,37 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
               </View>
             )}
 
-            <View className="items-center">
+            <View className="items-center" style={{ marginBottom: 8 }}>
               <CatCategoryIcon kind={icon} bg={color} size={80} />
             </View>
 
-            <Text className="text-foreground font-semibold " style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>ชื่อ</Text>
-            <TextInput
+            <Text
+              className="text-foreground"
+              style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 6 }}
+            >
+              ชื่อ
+            </Text>
+            <BottomSheetTextInput
               value={name}
               onChangeText={setName}
               placeholder="ชื่อหมวดหมู่"
-              placeholderTextColor="#999"
-              className="border border-border rounded-xl px-3 py-3 mb-4 text-foreground"
-              style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}
+              placeholderTextColor="#9A8D80"
+              className="border border-border rounded-xl px-3 text-foreground bg-card"
+              style={{
+                fontFamily: 'IBMPlexSansThai_400Regular',
+                fontSize: 15,
+                paddingVertical: 10,
+                marginBottom: 14,
+              }}
             />
 
-            <Text className="text-foreground font-semibold" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>ไอคอน</Text>
-            <View className="mb-4">
+            <Text
+              className="text-foreground"
+              style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 6 }}
+            >
+              ไอคอน
+            </Text>
+            <View style={{ marginBottom: 14 }}>
               {ICON_GROUPS.map(({ group, icons }) => (
                 <View key={group.id} style={{ marginBottom: 12 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
@@ -220,7 +302,10 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
                       return (
                         <Pressable
                           key={ic}
-                          onPress={() => setIcon(ic)}
+                          onPress={() => {
+                            Haptics.selectionAsync();
+                            setIcon(ic);
+                          }}
                           className={`w-14 h-14 rounded-full items-center justify-center border ${active ? 'border-4 border-primary bg-primary/10' : 'border-border bg-background'}`}
                         >
                           <CatCategoryIcon
@@ -237,12 +322,20 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
               ))}
             </View>
 
-            <Text className="text-foreground font-semibold mb-2" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>สี</Text>
-            <View className="flex-row flex-wrap gap-3 mb-5">
+            <Text
+              className="text-foreground"
+              style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13, marginBottom: 6 }}
+            >
+              สี
+            </Text>
+            <View className="flex-row flex-wrap gap-3" style={{ marginBottom: 18 }}>
               {COLOR_OPTIONS.map((c) => (
                 <Pressable
                   key={c}
-                  onPress={() => setColor(c)}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setColor(c);
+                  }}
                   className={`w-9 h-9 rounded-full items-center justify-center ${color === c ? 'border-2 border-foreground' : ''}`}
                   style={{ backgroundColor: c }}
                 >
@@ -256,13 +349,22 @@ export function AddCategoryModal({ visible, type, onClose }: Props) {
             <Pressable
               onPress={handleSave}
               disabled={!name.trim() || saving}
-              className={`py-3 rounded-full items-center bg-primary ${!name.trim() || saving ? 'opacity-50' : ''}`}
+              style={{
+                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+                paddingVertical: 12, borderRadius: 999,
+                backgroundColor: !name.trim() || saving ? 'rgba(232,122,61,0.4)' : '#E87A3D',
+                shadowColor: '#E87A3D', shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 3 },
+                elevation: 3,
+              }}
             >
-              <Text className="text-primary-foreground font-bold text-base" style={{ fontFamily: 'IBMPlexSansThai_400Regular' }}>เพิ่ม</Text>
+              <Ionicons name="add" size={16} color="#fff" />
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 15, color: '#fff' }}>
+                เพิ่ม
+              </Text>
             </Pressable>
-          </ScrollView>
-        </Pressable>
-      </Pressable>
+          </BottomSheetScrollView>
+        </BottomSheet>
+      </GestureHandlerRootView>
     </Modal>
   );
 }

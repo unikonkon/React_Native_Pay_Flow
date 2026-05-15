@@ -1,10 +1,21 @@
 import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { groupCategoriesByType } from '@/lib/constants/categories';
+import { getThemeSwatch } from '@/lib/constants/themes';
+import { useThemeStore } from '@/lib/stores/theme-store';
 import type { Category, TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+  useBottomSheetTimingConfigs,
+  type BottomSheetBackdropProps,
+} from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
-import { useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { Modal, Pressable, Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Easing } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AddCategoryModal } from './AddCategoryModal';
 
 interface Props {
@@ -28,7 +39,41 @@ export function CategoryGridModal({
 }: Props) {
   const [addVisible, setAddVisible] = useState(false);
 
+  const currentTheme = useThemeStore(s => s.currentTheme);
+  const swatch = getThemeSwatch(currentTheme);
+  const sheetBg = swatch?.bg ?? '#FBF7F0';
+  const indicatorColor = swatch?.border ?? '#EDE4D3';
+
+  const insets = useSafeAreaInsets();
+  const sheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ['85%'], []);
+  const animationConfigs = useBottomSheetTimingConfigs({
+    duration: 220,
+    easing: Easing.out(Easing.cubic),
+  });
+
   const sections = useMemo(() => groupCategoriesByType(categories), [categories]);
+
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        opacity={0.5}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
+  const handleRequestClose = useCallback(() => {
+    sheetRef.current?.close();
+  }, []);
+
+  const handleSheetClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
 
   // Build flat children + collect sticky-header indices so the section
   // headers pin to the top of the ScrollView as the user scrolls.
@@ -41,9 +86,11 @@ export function CategoryGridModal({
       out.push(
         <View
           key={`hdr-${group.id}`}
-          className="bg-card flex-row items-center"
+          className="flex-row items-center"
           style={{
             paddingHorizontal: 16,
+            paddingVertical: 8,
+            backgroundColor: sheetBg,
           }}
         >
           <Ionicons
@@ -61,23 +108,13 @@ export function CategoryGridModal({
           >
             {group.name}
           </Text>
-          {/* <Text
-            style={{
-              marginLeft: 'auto',
-              fontSize: 11,
-              color: '#8A7E72',
-              fontFamily: 'IBMPlexSansThai_400Regular',
-            }}
-          >
-            {items.length}
-          </Text> */}
         </View>
       );
       out.push(
         <View
           key={`grp-${group.id}`}
           className="flex-row flex-wrap"
-          style={{ paddingHorizontal: 12, paddingTop: 12, paddingBottom: 4 }}
+          style={{ paddingHorizontal: 12, paddingTop: 4, paddingBottom: 4 }}
         >
           {items.map((cat) => {
             const isSelected = cat.id === selectedId;
@@ -87,7 +124,7 @@ export function CategoryGridModal({
                 onPress={() => {
                   Haptics.selectionAsync();
                   onSelect(cat);
-                  onClose();
+                  handleRequestClose();
                 }}
                 style={{ width: `${100 / columns}%` }}
                 className="items-center mb-3"
@@ -124,23 +161,35 @@ export function CategoryGridModal({
     });
 
     return { children: out, stickyIndices: sticky };
-  }, [sections, selectedId, columns, onSelect, onClose]);
+  }, [sections, selectedId, columns, onSelect, handleRequestClose, sheetBg]);
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable
-        onPress={onClose}
-        className="flex-1 bg-black/40 items-center justify-center"
-      >
-        <Pressable
-          onPress={(e) => e.stopPropagation()}
-          className="w-11/12 max-w-md bg-card rounded-3xl border border-border"
-          style={{ maxHeight: '75%', overflow: 'hidden' }}
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      statusBarTranslucent
+      onRequestClose={handleRequestClose}
+    >
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <BottomSheet
+          ref={sheetRef}
+          index={0}
+          snapPoints={snapPoints}
+          topInset={insets.top}
+          enableDynamicSizing={false}
+          enableOverDrag={false}
+          enablePanDownToClose
+          animationConfigs={animationConfigs}
+          onClose={handleSheetClose}
+          backdropComponent={renderBackdrop}
+          handleIndicatorStyle={{ backgroundColor: indicatorColor, width: 36, height: 4 }}
+          backgroundStyle={{ backgroundColor: sheetBg, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
         >
           {/* Header */}
           <View
             className="flex-row items-center justify-between"
-            style={{ padding: 16, paddingBottom: 12 }}
+            style={{ paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8 }}
           >
             <Text
               style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 18 }}
@@ -149,25 +198,20 @@ export function CategoryGridModal({
               เลือกหมวดหมู่
             </Text>
             <Pressable
-              onPress={onClose}
-              style={{
-                width: 34,
-                height: 34,
-                borderRadius: 17,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              onPress={handleRequestClose}
+              style={{ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' }}
               className="bg-secondary"
+              hitSlop={6}
             >
               <Ionicons name="close" size={18} color="#6B5F52" />
             </Pressable>
           </View>
 
           {/* Sectioned grid — sticky group headers, items wrap horizontally */}
-          <ScrollView
+          <BottomSheetScrollView
             stickyHeaderIndices={stickyIndices}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
+            contentContainerStyle={{ paddingBottom: 24 + insets.bottom }}
           >
             {children}
 
@@ -178,7 +222,10 @@ export function CategoryGridModal({
                 style={{ paddingHorizontal: 12, paddingTop: 8 }}
               >
                 <Pressable
-                  onPress={() => setAddVisible(true)}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setAddVisible(true);
+                  }}
                   style={{ width: `${100 / columns}%` }}
                   className="items-center mb-3"
                 >
@@ -211,9 +258,9 @@ export function CategoryGridModal({
                 </Pressable>
               </View>
             )}
-          </ScrollView>
-        </Pressable>
-      </Pressable>
+          </BottomSheetScrollView>
+        </BottomSheet>
+      </GestureHandlerRootView>
 
       {type && (
         <AddCategoryModal
