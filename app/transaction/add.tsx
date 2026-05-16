@@ -10,8 +10,8 @@ import BottomSheet, {
   type BottomSheetBackdropProps,
 } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Platform, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Easing } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -36,6 +36,18 @@ export default function AddTransactionScreen() {
 
   const editingTransaction = useTransactionStore(s => s.editingTransaction);
   const setEditingTransaction = useTransactionStore(s => s.setEditingTransaction);
+
+  // On Android, defer mounting the heavy TransactionForm by one frame so the
+  // BottomSheet can commit its initial layout and kick off the slide-up
+  // animation without competing with the form's first-render work (icons,
+  // calculator pad, modals). The form mounts in parallel with the animation,
+  // eliminating the perceived lag before the sheet starts moving.
+  const [formReady, setFormReady] = useState(Platform.OS !== 'android');
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const id = requestAnimationFrame(() => setFormReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   // Clear editing state when screen unmounts
   useEffect(() => {
@@ -85,7 +97,11 @@ export default function AddTransactionScreen() {
           handleIndicatorStyle={{ backgroundColor: indicatorColor, width: 36, height: 4 }}
           backgroundStyle={{ backgroundColor: sheetBg, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
         >
-          <TransactionForm editTransaction={editingTransaction} onClose={handleRequestClose} />
+          {formReady ? (
+            <TransactionForm editTransaction={editingTransaction} onClose={handleRequestClose} />
+          ) : (
+            <View style={{ flex: 1 }} />
+          )}
         </BottomSheet>
       </View>
     </GestureHandlerRootView>
