@@ -3,6 +3,15 @@ export function formatCurrency(amount: number, currency = "THB"): string {
   return `${symbol}${amount.toLocaleString("th-TH", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
+export function getCurrencyFontSize(amount: number, baseSize = 22): number {
+  const abs = Math.abs(amount);
+  if (abs > 999_999_999) return Math.round(baseSize * 0.6);
+  if (abs > 99_999_999) return Math.round(baseSize * 0.68);
+  if (abs > 9_999_999) return Math.round(baseSize * 0.77);
+  if (abs > 999_999) return Math.round(baseSize * 0.86);
+  return baseSize;
+}
+
 export function parseCurrencyInput(text: string): number {
   const cleaned = text.replace(/[^0-9.]/g, "");
   return parseFloat(cleaned) || 0;

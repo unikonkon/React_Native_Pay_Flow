@@ -12,70 +12,17 @@ import { useAnalysisStore } from '@/lib/stores/analysis-store';
 import { getDb, getSummaryByRange } from '@/lib/stores/db';
 import { useThemeStore } from '@/lib/stores/theme-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
-import { formatCurrency, getToday } from '@/lib/utils/format';
+import { formatCurrency, getCurrencyFontSize, getToday } from '@/lib/utils/format';
 import type { Analysis, Transaction } from '@/types';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Image, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Circle, Path } from 'react-native-svg';
 
-// Tiny meaningful icons next to each summary label:
-//  • TrendUpIcon — line trending ↗ for "รายรับ" (income)
-//  • TrendDownIcon — line trending ↘ for "รายจ่าย" (expense)
-//  • WalletIcon — wallet silhouette w/ cat-ear flick for "คงเหลือ" (remaining)
-// Color is passed in so the balance icon can flip green/red with its value.
-
-function TrendUpIcon({ size = 13, color }: { size?: number; color: string }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 16 16">
-      <Path
-        d="M2.5 12 L6.5 7.5 L9 10 L13.5 4.5"
-        stroke={color} strokeWidth={1.8} fill="none"
-        strokeLinecap="round" strokeLinejoin="round"
-      />
-      <Path
-        d="M10.5 4.5 L13.7 4.5 L13.7 7.6"
-        stroke={color} strokeWidth={1.8} fill="none"
-        strokeLinecap="round" strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
-
-function TrendDownIcon({ size = 13, color }: { size?: number; color: string }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 16 16">
-      <Path
-        d="M2.5 4.5 L6.5 9 L9 6.5 L13.5 12"
-        stroke={color} strokeWidth={1.8} fill="none"
-        strokeLinecap="round" strokeLinejoin="round"
-      />
-      <Path
-        d="M10.5 12 L13.7 12 L13.7 8.9"
-        stroke={color} strokeWidth={1.8} fill="none"
-        strokeLinecap="round" strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
-
-function WalletIcon({ size = 13, color }: { size?: number; color: string }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 16 16">
-      {/* Cat-ear flick on the wallet's top-left, matching the app's mascot motif */}
-      <Path d="M3 5 L2.4 2.2 L4.8 3.5 Z" fill={color} />
-      {/* Wallet body w/ cut-out for the coin pocket on the right edge */}
-      <Path
-        d="M2 5.2 L2 13 A1 1 0 0 0 3 14 L13 14 A1 1 0 0 0 14 13 L14 9.5 L11 9.5 A1.6 1.6 0 0 1 11 6.3 L14 6.3 L14 5.2 A1 1 0 0 0 13 4.2 L3 4.2 A1 1 0 0 0 2 5.2 Z"
-        fill={color}
-      />
-      {/* Coin highlight inside the pocket */}
-      <Circle cx={11.4} cy={7.9} r={0.7} fill="#FBF7F0" />
-    </Svg>
-  );
-}
+const CAT_INCOME = require('@/assets/summary/cat-income.png');
+const CAT_EXPENSE = require('@/assets/summary/cat-expense.png');
+const CAT_BALANCE = require('@/assets/summary/cat-balance.png');
 
 export default function TransactionsScreen() {
   const transactions = useTransactionStore(s => s.transactions);
@@ -246,54 +193,81 @@ export default function TransactionsScreen() {
           </View>
         </View>
 
-        {/* Summary row — larger numbers like prototype, w/ a tiny meaning
-            icon next to each label (trending-up for income, trending-down
-            for expense, wallet for what's left). The balance icon flips
-            green/red along with its number when net dips below zero. */}
-        <View className="flex-row justify-around pb-2">
-          <View className="items-center flex-1">
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <TrendUpIcon size={13} color="#16A34A" />
-              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">รายรับ</Text>
-            </View>
-            <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 20, fontVariant: ['tabular-nums'], letterSpacing: -0.4 }} className="text-income">{formatCurrency(totalIncome)}</Text>
-          </View>
-          <View className="items-center flex-1">
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <TrendDownIcon size={13} color="#DC2626" />
-              <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">รายจ่าย</Text>
-            </View>
-            <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 20, fontVariant: ['tabular-nums'], letterSpacing: -0.4 }} className="text-expense">{formatCurrency(totalExpense)}</Text>
-          </View>
-          <View className="items-center flex-1">
-            {(() => {
-              const net = totalIncome - totalExpense;
-              const balanceColor = net >= 0 ? '#166534' : '#991B1B';
-              return (
-                <>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <WalletIcon size={13} color={balanceColor} />
-                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-muted-foreground">คงเหลือ</Text>
+        {/* Summary row — three rounded cards, each w/ a pill label up top,
+            a cat illustration in the middle, and a big colored number at
+            the bottom. The balance number flips green/red w/ its sign. */}
+        {(() => {
+          const net = totalIncome - totalExpense;
+          const balanceColor = net >= 0 ? '#16A34A' : '#DC2626';
+          const cards = [
+            { label: 'รายรับ', cat: CAT_INCOME, value: totalIncome, color: '#16A34A' },
+            { label: 'รายจ่าย', cat: CAT_EXPENSE, value: totalExpense, color: '#DC2626' },
+            { label: 'คงเหลือ', cat: CAT_BALANCE, value: net, color: balanceColor },
+          ];
+          return (
+            <View className="flex-row pb-2" style={{ gap: 6 }}>
+              {cards.map((c) => (
+                <View
+                  key={c.label}
+                  style={{
+                    flex: 1,
+                    borderRadius: 18,
+                    borderWidth: 1.5,
+                    // borderColor: '#D9C9A8',
+                    // backgroundColor: '#FBF3E2',
+                    paddingTop: 6,
+                    paddingBottom: 6,
+                    paddingHorizontal: 4,
+                    alignItems: 'center',
+                  }}
+                  className="border-b border-border"
+                >
+                  <View
+                    style={{
+                      // backgroundColor: '#F4E4C0',
+                      borderRadius: 12,
+                      paddingHorizontal: 14,
+                      paddingVertical: 3,
+                      marginBottom: 4,
+                    }}
+                    className="bg-accent"
+                  >
+                    <Text
+                      style={{
+                        fontFamily: 'IBMPlexSansThai_700Bold',
+                        fontSize: 15,
+                        // color: '#6B4A2B',
+                      }}
+                      className="text-foreground"
+                    >
+                      {c.label}
+                    </Text>
                   </View>
+                  <Image
+                    source={c.cat}
+                    style={{ width: 78, height: 58, marginVertical: 2 }}
+                    resizeMode="contain"
+                  />
                   <Text
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.6}
                     style={{
                       fontFamily: 'Inter_700Bold',
-                      fontSize: 20,
+                      fontSize: getCurrencyFontSize(c.value, 22),
                       fontVariant: ['tabular-nums'],
                       letterSpacing: -0.4,
-                      color: balanceColor,
-                      textShadowColor: 'rgba(0,0,0,0.09)',
-                      textShadowOffset: { width: 0, height: 1 },
-                      textShadowRadius: 1,
+                      color: c.color,
+                      marginTop: 2,
                     }}
                   >
-                    {formatCurrency(net)}
+                    {formatCurrency(c.value)}
                   </Text>
-                </>
-              );
-            })()}
-          </View>
-        </View>
+                </View>
+              ))}
+            </View>
+          );
+        })()}
       </View>
 
       {/* Budget Alerts */}
