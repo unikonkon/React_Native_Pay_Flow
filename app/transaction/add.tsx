@@ -1,4 +1,5 @@
 import { TransactionForm } from '@/components/transaction/TransactionForm';
+import { TransactionFormSkeleton } from '@/components/transaction/TransactionFormSkeleton';
 import { getThemeSwatch } from '@/lib/constants/themes';
 import { useSettingsStore } from '@/lib/stores/settings-store';
 import { useThemeStore } from '@/lib/stores/theme-store';
@@ -100,7 +101,7 @@ export default function AddTransactionScreen() {
           {formReady ? (
             <TransactionForm editTransaction={editingTransaction} onClose={handleRequestClose} />
           ) : (
-            <View style={{ flex: 1 }} />
+            <TransactionFormSkeleton />
           )}
         </BottomSheet>
       </View>
