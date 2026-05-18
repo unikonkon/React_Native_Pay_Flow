@@ -1,45 +1,42 @@
-import { getThemeSwatch } from '@/lib/constants/themes';
-import { useSettingsStore } from '@/lib/stores/settings-store';
-import { useThemeStore } from '@/lib/stores/theme-store';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Animated, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const CATEGORY_QUICK_ITEM_WIDTH = 66;
 
-// Fallbacks tuned for the default warm-light theme (matches global.css)
-const FALLBACK_BG = '#FBF7F0';
-const FALLBACK_WEAK = 'rgba(42,35,32,0.06)';
-const FALLBACK_STRONG = 'rgba(42,35,32,0.09)';
+// Static defaults — must match the settings store defaults so layout shift on
+// real form mount is minimal. See lib/stores/settings-store.ts.
+const DEFAULT_COMMON_COUNT = 7;
+const DEFAULT_TOP_COUNT = 8;
+const DEFAULT_CALC_PAD_PADDING = 6;
 
-interface SkeletonPalette {
+// Warm-light fallback palette (matches global.css). Caller can override via
+// props to adapt the skeleton to the active ThemeFamily without forcing the
+// skeleton to subscribe to the theme store itself.
+const FALLBACK_PALETTE: SkeletonPalette = {
+  bg: '#FBF7F0',
+  weak: 'rgba(42,35,32,0.06)',
+  strong: 'rgba(42,35,32,0.09)',
+};
+
+export interface SkeletonPalette {
   bg: string;
   weak: string;
   strong: string;
 }
 
-/**
- * Lightweight placeholder shown while the real TransactionForm defers its
- * first render on Android. Mirrors the form's outer layout so the BottomSheet
- * doesn't shift when the real content mounts. Adapts to light/dark themes
- * via the active ThemeFamily swatch.
- */
-export function TransactionFormSkeleton() {
-  const insets = useSafeAreaInsets();
-  const commonCategoryLimit = useSettingsStore(s => s.commonCategoryLimit);
-  const topCategoryLimit = useSettingsStore(s => s.topCategoryLimit);
-  const showCommonCategories = useSettingsStore(s => s.showCommonCategories);
-  const showTopCategories = useSettingsStore(s => s.showTopCategories);
-  const calcPadButtonPadding = useSettingsStore(s => s.calcPadButtonPadding);
-  const currentTheme = useThemeStore(s => s.currentTheme);
+interface TransactionFormSkeletonProps {
+  palette?: SkeletonPalette;
+}
 
-  const palette = useMemo<SkeletonPalette>(() => {
-    const swatch = getThemeSwatch(currentTheme);
-    if (!swatch) return { bg: FALLBACK_BG, weak: FALLBACK_WEAK, strong: FALLBACK_STRONG };
-    // `border` = subtle outline tint, `accent` = stronger surface tint.
-    // Both variants are tuned per family for the right contrast.
-    return { bg: swatch.bg, weak: swatch.border, strong: swatch.accent };
-  }, [currentTheme]);
+/**
+ * Static, dependency-free placeholder for TransactionForm. Renders synchronously
+ * with no store subscriptions so the BottomSheet can paint its first frame
+ * instantly. Layout uses default settings values — if the user has customised
+ * limits, a small shift may occur when the real form mounts.
+ */
+export function TransactionFormSkeleton({ palette = FALLBACK_PALETTE }: TransactionFormSkeletonProps) {
+  const insets = useSafeAreaInsets();
 
   const pulse = useRef(new Animated.Value(0.6)).current;
   useEffect(() => {
@@ -52,9 +49,6 @@ export function TransactionFormSkeleton() {
     loop.start();
     return () => loop.stop();
   }, [pulse]);
-
-  const commonCount = Math.min(8, Math.max(1, commonCategoryLimit || 7));
-  const topCount = Math.min(8, Math.max(1, topCategoryLimit || 8));
 
   const Block = ({
     width,
@@ -150,8 +144,8 @@ export function TransactionFormSkeleton() {
 
         {/* Scrollable category area */}
         <View style={{ flex: 1 }}>
-          {showCommonCategories && renderCategoryRow(commonCount)}
-          {showTopCategories && renderCategoryRow(topCount)}
+          {renderCategoryRow(DEFAULT_COMMON_COUNT)}
+          {renderCategoryRow(DEFAULT_TOP_COUNT)}
         </View>
 
         {/* Bottom fixed section */}
@@ -199,7 +193,7 @@ export function TransactionFormSkeleton() {
                       marginHorizontal: 4,
                       borderRadius: 10,
                       backgroundColor: palette.strong,
-                      height: 20 + calcPadButtonPadding * 2,
+                      height: 20 + DEFAULT_CALC_PAD_PADDING * 2,
                     }}
                   />
                 ))}
@@ -213,7 +207,7 @@ export function TransactionFormSkeleton() {
                   marginHorizontal: 4,
                   borderRadius: 12,
                   backgroundColor: palette.strong,
-                  height: 20 + calcPadButtonPadding * 2,
+                  height: 20 + DEFAULT_CALC_PAD_PADDING * 2,
                 }}
               />
               <View
@@ -222,7 +216,7 @@ export function TransactionFormSkeleton() {
                   marginHorizontal: 4,
                   borderRadius: 12,
                   backgroundColor: palette.strong,
-                  height: 20 + calcPadButtonPadding * 2,
+                  height: 20 + DEFAULT_CALC_PAD_PADDING * 2,
                 }}
               />
               <View
@@ -231,7 +225,7 @@ export function TransactionFormSkeleton() {
                   marginHorizontal: 4,
                   borderRadius: 14,
                   backgroundColor: palette.strong,
-                  height: 20 + calcPadButtonPadding * 2,
+                  height: 20 + DEFAULT_CALC_PAD_PADDING * 2,
                 }}
               />
             </View>
