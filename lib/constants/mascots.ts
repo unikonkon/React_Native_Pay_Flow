@@ -7,6 +7,21 @@ export interface MascotOption {
 }
 
 export const BG_MASCOTS: MascotOption[] = [
+  {
+    id: "head1",
+    name: "หัวการ์ตูน 1",
+    source: require("@/assets/bg/head1.png"),
+  },
+  {
+    id: "head2",
+    name: "หัวการ์ตูน 2",
+    source: require("@/assets/bg/head2.png"),
+  },
+  {
+    id: "head3",
+    name: "หัวการ์ตูน 3",
+    source: require("@/assets/bg/head3.png"),
+  },
   { id: "bg", name: "แมวมันนี่", source: require("@/assets/bg/bg.png") },
   { id: "bg1", name: "แบบ 1", source: require("@/assets/bg/bg1.png") },
   { id: "bg2", name: "แบบ 2", source: require("@/assets/bg/bg2.png") },
@@ -25,10 +40,26 @@ export const BG_MASCOTS: MascotOption[] = [
 ];
 
 export const ADD_MASCOTS: MascotOption[] = [
+  { id: "add18", name: "แบบ 18", source: require("@/assets/add/add18.png") },
   { id: "add", name: "แมวมันนี่", source: require("@/assets/add/add.png") },
   { id: "add1", name: "แบบ 1", source: require("@/assets/add/add1.png") },
   { id: "add2", name: "แบบ 2", source: require("@/assets/add/add2.png") },
   { id: "add3", name: "แบบ 3", source: require("@/assets/add/add3.png") },
+  {
+    id: "cat-income",
+    name: "cat-income",
+    source: require("@/assets/summary/cat-income.png"),
+  },
+  {
+    id: "cat-balance",
+    name: "cat-balance",
+    source: require("@/assets/summary/cat-balance.png"),
+  },
+  {
+    id: "cat-expense",
+    name: "cat-expense",
+    source: require("@/assets/summary/cat-expense.png"),
+  },
   {
     id: "iconApp",
     name: "iconApp",

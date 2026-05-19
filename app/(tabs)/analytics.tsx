@@ -87,6 +87,7 @@ export default function AnalyticsScreen() {
               period={currentPeriod}
               onChange={setCurrentPeriod}
               className=""
+              typeUI='compact'
             />
           </View>
           {/* Expense / Income / All toggle */}

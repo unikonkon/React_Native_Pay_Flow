@@ -12,7 +12,7 @@ import { useAnalysisStore } from '@/lib/stores/analysis-store';
 import { getDb, getSummaryByRange } from '@/lib/stores/db';
 import { useThemeStore } from '@/lib/stores/theme-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
-import { formatCurrency, getCurrencyFontSize, getToday } from '@/lib/utils/format';
+import { formatCurrency, getToday } from '@/lib/utils/format';
 import type { Analysis, Transaction } from '@/types';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
@@ -166,149 +166,144 @@ export default function TransactionsScreen() {
 
   return (
     <WallpaperBackground>
-    <SafeAreaView className="flex-1" edges={['top']}>
-      {/* Header */}
-      <View className="px-4">
-        <View className="flex-row items-center mb-2 justify-between">
-          <View className="flex-row items-center">
-            <Image source={mascotRun} style={{ width: 50, height: 34 }} resizeMode="contain" />
-            <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground ml-2">รายการ</Text>
-          </View>
-          {/* Wallet filter */}
-          <WalletFilter
-            selectedWalletId={selectedWalletId}
-            onChange={setSelectedWalletId}
-            className=""
-          />
-        </View>
-
-        {/* Month row */}
-        <View className="flex-row items-center mb-1">
-          <View className="flex-1">
-            <PeriodSelector
-              period={currentPeriod}
-              onChange={setCurrentPeriod}
+      <SafeAreaView className="flex-1" edges={['top']}>
+        {/* Header */}
+        <View className="px-4">
+          <View className="flex-row items-center mb-2 justify-between">
+            <View className="flex-row items-center">
+              <Image source={mascotRun} style={{ width: 50, height: 34 }} resizeMode="contain" />
+              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground ml-2">รายการ</Text>
+            </View>
+            {/* Wallet filter */}
+            <WalletFilter
+              selectedWalletId={selectedWalletId}
+              onChange={setSelectedWalletId}
               className=""
             />
           </View>
-        </View>
 
-        {/* Summary row — three rounded cards, each w/ a pill label up top,
+          {/* Month row */}
+          <View className="flex-row items-center mb-1">
+            <View className="flex-1">
+              <PeriodSelector
+                period={currentPeriod}
+                onChange={setCurrentPeriod}
+                className=""
+                typeUI='full'
+              />
+            </View>
+          </View>
+
+          {/* Summary row — three rounded cards, each w/ a pill label up top,
             a cat illustration in the middle, and a big colored number at
             the bottom. The balance number flips green/red w/ its sign. */}
-        {(() => {
-          const net = totalIncome - totalExpense;
-          const balanceColor = net >= 0 ? '#16A34A' : '#DC2626';
-          const cards = [
-            { label: 'รายรับ', cat: CAT_INCOME, value: totalIncome, color: '#16A34A' },
-            { label: 'รายจ่าย', cat: CAT_EXPENSE, value: totalExpense, color: '#DC2626' },
-            { label: 'คงเหลือ', cat: CAT_BALANCE, value: net, color: balanceColor },
-          ];
-          return (
-            <View className="flex-row pb-2" style={{ gap: 6 }}>
-              {cards.map((c) => (
-                <View
-                  key={c.label}
-                  style={{
-                    flex: 1,
-                    borderRadius: 18,
-                    borderWidth: 1.5,
-                    // borderColor: '#D9C9A8',
-                    // backgroundColor: '#FBF3E2',
-                    paddingTop: 6,
-                    paddingBottom: 6,
-                    paddingHorizontal: 4,
-                    alignItems: 'center',
-                  }}
-                  className="border-b border-border"
-                >
+          {(() => {
+            const net = totalIncome - totalExpense;
+            const balanceColor = net >= 0 ? '#16A34A' : '#DC2626';
+            const cards = [
+              { label: 'รายรับ', cat: CAT_INCOME, value: totalIncome, color: '#16A34A' },
+              { label: 'รายจ่าย', cat: CAT_EXPENSE, value: totalExpense, color: '#DC2626' },
+              { label: 'คงเหลือ', cat: CAT_BALANCE, value: net, color: balanceColor },
+            ];
+            return (
+              <View className="flex-row pb-2" style={{ gap: 6 }}>
+                {cards.map((c) => (
                   <View
+                    key={c.label}
                     style={{
-                      // backgroundColor: '#F4E4C0',
-                      borderRadius: 12,
-                      paddingHorizontal: 14,
-                      paddingVertical: 3,
-                      marginBottom: 4,
+                      flex: 1,
+                      borderRadius: 18,
+                      // borderColor: '#D9C9A8',
+                      // backgroundColor: '#FBF3E2',
+                      paddingTop: 3,
+                      paddingBottom: 4,
+                      paddingHorizontal: 4,
+                      alignItems: 'center',
                     }}
-                    className="bg-accent"
+                    className="border-border border-2"
                   >
+                    <View
+                    // style={{
+                    //   borderRadius: 12,
+                    //   paddingHorizontal: 14,
+                    //   paddingVertical: 3,
+                    //   marginBottom: 4,
+                    // }}
+                    // className="bg-accent"
+                    >
+                      <Text
+                        style={{
+                          fontFamily: 'IBMPlexSansThai_700Bold',
+                          fontSize: 15,
+                          // color: '#6B4A2B',
+                        }}
+                        className="text-foreground"
+                      >
+                        {c.label}
+                      </Text>
+                    </View>
+                    <Image
+                      source={c.cat}
+                      style={{ width: 78, height: 58 }}
+                      resizeMode="contain"
+                    />
                     <Text
                       style={{
-                        fontFamily: 'IBMPlexSansThai_700Bold',
-                        fontSize: 15,
-                        // color: '#6B4A2B',
+                        fontFamily: 'Inter_700Bold',
+                        fontSize: Math.abs(c.value) > 999999 ? 18 : 21,
+                        fontVariant: ['tabular-nums'],
+                        letterSpacing: -0.4,
+                        color: c.color,
                       }}
-                      className="text-foreground"
                     >
-                      {c.label}
+                      {formatCurrency(c.value)}
                     </Text>
                   </View>
-                  <Image
-                    source={c.cat}
-                    style={{ width: 78, height: 58, marginVertical: 2 }}
-                    resizeMode="contain"
-                  />
-                  <Text
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                    minimumFontScale={0.6}
-                    style={{
-                      fontFamily: 'Inter_700Bold',
-                      fontSize: getCurrencyFontSize(c.value, 22),
-                      fontVariant: ['tabular-nums'],
-                      letterSpacing: -0.4,
-                      color: c.color,
-                      marginTop: 2,
-                    }}
-                  >
-                    {formatCurrency(c.value)}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          );
-        })()}
-      </View>
+                ))}
+              </View>
+            );
+          })()}
+        </View>
 
-      {/* Budget Alerts */}
-      {isDailyTargetEnabled && !dismissDaily && (
-        <AlertBanner
-          scope="daily"
-          currentExpense={todayExpense}
-          target={dailyExpenseTarget}
-          onDismiss={() => setDismissDaily(true)}
+        {/* Budget Alerts */}
+        {isDailyTargetEnabled && !dismissDaily && (
+          <AlertBanner
+            scope="daily"
+            currentExpense={todayExpense}
+            target={dailyExpenseTarget}
+            onDismiss={() => setDismissDaily(true)}
+          />
+        )}
+        {isMonthlyTargetEnabled && !dismissMonthly && (
+          <AlertBanner
+            scope="monthly"
+            currentExpense={totalExpense}
+            target={monthlyExpenseTarget}
+            onDismiss={() => setDismissMonthly(true)}
+          />
+        )}
+
+        <FrequentTransactions
+          onSelect={handleFrequentSelect}
         />
-      )}
-      {isMonthlyTargetEnabled && !dismissMonthly && (
-        <AlertBanner
-          scope="monthly"
-          currentExpense={totalExpense}
-          target={monthlyExpenseTarget}
-          onDismiss={() => setDismissMonthly(true)}
-        />
-      )}
 
-      <FrequentTransactions
-        onSelect={handleFrequentSelect}
-      />
-
-      {/* `flex-1` is what keeps the SectionList constrained to the
+        {/* `flex-1` is what keeps the SectionList constrained to the
           remaining space above the bottom tab bar. Without it, the list
           renders at its natural (unbounded) height and the bottom rows
           end up hidden under the tab bar from `(tabs)/_layout.tsx`. */}
-      <View className="flex-1">
-        <TransactionList
-          transactions={transactions}
-          onItemPress={handleItemPress}
-          onItemLongPress={handleItemLongPress}
-          onDeleteItem={handleDeleteItem}
-          onDeleteGroup={handleDeleteGroup}
-          onCopyItem={handleCopyItem}
-        />
-      </View>
+        <View className="flex-1">
+          <TransactionList
+            transactions={transactions}
+            onItemPress={handleItemPress}
+            onItemLongPress={handleItemLongPress}
+            onDeleteItem={handleDeleteItem}
+            onDeleteGroup={handleDeleteGroup}
+            onCopyItem={handleCopyItem}
+          />
+        </View>
 
-      <FAB onPress={handleAddNew} />
-    </SafeAreaView>
+        <FAB onPress={handleAddNew} />
+      </SafeAreaView>
     </WallpaperBackground>
   );
 }

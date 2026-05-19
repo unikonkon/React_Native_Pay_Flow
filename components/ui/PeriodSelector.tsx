@@ -19,6 +19,7 @@ interface Props {
   period: Period;
   onChange: (p: Period) => void;
   className?: string;
+  typeUI?: 'full' | 'compact';
 }
 
 type PresetType = Extract<
@@ -51,12 +52,12 @@ const sameDay = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 const sameMonth = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
-const formatShortThai = (d: Date) => {
+const formatShortThai = (d: Date, typeUI: 'full' | 'compact' = 'compact') => {
   const yy = String((d.getFullYear() + 543) % 100).padStart(2, '0');
-  return `${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${yy}`;
+  return `${d.getDate()}   ${typeUI === 'full' ? THAI_MONTHS_FULL[d.getMonth()] : THAI_MONTHS[d.getMonth()]}   ${yy}`;
 };
 
-export function PeriodSelector({ period, onChange, className }: Props) {
+export function PeriodSelector({ period, onChange, className, typeUI = 'compact' }: Props) {
   const [open, setOpen] = useState(false);
   const isDark = useIsDarkTheme();
   const chevronActive = isDark ? '#A39685' : '#6B5F52';
@@ -158,9 +159,9 @@ export function PeriodSelector({ period, onChange, className }: Props) {
   const stepLabel = (() => {
     if (selectionStep === 'start') return 'เลือกวันที่เริ่มต้น';
     if (selectionStep === 'end') {
-      return `เริ่ม ${formatShortThai(pendingStart!)} → เลือกวันที่สุดท้าย`;
+      return `เริ่ม ${formatShortThai(pendingStart!, typeUI)} → เลือกวันที่สุดท้าย`;
     }
-    return `${formatShortThai(pendingStart!)} → ${formatShortThai(pendingEnd!)}`;
+    return `${formatShortThai(pendingStart!, typeUI)} → ${formatShortThai(pendingEnd!, typeUI)}`;
   })();
 
   const canShift = canShiftPeriod(period);
@@ -181,7 +182,7 @@ export function PeriodSelector({ period, onChange, className }: Props) {
         >
           <Ionicons name="calendar-outline" size={16} color="#A39685" style={{ marginRight: 6 }} />
           <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 16 }} className="text-foreground" numberOfLines={1}>
-            {formatPeriodLabel(period)}
+            {formatPeriodLabel(period, typeUI)}
           </Text>
           <Ionicons name="chevron-down" size={14} color="#A39685" style={{ marginLeft: 4 }} />
         </Pressable>

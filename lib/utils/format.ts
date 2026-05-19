@@ -33,18 +33,18 @@ export const THAI_MONTHS = [
 ];
 
 export const THAI_MONTHS_FULL = [
-  "ม.ค.",
-  "ก.พ.",
-  "มี.ค.",
-  "เม.ย.",
-  "พ.ค.",
-  "มิ.ย.",
-  "ก.ค.",
-  "ส.ค.",
-  "ก.ย.",
-  "ต.ค.",
-  "พ.ย.",
-  "ธ.ค.",
+  "มกราคม",
+  "กุมภาพันธ์",
+  "มีนาคม",
+  "เมษายน",
+  "พฤษภาคม",
+  "มิถุนายน",
+  "กรกฎาคม",
+  "สิงหาคม",
+  "กันยายน",
+  "ตุลาคม",
+  "พฤศจิกายน",
+  "ธันวาคม",
 ];
 
 export function formatDateThai(dateStr: string): string {
@@ -117,17 +117,22 @@ export function getDayOfWeek(date: Date): string {
   return THAI_DAYS[date.getDay()];
 }
 
-export function formatDateRangeThai(start: string, end: string): string {
+export function formatDateRangeThai(
+  start: string,
+  end: string,
+  typeUI: "full" | "compact" = "compact",
+): string {
+  const months = typeUI === "full" ? THAI_MONTHS_FULL : THAI_MONTHS;
   const s = new Date(start);
   const e = new Date(end);
   const sameMonth =
     s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear();
   const sDay = s.getDate();
   const eDay = e.getDate();
-  const eMonth = THAI_MONTHS[e.getMonth()];
+  const eMonth = months[e.getMonth()];
   const eYear = e.getFullYear() + 543;
   if (sameMonth) return `${sDay} - ${eDay} ${eMonth} ${eYear}`;
-  const sMonth = THAI_MONTHS[s.getMonth()];
+  const sMonth = months[s.getMonth()];
   return `${sDay} ${sMonth} - ${eDay} ${eMonth} ${eYear}`;
 }
 

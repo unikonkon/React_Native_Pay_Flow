@@ -137,14 +137,15 @@ export function shiftPeriod(p: Period, dir: -1 | 1): Period {
   }
 }
 
-export function formatPeriodLabel(p: Period): string {
+export function formatPeriodLabel(p: Period, typeUI: 'full' | 'compact' = 'compact'): string {
   const { start, end } = getPeriodRange(p);
+  const months = typeUI === 'full' ? THAI_MONTHS_FULL : THAI_MONTHS;
   switch (p.type) {
     case 'week':
-      return formatDateRangeThai(start, end);
+      return formatDateRangeThai(start, end, typeUI);
     case 'month': {
       const a = new Date(p.anchor);
-      return `${THAI_MONTHS_FULL[a.getMonth()]} ${a.getFullYear() + 543}`;
+      return `${months[a.getMonth()]} ${a.getFullYear() + 543}`;
     }
     case '2months':
     case '3months':
@@ -152,7 +153,7 @@ export function formatPeriodLabel(p: Period): string {
     case '6months': {
       const s = new Date(start);
       const e = new Date(end);
-      return `${THAI_MONTHS[s.getMonth()]} ${s.getFullYear() + 543} - ${THAI_MONTHS[e.getMonth()]} ${e.getFullYear() + 543}`;
+      return `${months[s.getMonth()]} ${s.getFullYear() + 543} - ${months[e.getMonth()]} ${e.getFullYear() + 543}`;
     }
     case 'year':
       return `ปี ${new Date(p.anchor).getFullYear() + 543}`;
@@ -166,7 +167,7 @@ export function formatPeriodLabel(p: Period): string {
     case 'custom': {
       const cs = new Date(start);
       const ce = new Date(end);
-      return formatDateRangeThai(toISO(cs), toISO(ce));
+      return formatDateRangeThai(toISO(cs), toISO(ce), typeUI);
     }
   }
 }

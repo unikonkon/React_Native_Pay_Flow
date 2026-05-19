@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, Easing, Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { Animated, Dimensions, Easing, Image, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 
 interface Props {
   selectedWalletId: string | null;
@@ -21,6 +21,8 @@ interface Anchor {
 
 const POPOVER_WIDTH = 260;
 const SCREEN_MARGIN = 12;
+
+const LIST_ICON = require('@/assets/tab/nav-list.png');
 
 export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
   const isDark = useIsDarkTheme();
@@ -100,10 +102,10 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
       <Pressable
         ref={triggerRef}
         onPress={handleOpen}
-        className="flex-row items-center px-3.5 py-1 bg-background rounded-2xl self-start border border-border"
+        className="flex-row items-center px-3.5 py-0.5 bg-background rounded-2xl self-start border-2 border-border"
       >
-        <Ionicons name="wallet-outline" size={15} color="#E87A3D" />
-        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground ml-1.5">{selectedWalletName}</Text>
+        <Image source={LIST_ICON} style={{ width: 15, height: 15 }} resizeMode="contain" />
+        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 16 }} className="text-foreground ml-1.5">{selectedWalletName}</Text>
       </Pressable>
 
       <Modal visible={open} transparent animationType="none" onRequestClose={closePopover}>
