@@ -1544,7 +1544,7 @@ export function CatCategoryIcon({
         borderRadius: size / 2,
         backgroundColor: bg,
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'center'
       }}
     >
       {inner}

@@ -1,7 +1,7 @@
 import { EmptyState } from '@/components/ui/EmptyState';
 import type { Transaction } from '@/types';
 import { useMemo } from 'react';
-import { SectionList } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { DayGroupHeader } from './DayGroupHeader';
 import { TransactionGroupItem } from './TransactionGroupItem';
 
@@ -18,7 +18,7 @@ interface DaySection {
   date: string;
   income: number;
   expense: number;
-  data: Transaction[][];
+  groups: Transaction[][];
 }
 
 export function TransactionList({
@@ -29,7 +29,7 @@ export function TransactionList({
   onDeleteGroup,
   onCopyItem,
 }: TransactionListProps) {
-  const sections: DaySection[] = useMemo(() => {
+  const days: DaySection[] = useMemo(() => {
     const byDay = new Map<string, Transaction[]>();
     for (const tx of transactions) {
       const day = tx.date;
@@ -48,7 +48,7 @@ export function TransactionList({
         date,
         income: txs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0),
         expense: txs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0),
-        data: Array.from(groups.values()),
+        groups: Array.from(groups.values()),
       };
     });
   }, [transactions]);
@@ -58,37 +58,46 @@ export function TransactionList({
   }
 
   return (
-    <SectionList
-      sections={sections}
-      keyExtractor={(group) => group[0]?.id ?? Math.random().toString()}
-      renderItem={(info: any) => (
-        <TransactionGroupItem
-          items={info.item as Transaction[]}
-          onItemPress={onItemPress}
-          onItemLongPress={onItemLongPress}
-          onDeleteItem={onDeleteItem}
-          onDeleteGroup={onDeleteGroup}
-          onCopyItem={onCopyItem}
-        />
-      )}
-      renderSectionHeader={({ section }: any) => (
-        <DayGroupHeader
-          date={section.date}
-          income={section.income}
-          expense={section.expense}
-        />
-      )}
+    <ScrollView
       // Trailing inset so the final rows clear the floating FAB mascot
-      // (~110px tall, anchored bottom-right) instead of rendering behind it
-      // when scrolled to the end. The bottom tab bar itself sits below the
-      // screen's SafeAreaView, so the list's outer height already excludes
-      // it — this padding only handles the FAB overlap.
+      // (~110px tall, anchored bottom-right). The bottom tab bar already
+      // sits below the screen's SafeAreaView — this padding only handles
+      // the FAB overlap.
       contentContainerStyle={{ paddingBottom: 20 }}
-      stickySectionHeadersEnabled={false}
-      initialNumToRender={15}
-      maxToRenderPerBatch={10}
-      windowSize={5}
-      removeClippedSubviews
-    />
+      showsVerticalScrollIndicator={false}
+    >
+      {days.map((day) => (
+        <View key={day.date} style={{ marginHorizontal: 12, marginTop: 14 }} className="">
+          <DayGroupHeader date={day.date} income={day.income} expense={day.expense} />
+          <View
+            className="bg-card"
+            style={{
+              marginTop: -18,
+              borderRadius: 22,
+              overflow: 'hidden',
+              shadowColor: '#2A2320',
+              shadowOpacity: 0.05,
+              shadowRadius: 12,
+              shadowOffset: { width: 0, height: 4 },
+              elevation: 2,
+            }}
+          >
+     
+            {day.groups.map((g, i) => (
+              <TransactionGroupItem
+                key={g[0]?.id ?? `${day.date}-${i}`}
+                items={g}
+                isLastInDay={i === day.groups.length - 1}
+                onItemPress={onItemPress}
+                onItemLongPress={onItemLongPress}
+                onDeleteItem={onDeleteItem}
+                onDeleteGroup={onDeleteGroup}
+                onCopyItem={onCopyItem}
+              />
+            ))}
+          </View>
+        </View>
+      ))}
+    </ScrollView>
   );
 }

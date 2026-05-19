@@ -60,13 +60,13 @@ export function FrequentTransactions({ onSelect }: FrequentTransactionsProps) {
   if (rows === 1) {
     return (
       <View className="pb-1">
-        <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-muted-foreground px-4 mb-1">รายการใช้บ่อย</Text>
+        <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-muted-foreground px-4 mb-1">รายการใช้บ่อย</Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 16 }}
         >
-          <View className="flex-row" style={{ gap: 4 }}>
+          <View className="flex-row" style={{ gap: 8 }}>
             {analyses.map((analysis) => {
               const cat = categories.find(c => c.id === analysis.categoryId);
               return (
@@ -86,7 +86,7 @@ export function FrequentTransactions({ onSelect }: FrequentTransactionsProps) {
 
   return (
     <View className="pb-1">
-      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-muted-foreground px-4 mb-1">รายการใช้บ่อย</Text>
+      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-muted-foreground px-4 mb-1">รายการใช้บ่อย</Text>
       <View
         style={{
           flexDirection: 'row',
@@ -128,19 +128,38 @@ function FrequentItem({ analysis, category, onSelect }: FrequentItemProps) {
         onSelect(analysis);
       }}
       className="items-center"
-      style={{ width: 62 }}
+      style={{ width: 65 }}
     >
       <CatCategoryIcon
         kind={category?.icon ?? 'ellipsis-horizontal'}
         bg={category?.color ?? '#999'}
-        size={37}
+        size={45}
       />
-      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }} className="text-foreground text-center" numberOfLines={1}>
-        {analysis.note ? analysis.note : category?.name ? category.name : 'อื่นๆ'}
-      </Text>
-      <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 15, fontVariant: ['tabular-nums'] }} className="text-muted-foreground">
-        {formatCurrency(analysis.amount)}
-      </Text>
+      <View style={{ alignItems: 'center', gap: 2 }}>
+        <Text
+          style={{
+            fontFamily: 'IBMPlexSansThai_600SemiBold',
+            fontSize: 13,
+          }}
+          className="text-muted-foreground text-center"
+          numberOfLines={1}
+        >
+          {analysis.note ? analysis.note : category?.name ? category.name : 'อื่นๆ'}
+        </Text>
+        <Text
+          style={{
+            fontFamily: 'Inter_700Bold',
+            fontSize: 12,
+            fontVariant: ['tabular-nums'],
+            marginTop: -6,
+          }}
+          className="text-muted-foreground"
+        >
+          {formatCurrency(analysis.amount)}
+        </Text>
+      </View>
+ 
+
       <PawPrintTapEffect ref={pawRef} size={32} color="#E87A3D" />
     </Pressable>
   );

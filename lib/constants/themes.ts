@@ -28,7 +28,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "warm",
       bg: "#FBF7F0",
-      card: "#FFFFFF",
+      card: "#FFF9F3",
       accent: "#F5D9B8",
       primary: "#E87A3D",
       ink: "#2B2118",
@@ -55,7 +55,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "sakura",
       bg: "#FFF5F5",
-      card: "#FFFFFF",
+      card: "#FFF8F9",
       accent: "#FFE0E8",
       primary: "#E87A3D",
       ink: "#2B2118",
@@ -82,7 +82,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "ocean",
       bg: "#F0F7FB",
-      card: "#FFFFFF",
+      card: "#F7FBFF",
       accent: "#D0E8F5",
       primary: "#E87A3D",
       ink: "#2B2118",
@@ -109,7 +109,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "forest",
       bg: "#F2F7F0",
-      card: "#FFFFFF",
+      card: "#F8FCF7",
       accent: "#D0E8C8",
       primary: "#E87A3D",
       ink: "#2B2118",
@@ -136,7 +136,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "midnight-light",
       bg: "#F4F5F8",
-      card: "#FFFFFF",
+      card: "#F8F8FC",
       accent: "#DEDFEA",
       primary: "#E87A3D",
       ink: "#1F1F2A",
@@ -163,7 +163,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "plum",
       bg: "#F7F1F9",
-      card: "#FFFFFF",
+      card: "#FBF7FD",
       accent: "#E5C9EE",
       primary: "#E87A3D",
       ink: "#2B1A30",
@@ -190,7 +190,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "honey-light",
       bg: "#FFF8E8",
-      card: "#FFFFFF",
+      card: "#FFFBF0",
       accent: "#F5DC9C",
       primary: "#E87A3D",
       ink: "#2A1F0F",
@@ -217,7 +217,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "emerald",
       bg: "#E8F4F0",
-      card: "#FFFFFF",
+      card: "#F3FBF8",
       accent: "#A0D9C5",
       primary: "#E87A3D",
       ink: "#1A2B26",
@@ -244,7 +244,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "paper",
       bg: "#F4F1EA",
-      card: "#FFFFFF",
+      card: "#FAF8F3",
       accent: "#D5CDBC",
       primary: "#E87A3D",
       ink: "#2B2622",
@@ -271,7 +271,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "mocha",
       bg: "#F5EEE4",
-      card: "#FFFFFF",
+      card: "#FCF8F2",
       accent: "#D2B89C",
       primary: "#E87A3D",
       ink: "#2D2117",
@@ -298,7 +298,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "slate",
       bg: "#EEF2F5",
-      card: "#FFFFFF",
+      card: "#F7F9FC",
       accent: "#C5D2DD",
       primary: "#E87A3D",
       ink: "#1F2933",
@@ -325,7 +325,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "moss",
       bg: "#EFF2EA",
-      card: "#FFFFFF",
+      card: "#F8FAF4",
       accent: "#C5D0B5",
       primary: "#E87A3D",
       ink: "#28311E",
@@ -352,7 +352,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "obsidian-light",
       bg: "#F2F4F8",
-      card: "#FFFFFF",
+      card: "#F7F8FC",
       accent: "#D8DDE6",
       primary: "#E87A3D",
       ink: "#14161D",
@@ -379,7 +379,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "graphite",
       bg: "#F4F4F5",
-      card: "#FFFFFF",
+      card: "#FAFAFA",
       accent: "#DEDEE0",
       primary: "#E87A3D",
       ink: "#27272A",
@@ -406,7 +406,7 @@ export const FAMILIES: ThemeFamily[] = [
     light: {
       key: "indigo",
       bg: "#F4F3FA",
-      card: "#FFFFFF",
+      card: "#F9F8FD",
       accent: "#DCDAE8",
       primary: "#E87A3D",
       ink: "#1F1E2A",

@@ -1,7 +1,5 @@
 import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { PawPrintTapEffect, type PawPrintTapEffectHandle } from '@/components/ui/PawPrintTapEffect';
-import { getTabBarBackgroundColor } from '@/lib/constants/themes';
-import { useThemeStore } from '@/lib/stores/theme-store';
 import { formatCurrency } from '@/lib/utils/format';
 import type { Transaction } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,6 +19,7 @@ function formatTime(iso?: string): string {
 
 interface TransactionGroupItemProps {
   items: Transaction[];
+  isLastInDay?: boolean;
   onItemPress?: (item: Transaction) => void;
   onItemLongPress?: (item: Transaction) => void;
   onDeleteItem?: (item: Transaction) => void;
@@ -30,6 +29,7 @@ interface TransactionGroupItemProps {
 
 export function TransactionGroupItem({
   items,
+  isLastInDay = false,
   onItemPress,
   onItemLongPress,
   onDeleteItem,
@@ -38,7 +38,6 @@ export function TransactionGroupItem({
 }: TransactionGroupItemProps) {
   const [expanded, setExpanded] = useState(false);
   const headPawRef = useRef<PawPrintTapEffectHandle>(null);
-  const currentTheme = useThemeStore(s => s.currentTheme);
 
   if (items.length === 0) return null;
   const head = items[0];
@@ -49,7 +48,9 @@ export function TransactionGroupItem({
   const count = items.length;
   const isGroup = count > 1;
 
-  const borderColorBg = getTabBarBackgroundColor(currentTheme);
+  // Parent row has bottom divider unless it's the absolute last visible row
+  // of the day card (i.e., last group AND not expanded).
+  const headHasDivider = !(isLastInDay && !expanded);
 
   const handleHeadPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -71,18 +72,18 @@ export function TransactionGroupItem({
       onPress={handleHeadPress}
       onLongPress={handleHeadLongPress}
       android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
-      className="flex-row items-center border-b border-border"
+      className={`flex-row items-center ${headHasDivider ? 'border-b border-border' : ''}`}
       style={{
-        paddingVertical: 5, paddingHorizontal: 12, gap: 11,
-        borderRadius: 16,
-        shadowColor: '#2A2320', shadowOpacity: 0.04, shadowRadius: 13, shadowOffset: { width: 0, height: 3 },
+        paddingVertical: 6,
+        paddingHorizontal: 14,
+        gap: 11,
       }}
     >
       <CatCategoryIcon kind={icon} size={41} bg={color} />
 
       <View className="flex-1" style={{ minWidth: 0 }}>
         <View className="flex-row items-center" style={{ gap: 7 }}>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground" numberOfLines={1}>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground" numberOfLines={1}>
             {head.category?.name ?? 'ไม่ระบุ'}
           </Text>
           {isGroup && (
@@ -99,7 +100,7 @@ export function TransactionGroupItem({
       </View>
 
       <View className="items-end">
-        <Text style={{ fontFamily: 'Inter_700SemiBold', fontSize: 14, fontVariant: ['tabular-nums'], letterSpacing: -0.2 }} className={isIncome ? 'text-income' : 'text-expense'}>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 14, fontVariant: ['tabular-nums'], letterSpacing: -0.2 }} className={isIncome ? 'text-income' : 'text-expense'}>
           {isIncome ? '+' : '-'}{formatCurrency(total)}
         </Text>
         <View className="flex-row items-center">
@@ -121,7 +122,7 @@ export function TransactionGroupItem({
   );
 
   return (
-    <View style={{ marginHorizontal: 12, marginVertical: 1 }}>
+    <View>
       <SwipeableRow
         onDelete={() => {
           if (isGroup) {
@@ -136,39 +137,43 @@ export function TransactionGroupItem({
       </SwipeableRow>
 
       {isGroup && expanded && (
-        <View className="">
-          {items.map((t) => (
-            <SwipeableRow
-              key={t.id}
-              onDelete={() => onDeleteItem?.(t)}
-              onCopy={() => onCopyItem?.(t)}
-            >
-              <Pressable
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  onItemPress?.(t);
-                }}
-                onLongPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  onItemLongPress?.(t);
-                }}
-                android_ripple={{ color: 'rgba(0,0,0,0.08)' }}
-                className="flex-row items-center border-b border-border bg-card rounded-xl"
-                style={{ paddingVertical: 7, paddingLeft: 60, paddingRight: 14, gap: 7}}
+        <View>
+          {items.map((t, i) => {
+            const isLastChild = i === items.length - 1;
+            const hasDivider = !(isLastInDay && isLastChild);
+            return (
+              <SwipeableRow
+                key={t.id}
+                onDelete={() => onDeleteItem?.(t)}
+                onCopy={() => onCopyItem?.(t)}
               >
-                <View style={{ width: 8, height: 1 }} className="bg-border" />
-                <View className="flex-1">
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-foreground" numberOfLines={1}>
-                    {t.note || formatTime(t.createdAt)}
+                <Pressable
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    onItemPress?.(t);
+                  }}
+                  onLongPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    onItemLongPress?.(t);
+                  }}
+                  android_ripple={{ color: 'rgba(0,0,0,0.08)' }}
+                  className={`flex-row items-center ${hasDivider ? 'border-b border-border' : ''}`}
+                  style={{ paddingVertical: 7, paddingLeft: 60, paddingRight: 14, gap: 7 }}
+                >
+                  <View style={{ width: 8, height: 1 }} className="bg-border" />
+                  <View className="flex-1">
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-foreground" numberOfLines={1}>
+                      {t.note || formatTime(t.createdAt)}
+                    </Text>
+                  </View>
+                  <Text style={{ fontFamily: 'Inter_700SemiBold', fontSize: 13, fontVariant: ['tabular-nums'] }} className={isIncome ? 'text-income' : 'text-expense'}>
+                    {isIncome ? '+' : '-'}{formatCurrency(t.amount)}
                   </Text>
-                </View>
-                <Text style={{ fontFamily: 'Inter_700SemiBold', fontSize: 13, fontVariant: ['tabular-nums'] }} className={isIncome ? 'text-income' : 'text-expense'}>
-                  {isIncome ? '+' : '-'}{formatCurrency(t.amount)}
-                </Text>
-                <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, fontVariant: ['tabular-nums'], width: 40, textAlign: 'right' }} className="text-muted-foreground">{formatTime(t.createdAt)}</Text>
-              </Pressable>
-            </SwipeableRow>
-          ))}
+                  <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, fontVariant: ['tabular-nums'], width: 40, textAlign: 'right' }} className="text-muted-foreground">{formatTime(t.createdAt)}</Text>
+                </Pressable>
+              </SwipeableRow>
+            );
+          })}
         </View>
       )}
     </View>

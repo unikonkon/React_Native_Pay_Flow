@@ -1,5 +1,3 @@
-import { getTabBarBackgroundColor } from '@/lib/constants/themes';
-import { useThemeStore } from '@/lib/stores/theme-store';
 import { formatCurrency, formatRelativeDate } from '@/lib/utils/format';
 import { Text, View } from 'react-native';
 
@@ -14,33 +12,50 @@ export function DayGroupHeader({ date, income, expense }: DayGroupHeaderProps) {
   const balanceSign = balance > 0 ? '+' : balance < 0 ? '−' : '=';
   const balanceColor = balance > 0 ? '#3E8B68' : balance < 0 ? '#C65A4E' : '#6B5F52';
   const hasAny = income > 0 && expense > 0;
-  const currentTheme = useThemeStore(s => s.currentTheme);
-  const tabBg = getTabBarBackgroundColor(currentTheme);
 
   return (
-    <View className="flex-row items-center rounded-xl"
+    <View
+      className="self-start flex-row items-center bg-accent"
       style={{
-        paddingHorizontal: 18, paddingTop: 3, paddingBottom: 2, marginTop: 8, gap: 6,
-      }}>
-      <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 17, fontVariant: ['tabular-nums'] }} className="text-foreground">
+        borderTopLeftRadius: 14,
+        borderTopRightRadius: 14,
+        borderBottomRightRadius: 14,
+        paddingHorizontal: 12,
+        paddingVertical: 5,
+        paddingBottom: 18,
+        gap: 8,
+        shadowColor: '#2A2320',
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 2,
+      }}
+    >
+      <Text
+        style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, fontVariant: ['tabular-nums'] }}
+        className="text-foreground"
+      >
         {formatRelativeDate(date)}
       </Text>
-      <View/>
       {income > 0 && (
-        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 17, color: '#3E8B68' }}>+{formatCurrency(income)}</Text>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 15, color: '#3E8B68' }}>
+          +{formatCurrency(income)}
+        </Text>
       )}
       {expense > 0 && (
-        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 17, color: '#C65A4E' }}>−{formatCurrency(expense)}</Text>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 15, color: '#C65A4E' }}>
+          −{formatCurrency(expense)}
+        </Text>
       )}
       {hasAny && (
         <Text
           style={{
             fontFamily: 'Inter_700Bold',
-            fontSize: 17,
+            fontSize: 15,
             color: balanceColor,
-            paddingHorizontal: 6,
+            paddingHorizontal: 5,
             paddingVertical: 1,
-            borderRadius: 6,
+            borderRadius: 5,
             backgroundColor: balanceColor + '15',
           }}
         >

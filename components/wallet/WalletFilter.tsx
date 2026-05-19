@@ -100,11 +100,10 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
       <Pressable
         ref={triggerRef}
         onPress={handleOpen}
-        className="flex-row items-center px-3.5 py-1.5 bg-background rounded-2xl self-start border border-border"
+        className="flex-row items-center px-3.5 py-1 bg-background rounded-2xl self-start border border-border"
       >
         <Ionicons name="wallet-outline" size={15} color="#E87A3D" />
         <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 14 }} className="text-foreground ml-1.5">{selectedWalletName}</Text>
-        <Ionicons name="chevron-down" size={12} color="#A39685" style={{ marginLeft: 4 }} />
       </Pressable>
 
       <Modal visible={open} transparent animationType="none" onRequestClose={closePopover}>
