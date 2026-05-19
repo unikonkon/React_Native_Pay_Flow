@@ -74,12 +74,12 @@ export function TransactionGroupItem({
       android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
       className={`flex-row items-center bg-card ${headHasDivider ? 'border-b border-border' : ''}`}
       style={{
-        paddingVertical: 4,
+        paddingVertical: 5,
         paddingHorizontal: 14,
         gap: 11,
       }}
     >
-      <CatCategoryIcon kind={icon} size={42} bg={color} />
+      <CatCategoryIcon kind={icon} size={45} bg={color} />
 
       <View className="flex-1" style={{ minWidth: 0 }}>
         <View className="flex-row items-center" style={{ gap: 7 }}>

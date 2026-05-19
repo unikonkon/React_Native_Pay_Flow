@@ -17,7 +17,7 @@ import type { Analysis, Transaction } from '@/types';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Image, Pressable, Text, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const CAT_INCOME = require('@/assets/summary/cat-income.png');
@@ -206,7 +206,7 @@ export default function TransactionsScreen() {
               { label: 'คงเหลือ', cat: CAT_BALANCE, value: net, color: balanceColor, view: 'all' as const },
             ];
             return (
-              <View className="flex-row pb-2 justify-around items-center">
+              <View className="flex-row pb-2 gap-2">
                 {cards.map((c) => (
                   <Pressable
                     key={c.label}
@@ -214,7 +214,7 @@ export default function TransactionsScreen() {
                       Haptics.selectionAsync();
                       router.push({ pathname: '/(tabs)/analytics', params: { view: c.view } });
                     }}
-                    className="border-border border-2 rounded-3xl px-3 items-center justify-center"
+                    className="flex-1 border-border border-2 rounded-3xl pb-2 pt-1 items-center justify-center"
                   >
                     <View>
                       <Text
@@ -235,7 +235,7 @@ export default function TransactionsScreen() {
                     <Text
                       style={{
                         fontFamily: 'Inter_700Bold',
-                        fontSize: Math.abs(c.value) > 999999 ? 18 : 21,
+                        fontSize: Math.abs(c.value) > 999999 ? 19 : 20,
                         fontVariant: ['tabular-nums'],
                         letterSpacing: -0.4,
                         color: c.color,
@@ -251,33 +251,33 @@ export default function TransactionsScreen() {
 
         </View>
 
-        {/* Budget Alerts */}
-        {isDailyTargetEnabled && !dismissDaily && (
-          <AlertBanner
-            scope="daily"
-            currentExpense={todayExpense}
-            target={dailyExpenseTarget}
-            onDismiss={() => setDismissDaily(true)}
-          />
-        )}
-        {isMonthlyTargetEnabled && !dismissMonthly && (
-          <AlertBanner
-            scope="monthly"
-            currentExpense={totalExpense}
-            target={monthlyExpenseTarget}
-            onDismiss={() => setDismissMonthly(true)}
-          />
-        )}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        >
 
-        <FrequentTransactions
-          onSelect={handleFrequentSelect}
-        />
+          {/* Budget Alerts */}
+          {isDailyTargetEnabled && !dismissDaily && (
+            <AlertBanner
+              scope="daily"
+              currentExpense={todayExpense}
+              target={dailyExpenseTarget}
+              onDismiss={() => setDismissDaily(true)}
+            />
+          )}
+          {isMonthlyTargetEnabled && !dismissMonthly && (
+            <AlertBanner
+              scope="monthly"
+              currentExpense={totalExpense}
+              target={monthlyExpenseTarget}
+              onDismiss={() => setDismissMonthly(true)}
+            />
+          )}
 
-        {/* `flex-1` is what keeps the SectionList constrained to the
-          remaining space above the bottom tab bar. Without it, the list
-          renders at its natural (unbounded) height and the bottom rows
-          end up hidden under the tab bar from `(tabs)/_layout.tsx`. */}
-        <View className="flex-1">
+          <FrequentTransactions
+            onSelect={handleFrequentSelect}
+          />
+
           <TransactionList
             transactions={transactions}
             onItemPress={handleItemPress}
@@ -286,7 +286,7 @@ export default function TransactionsScreen() {
             onDeleteGroup={handleDeleteGroup}
             onCopyItem={handleCopyItem}
           />
-        </View>
+        </ScrollView>
 
         <FAB onPress={handleAddNew} />
       </SafeAreaView>

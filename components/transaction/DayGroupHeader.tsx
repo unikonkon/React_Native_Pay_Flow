@@ -38,12 +38,12 @@ export function DayGroupHeader({ date, income, expense }: DayGroupHeaderProps) {
         {formatRelativeDate(date)}
       </Text>
       {income > 0 && (
-        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 16, fontVariant: ['tabular-nums'], color: '#3E8B68' }}>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 16, fontVariant: ['tabular-nums'], color: '#40C08D' }}>
           +{formatCurrency(income)}
         </Text>
       )}
       {expense > 0 && (
-        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 16, fontVariant: ['tabular-nums'], color: '#C65A4E' }}>
+        <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 16, fontVariant: ['tabular-nums'], color: '#FF6660' }}>
           −{formatCurrency(expense)}
         </Text>
       )}
@@ -53,16 +53,17 @@ export function DayGroupHeader({ date, income, expense }: DayGroupHeaderProps) {
             fontFamily: 'Inter_700Bold',
             fontSize: 16,
             fontVariant: ['tabular-nums'],
-            color: balanceColor,
+            color: balance > 0 ? '#40C08D' : balance < 0 ? '#FF6660' : '#E1D2AF',
             paddingHorizontal: 5,
             paddingVertical: 1,
             borderRadius: 5,
-            backgroundColor: balanceColor + '15',
+            backgroundColor: (balance > 0 ? '#40C08D' : balance < 0 ? '#FF6660' : '#E1D2AF') + '22',
           }}
         >
           = {balanceSign}{formatCurrency(Math.abs(balance))}
         </Text>
       )}
+ 
     </View>
   );
 }

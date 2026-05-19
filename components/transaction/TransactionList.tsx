@@ -1,7 +1,7 @@
 import { EmptyState } from '@/components/ui/EmptyState';
 import type { Transaction } from '@/types';
 import { useMemo } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { DayGroupHeader } from './DayGroupHeader';
 import { TransactionGroupItem } from './TransactionGroupItem';
 
@@ -58,16 +58,9 @@ export function TransactionList({
   }
 
   return (
-    <ScrollView
-      // Trailing inset so the final rows clear the floating FAB mascot
-      // (~110px tall, anchored bottom-right). The bottom tab bar already
-      // sits below the screen's SafeAreaView — this padding only handles
-      // the FAB overlap.
-      contentContainerStyle={{ paddingBottom: 20 }}
-      showsVerticalScrollIndicator={false}
-    >
+    <View>
       {days.map((day) => (
-        <View key={day.date} style={{ marginHorizontal: 12, marginTop: 14 }} className="">
+        <View key={day.date} style={{ marginHorizontal: 12, marginTop: 14 }}>
           <DayGroupHeader date={day.date} income={day.income} expense={day.expense} />
           <View
             className="bg-card"
@@ -82,7 +75,6 @@ export function TransactionList({
               elevation: 2,
             }}
           >
-     
             {day.groups.map((g, i) => (
               <TransactionGroupItem
                 key={g[0]?.id ?? `${day.date}-${i}`}
@@ -98,6 +90,6 @@ export function TransactionList({
           </View>
         </View>
       ))}
-    </ScrollView>
+    </View>
   );
 }
