@@ -7,6 +7,7 @@ import { getBgMascotSource } from '@/lib/constants/mascots';
 import { useThemeStore } from '@/lib/stores/theme-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import * as Haptics from 'expo-haptics';
+import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,9 +21,20 @@ export default function AnalyticsScreen() {
   const loadTransactions = useTransactionStore(s => s.loadTransactions);
   const selectedWalletId = useTransactionStore(s => s.selectedWalletId);
   const setSelectedWalletId = useTransactionStore(s => s.setSelectedWalletId);
-  const [viewType, setViewType] = useState<ViewType>('expense');
+  const params = useLocalSearchParams<{ view?: string }>();
+  const initialView: ViewType =
+    params.view === 'income' || params.view === 'expense' || params.view === 'all'
+      ? (params.view as ViewType)
+      : 'expense';
+  const [viewType, setViewType] = useState<ViewType>(initialView);
   const bgMascotId = useThemeStore(s => s.currentBgMascot);
   const mascotRun = getBgMascotSource(bgMascotId);
+
+  useEffect(() => {
+    if (params.view === 'income' || params.view === 'expense' || params.view === 'all') {
+      setViewType(params.view as ViewType);
+    }
+  }, [params.view]);
 
   const { expenseByCategory, incomeByCategory, balance } = useSummary(transactions);
 
@@ -62,73 +74,73 @@ export default function AnalyticsScreen() {
 
   return (
     <WallpaperBackground>
-    <SafeAreaView className="flex-1" edges={['top']}>
-      <ScrollView>
-        {/* Header */}
-        <View className="px-4 mb-2">
-          <View className="flex-row items-center mb-2 justify-between">
-            <View className="flex-row items-center">
-              <Image source={mascotRun} style={{ width: 50, height: 34 }} resizeMode="contain" />
-              <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground ml-2">สรุป</Text>
+      <SafeAreaView className="flex-1" edges={['top']}>
+        <ScrollView>
+          {/* Header */}
+          <View className="px-4 mb-2">
+            <View className="flex-row items-center mb-2 justify-between">
+              <View className="flex-row items-center">
+                <Image source={mascotRun} style={{ width: 50, height: 34 }} resizeMode="contain" />
+                <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground ml-2">สรุป</Text>
+              </View>
+              {/* Wallet filter */}
+              <WalletFilter
+                selectedWalletId={selectedWalletId}
+                onChange={setSelectedWalletId}
+                className=""
+              />
             </View>
-            {/* Wallet filter */}
-            <WalletFilter
-              selectedWalletId={selectedWalletId}
-              onChange={setSelectedWalletId}
-              className=""
-            />
-          </View>     
-        </View>
-
-        {/* Period selector + expense/income toggle */}
-        <View style={{ paddingHorizontal: 8, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-          <View style={{ flex: 1 }}>
-            <PeriodSelector
-              period={currentPeriod}
-              onChange={setCurrentPeriod}
-              className=""
-              typeUI='compact'
-            />
           </View>
-          {/* Expense / Income / All toggle */}
-          <View className="flex-row bg-white rounded-full border border-border overflow-hidden">
-            {([
-              ['expense', 'จ่าย', '#C65A4E'],
-              ['income', 'รับ', '#3E8B68'],
-              ['all', 'คงเหลือ', '#2B2118'],
-            ] as const).map(([key, label, accent]) => {
-              const active = viewType === key;
-              return (
-                <Pressable
-                  key={key}
-                  onPress={() => { Haptics.selectionAsync(); setViewType(key); }}
-                  style={{ backgroundColor: active ? accent : 'transparent' }}
-                  className="px-2 py-2 rounded-full"
-                >
-                  <Text style={{
-                    fontFamily: 'IBMPlexSansThai_600SemiBold',
-                    fontSize: 13,
-                    paddingHorizontal: 6,
-                    color: active ? '#fff' : key === 'all' ? '#6B5F52' : accent,
-                  }}>{label}</Text>
-                </Pressable>
-              );
-            })}
+
+          {/* Period selector + expense/income toggle */}
+          <View style={{ paddingHorizontal: 8, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+            <View style={{ flex: 1 }}>
+              <PeriodSelector
+                period={currentPeriod}
+                onChange={setCurrentPeriod}
+                className=""
+                typeUI='compact'
+              />
+            </View>
+            {/* Expense / Income / All toggle */}
+            <View className="flex-row bg-white rounded-full border border-border overflow-hidden">
+              {([
+                ['expense', 'จ่าย', '#C65A4E'],
+                ['income', 'รับ', '#3E8B68'],
+                ['all', 'คงเหลือ', '#2B2118'],
+              ] as const).map(([key, label, accent]) => {
+                const active = viewType === key;
+                return (
+                  <Pressable
+                    key={key}
+                    onPress={() => { Haptics.selectionAsync(); setViewType(key); }}
+                    style={{ backgroundColor: active ? accent : 'transparent' }}
+                    className="px-2 py-2 rounded-full"
+                  >
+                    <Text style={{
+                      fontFamily: 'IBMPlexSansThai_600SemiBold',
+                      fontSize: 13,
+                      paddingHorizontal: 6,
+                      color: active ? '#fff' : key === 'all' ? '#6B5F52' : accent,
+                    }}>{label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
-        </View>
 
-        <PieChartView
-          data={data}
-          title={title}
-          minPercentage={filterMin}
-          period={currentPeriod}
-          walletId={selectedWalletId}
-          viewType={viewType}
-          netAmount={viewType === 'all' ? balance : undefined}
-        />
+          <PieChartView
+            data={data}
+            title={title}
+            minPercentage={filterMin}
+            period={currentPeriod}
+            walletId={selectedWalletId}
+            viewType={viewType}
+            netAmount={viewType === 'all' ? balance : undefined}
+          />
 
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
     </WallpaperBackground>
   );
 }

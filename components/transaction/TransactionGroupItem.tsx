@@ -72,14 +72,14 @@ export function TransactionGroupItem({
       onPress={handleHeadPress}
       onLongPress={handleHeadLongPress}
       android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
-      className={`flex-row items-center ${headHasDivider ? 'border-b border-border' : ''}`}
+      className={`flex-row items-center bg-card ${headHasDivider ? 'border-b border-border' : ''}`}
       style={{
-        paddingVertical: 6,
+        paddingVertical: 4,
         paddingHorizontal: 14,
         gap: 11,
       }}
     >
-      <CatCategoryIcon kind={icon} size={41} bg={color} />
+      <CatCategoryIcon kind={icon} size={42} bg={color} />
 
       <View className="flex-1" style={{ minWidth: 0 }}>
         <View className="flex-row items-center" style={{ gap: 7 }}>
@@ -147,30 +147,33 @@ export function TransactionGroupItem({
                 onDelete={() => onDeleteItem?.(t)}
                 onCopy={() => onCopyItem?.(t)}
               >
-                <Pressable
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    onItemPress?.(t);
-                  }}
-                  onLongPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    onItemLongPress?.(t);
-                  }}
-                  android_ripple={{ color: 'rgba(0,0,0,0.08)' }}
-                  className={`flex-row items-center ${hasDivider ? 'border-b border-border' : ''}`}
-                  style={{ paddingVertical: 7, paddingLeft: 60, paddingRight: 14, gap: 7 }}
-                >
-                  <View style={{ width: 8, height: 1 }} className="bg-border" />
-                  <View className="flex-1">
-                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-foreground" numberOfLines={1}>
-                      {t.note || formatTime(t.createdAt)}
+                <View className="bg-card">
+                  <Pressable
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      onItemPress?.(t);
+                    }}
+                    onLongPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                      onItemLongPress?.(t);
+                    }}
+                    android_ripple={{ color: 'rgba(0,0,0,0.08)' }}
+                    className={`flex-row items-center ${hasDivider ? 'border-b border-border' : ''}`}
+                    style={{ paddingVertical: 7, paddingLeft: 60, paddingRight: 14, gap: 7 }}
+                  >
+                    <View style={{ width: 8, height: 1 }} className="bg-border" />
+                    <View className="flex-1">
+                      <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12 }} className="text-foreground" numberOfLines={1}>
+                        {t.note || formatTime(t.createdAt)}
+                      </Text>
+                    </View>
+                    <Text style={{ fontFamily: 'Inter_700SemiBold', fontSize: 13, fontVariant: ['tabular-nums'] }} className={isIncome ? 'text-income' : 'text-expense'}>
+                      {isIncome ? '+' : '-'}{formatCurrency(t.amount)}
                     </Text>
-                  </View>
-                  <Text style={{ fontFamily: 'Inter_700SemiBold', fontSize: 13, fontVariant: ['tabular-nums'] }} className={isIncome ? 'text-income' : 'text-expense'}>
-                    {isIncome ? '+' : '-'}{formatCurrency(t.amount)}
-                  </Text>
-                  <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, fontVariant: ['tabular-nums'], width: 40, textAlign: 'right' }} className="text-muted-foreground">{formatTime(t.createdAt)}</Text>
-                </Pressable>
+                    <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, fontVariant: ['tabular-nums'], width: 40, textAlign: 'right' }} className="text-muted-foreground">{formatTime(t.createdAt)}</Text>
+                  </Pressable>
+                </View>
+
               </SwipeableRow>
             );
           })}

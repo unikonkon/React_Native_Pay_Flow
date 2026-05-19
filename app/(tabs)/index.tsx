@@ -17,7 +17,7 @@ import type { Analysis, Transaction } from '@/types';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Image, Text, View } from 'react-native';
+import { Alert, Image, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const CAT_INCOME = require('@/assets/summary/cat-income.png');
@@ -169,7 +169,7 @@ export default function TransactionsScreen() {
       <SafeAreaView className="flex-1" edges={['top']}>
         {/* Header */}
         <View className="px-4">
-          <View className="flex-row items-center mb-2 justify-between">
+          <View className="flex-row items-center justify-between">
             <View className="flex-row items-center">
               <Image source={mascotRun} style={{ width: 50, height: 34 }} resizeMode="contain" />
               <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 22, letterSpacing: -0.2 }} className="text-foreground ml-2">รายการ</Text>
@@ -201,41 +201,26 @@ export default function TransactionsScreen() {
             const net = totalIncome - totalExpense;
             const balanceColor = net >= 0 ? '#16A34A' : '#DC2626';
             const cards = [
-              { label: 'รายรับ', cat: CAT_INCOME, value: totalIncome, color: '#16A34A' },
-              { label: 'รายจ่าย', cat: CAT_EXPENSE, value: totalExpense, color: '#DC2626' },
-              { label: 'คงเหลือ', cat: CAT_BALANCE, value: net, color: balanceColor },
+              { label: 'รายรับ', cat: CAT_INCOME, value: totalIncome, color: '#16A34A', view: 'income' as const },
+              { label: 'รายจ่าย', cat: CAT_EXPENSE, value: totalExpense, color: '#DC2626', view: 'expense' as const },
+              { label: 'คงเหลือ', cat: CAT_BALANCE, value: net, color: balanceColor, view: 'all' as const },
             ];
             return (
-              <View className="flex-row pb-2" style={{ gap: 6 }}>
+              <View className="flex-row pb-2 justify-around items-center">
                 {cards.map((c) => (
-                  <View
+                  <Pressable
                     key={c.label}
-                    style={{
-                      flex: 1,
-                      borderRadius: 18,
-                      // borderColor: '#D9C9A8',
-                      // backgroundColor: '#FBF3E2',
-                      paddingTop: 3,
-                      paddingBottom: 4,
-                      paddingHorizontal: 4,
-                      alignItems: 'center',
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      router.push({ pathname: '/(tabs)/analytics', params: { view: c.view } });
                     }}
-                    className="border-border border-2"
+                    className="border-border border-2 rounded-3xl px-3 items-center justify-center"
                   >
-                    <View
-                    // style={{
-                    //   borderRadius: 12,
-                    //   paddingHorizontal: 14,
-                    //   paddingVertical: 3,
-                    //   marginBottom: 4,
-                    // }}
-                    // className="bg-accent"
-                    >
+                    <View>
                       <Text
                         style={{
                           fontFamily: 'IBMPlexSansThai_700Bold',
                           fontSize: 15,
-                          // color: '#6B4A2B',
                         }}
                         className="text-foreground"
                       >
@@ -258,11 +243,12 @@ export default function TransactionsScreen() {
                     >
                       {formatCurrency(c.value)}
                     </Text>
-                  </View>
+                  </Pressable>
                 ))}
               </View>
             );
           })()}
+
         </View>
 
         {/* Budget Alerts */}

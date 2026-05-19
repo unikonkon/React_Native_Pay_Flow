@@ -26,7 +26,7 @@ export function SwipeableRow({ children, onDelete, onCopy }: SwipeableRowProps) 
     });
 
     return (
-      <View style={{ flexDirection: 'row', width: 140, gap: 4,paddingLeft: 6 }}>
+      <View style={{ flexDirection: 'row', width: 140, gap: 4, paddingLeft: 6 }}>
         <Pressable
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
