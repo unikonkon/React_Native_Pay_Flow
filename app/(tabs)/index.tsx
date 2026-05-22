@@ -214,7 +214,7 @@ export default function TransactionsScreen() {
                       Haptics.selectionAsync();
                       router.push({ pathname: '/(tabs)/analytics', params: { view: c.view } });
                     }}
-                    className="flex-1 border-border border-2 rounded-3xl pb-2 pt-1 items-center justify-center"
+                    className="flex-1 border-border border-2 rounded-3xl pb-2 pt-0.5 items-center justify-center"
                   >
                     <View>
                       <Text

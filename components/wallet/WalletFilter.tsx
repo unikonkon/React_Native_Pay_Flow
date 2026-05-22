@@ -22,7 +22,7 @@ interface Anchor {
 const POPOVER_WIDTH = 260;
 const SCREEN_MARGIN = 12;
 
-const LIST_ICON = require('@/assets/tab/nav-list.png');
+const LIST_ICON = require('@/assets/bg/head2.png');
 
 export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
   const isDark = useIsDarkTheme();
@@ -104,7 +104,7 @@ export function WalletFilter({ selectedWalletId, onChange, className }: Props) {
         onPress={handleOpen}
         className="flex-row items-center px-3.5 py-0.5 bg-background rounded-2xl self-start border-2 border-border"
       >
-        <Image source={LIST_ICON} style={{ width: 15, height: 15 }} resizeMode="contain" />
+        <Image source={LIST_ICON} style={{ width: 20, height: 20 }} resizeMode="contain" />
         <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 16 }} className="text-foreground ml-1.5">{selectedWalletName}</Text>
       </Pressable>
 
