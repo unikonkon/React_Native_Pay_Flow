@@ -253,7 +253,7 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
         <Text style={{ fontFamily: 'IBMPlexSansThai_700Bold', fontSize: 16, marginBottom: 8 }} className="text-foreground">
           {THAI_MONTHS[data.month]} {buddhistYear}
         </Text>
-        <View className="flex-row items-center" style={{ gap: 8 }}>
+        {/* <View className="flex-row items-center" style={{ gap: 8 }}>
           {splitMode ? (
             <>
               {totalExpense > 0 && (
@@ -302,7 +302,7 @@ export const CalendarMonth = React.memo(function CalendarMonth({ data, color, se
               รวม: {formatCurrency(totalAmount)}
             </Text>
           )}
-        </View>
+        </View> */}
       </View>
 
 

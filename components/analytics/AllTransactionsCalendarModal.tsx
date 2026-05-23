@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
-import { CalendarMonth, formatThaiFullDate, type MonthData } from './CategoryCalendarModal';
+import { CalendarMonth, formatThaiFullDate, THAI_MONTHS, type MonthData } from './CategoryCalendarModal';
 
 interface Props {
   visible: boolean;
@@ -188,16 +188,169 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
             </View>
           )}
 
-          {months.map((m) => (
-            <CalendarMonth
-              key={`${m.year}-${m.month}`}
-              data={m}
-              color={themeColor}
-              selectedDay={selectedDay}
-              onSelectDay={(dateStr) => setSelectedDay(selectedDay === dateStr ? null : dateStr)}
-              splitMode={isSplit}
-            />
-          ))}
+          {months.map((m) => {
+            const showSummary = viewType !== 'income';
+            const daysInMonth = m.days.length;
+            const monthExpense = m.days.reduce((s, d) => s + (d.expenseAmount ?? 0), 0);
+            const monthIncome = m.days.reduce((s, d) => s + (d.incomeAmount ?? 0), 0);
+            const monthBalance = monthIncome - monthExpense;
+            const avgExpensePerDay = daysInMonth > 0 ? monthExpense / daysInMonth : 0;
+            const avgBalancePerDay = daysInMonth > 0 ? monthBalance / daysInMonth : 0;
+
+            return (
+              <View key={`${m.year}-${m.month}`}>
+                <CalendarMonth
+                  data={m}
+                  color={themeColor}
+                  selectedDay={selectedDay}
+                  onSelectDay={(dateStr) =>
+                    setSelectedDay(selectedDay === dateStr ? null : dateStr)
+                  }
+                  splitMode={isSplit}
+                />
+                {showSummary && monthExpense > 0 && (
+                  <View
+                    className="mx-4 mt-3 bg-card"
+                    style={{
+                      borderRadius: 16,
+                      paddingHorizontal: 14,
+                      paddingVertical: 12,
+                      shadowColor: '#2A2320',
+                      shadowOpacity: 0.05,
+                      shadowRadius: 10,
+                      shadowOffset: { width: 0, height: 3 },
+                      elevation: 2,
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginBottom: 8,
+                      }}
+                    >
+                      <Ionicons name="calculator-outline" size={14} color="#A39685" />
+                      <Text
+                        style={{
+                          fontFamily: 'IBMPlexSansThai_600SemiBold',
+                          fontSize: 12,
+                          marginLeft: 6,
+                        }}
+                        className="text-muted-foreground"
+                      >
+                        สรุป {THAI_MONTHS[m.month]} {m.year + 543}
+                      </Text>
+                      <View style={{ flex: 1 }} />
+                      <Text
+                        style={{
+                          fontFamily: 'IBMPlexSansThai_400Regular',
+                          fontSize: 10,
+                          fontVariant: ['tabular-nums'],
+                        }}
+                        className="text-muted-foreground"
+                      >
+                        {daysInMonth} วัน
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'stretch',
+                        gap: 10,
+                      }}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11 }}
+                          className="text-muted-foreground"
+                        >
+                          รายจ่าย
+                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+                          <Text
+                            style={{
+                              fontFamily: 'Inter_700Bold',
+                              fontSize: 15,
+                              fontVariant: ['tabular-nums'],
+                              color: '#C65A4E',
+                              marginTop: 2,
+                            }}
+                            numberOfLines={1}
+                          >
+                            -{formatCurrency(monthExpense)}
+                          </Text>
+                          <Text
+                            style={{
+                              fontFamily: 'IBMPlexSansThai_400Regular',
+                              fontSize: 11,
+                              fontVariant: ['tabular-nums'],
+                              marginTop: 2,
+                            }}
+                            className="text-muted-foreground"
+                            numberOfLines={1}
+                          >
+                            เฉลี่ย - {formatCurrency(avgExpensePerDay)} / วัน
+                          </Text>
+                        </View>
+                      </View>
+                      {viewType === 'all' && (
+                        <>
+                          <View
+                            style={{
+                              width: 1,
+                              backgroundColor: 'rgba(42,35,32,0.08)',
+                            }}
+                          />
+                          <View style={{ flex: 1 }}>
+                            <Text
+                              style={{
+                                fontFamily: 'IBMPlexSansThai_400Regular',
+                                fontSize: 11,
+                              }}
+                              className="text-muted-foreground"
+                            >
+                              คงเหลือ
+                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+
+                              <Text
+                                style={{
+                                  fontFamily: 'Inter_700Bold',
+                                  fontSize: 15,
+                                  fontVariant: ['tabular-nums'],
+                                  color: monthBalance >= 0 ? '#3E8B68' : '#C65A4E',
+                                  marginTop: 2,
+                                }}
+                                numberOfLines={1}
+                              >
+                                {monthBalance >= 0 ? '+' : '-'}
+                                {formatCurrency(Math.abs(monthBalance))}
+                              </Text>
+                              <Text
+                                style={{
+                                  fontFamily: 'IBMPlexSansThai_400Regular',
+                                  fontSize: 11,
+                                  fontVariant: ['tabular-nums'],
+                                  marginTop: 2,
+                                  color:
+                                    avgBalancePerDay >= 0 ? '#3E8B68' : '#C65A4E',
+                                  opacity: 0.85,
+                                }}
+                                numberOfLines={1}
+                              >
+                                เฉลี่ย {avgBalancePerDay >= 0 ? '+' : '-'}
+                                {formatCurrency(Math.abs(avgBalancePerDay))} / วัน
+                              </Text>
+                            </View>
+                          </View>
+                        </>
+                      )}
+                    </View>
+                  </View>
+                )}
+              </View>
+            );
+          })}
 
           {selectedDay && selectedTxs.length > 0 && (
             <View className="mx-4 mt-2 bg-card" style={{ borderRadius: 20, overflow: 'hidden', shadowColor: '#2A2320', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 }}>
