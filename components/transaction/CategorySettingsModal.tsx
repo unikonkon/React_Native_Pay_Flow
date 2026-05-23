@@ -8,10 +8,10 @@ import { useTransactionStore } from '@/lib/stores/transaction-store';
 import type { Category, TransactionType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
-  useBottomSheetTimingConfigs,
-  type BottomSheetBackdropProps,
+    BottomSheetBackdrop,
+    BottomSheetScrollView,
+    useBottomSheetTimingConfigs,
+    type BottomSheetBackdropProps,
 } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -736,74 +736,6 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
 
             <View style={{ height: 1, backgroundColor: 'rgba(42,35,32,0.08)', marginBottom: 20 }} />
 
-            {/* Unified TransactionForm preview — shared across the next 3 sections
-                (หมวดหมู่ที่ใช้บ่อย, รายการที่ใช้บ่อย ในฟอร์ม, หมวดหมู่ในกระเป๋า). */}
-            <TransactionFormPreview
-              showCommonCategories={showCommonCategories}
-              commonCategoryLimit={commonCategoryLimit}
-              showTopCategories={showTopCategories}
-              topCategoryLimit={topCategoryLimit}
-              showFrequentPills={showFrequentPills}
-              categories={allCommonCats}
-            />
-
-            {/* Section: หมวดหมู่ในกระเป๋า */}
-            <View style={{ marginBottom: 10 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">
-                    หมวดหมู่ในกระเป๋า
-                  </Text>
-                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">
-                    แสดงหมวดหมู่เริ่มต้นที่มีอยู่ในระบบ
-                  </Text>
-                </View>
-                <Switch
-                  value={showCommonCategories}
-                  onValueChange={(v) => handleToggle('showCommonCategories', v)}
-                  trackColor={{ false: '#A89888', true: '#E87A3D' }}
-                  thumbColor="#bbb4a4"
-                />
-              </View>
-              {showCommonCategories && (
-                <Fragment>
-                  <View style={{
-                    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-                    backgroundColor: 'rgba(42,35,32,0.03)', borderRadius: 12, padding: 12, marginBottom: 10,
-                  }}>
-                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground">
-                      จำนวนที่แสดง
-                    </Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                      <Pressable
-                        onPress={() => handleCount('commonCategoryLimit', -1)}
-                        style={{
-                          width: 32, height: 32, borderRadius: 16,
-                          alignItems: 'center', justifyContent: 'center',
-                          backgroundColor: commonCategoryLimit <= 3 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
-                        }}
-                      >
-                        <Ionicons name="remove" size={16} color={commonCategoryLimit <= 3 ? '#D1C7BC' : '#E87A3D'} />
-                      </Pressable>
-                      <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 18, fontVariant: ['tabular-nums'], minWidth: 28, textAlign: 'center' }} className="text-foreground">
-                        {commonCategoryLimit}
-                      </Text>
-                      <Pressable
-                        onPress={() => handleCount('commonCategoryLimit', 1)}
-                        style={{
-                          width: 32, height: 32, borderRadius: 16,
-                          alignItems: 'center', justifyContent: 'center',
-                          backgroundColor: commonCategoryLimit >= 29 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
-                        }}
-                      >
-                        <Ionicons name="add" size={16} color={commonCategoryLimit >= 29 ? '#D1C7BC' : '#E87A3D'} />
-                      </Pressable>
-                    </View>
-                  </View>
-                </Fragment>
-              )}
-            </View>
-
             {/* Section: หมวดหมู่ที่ใช้บ่อย */}
             <View style={{ marginBottom: 10 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -972,6 +904,74 @@ export function CategorySettingsModal({ visible, type, onClose }: Props) {
             </View>
 
             <View style={{ height: 1, backgroundColor: 'rgba(42,35,32,0.08)', marginBottom: 20 }} />
+
+            {/* Unified TransactionForm preview — shared across the next 3 sections
+                (หมวดหมู่ที่ใช้บ่อย, รายการที่ใช้บ่อย ในฟอร์ม, หมวดหมู่ในกระเป๋า). */}
+            <TransactionFormPreview
+              showCommonCategories={showCommonCategories}
+              commonCategoryLimit={commonCategoryLimit}
+              showTopCategories={showTopCategories}
+              topCategoryLimit={topCategoryLimit}
+              showFrequentPills={showFrequentPills}
+              categories={allCommonCats}
+            />
+
+            {/* Section: หมวดหมู่ในกระเป๋า */}
+            <View style={{ marginBottom: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground">
+                    หมวดหมู่ในกระเป๋า
+                  </Text>
+                  <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 12, marginTop: 2 }} className="text-muted-foreground">
+                    แสดงหมวดหมู่เริ่มต้นที่มีอยู่ในระบบ
+                  </Text>
+                </View>
+                <Switch
+                  value={showCommonCategories}
+                  onValueChange={(v) => handleToggle('showCommonCategories', v)}
+                  trackColor={{ false: '#A89888', true: '#E87A3D' }}
+                  thumbColor="#bbb4a4"
+                />
+              </View>
+              {showCommonCategories && (
+                <Fragment>
+                  <View style={{
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                    backgroundColor: 'rgba(42,35,32,0.03)', borderRadius: 12, padding: 12, marginBottom: 10,
+                  }}>
+                    <Text style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 14 }} className="text-foreground">
+                      จำนวนที่แสดง
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                      <Pressable
+                        onPress={() => handleCount('commonCategoryLimit', -1)}
+                        style={{
+                          width: 32, height: 32, borderRadius: 16,
+                          alignItems: 'center', justifyContent: 'center',
+                          backgroundColor: commonCategoryLimit <= 3 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                        }}
+                      >
+                        <Ionicons name="remove" size={16} color={commonCategoryLimit <= 3 ? '#D1C7BC' : '#E87A3D'} />
+                      </Pressable>
+                      <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 18, fontVariant: ['tabular-nums'], minWidth: 28, textAlign: 'center' }} className="text-foreground">
+                        {commonCategoryLimit}
+                      </Text>
+                      <Pressable
+                        onPress={() => handleCount('commonCategoryLimit', 1)}
+                        style={{
+                          width: 32, height: 32, borderRadius: 16,
+                          alignItems: 'center', justifyContent: 'center',
+                          backgroundColor: commonCategoryLimit >= 29 ? 'rgba(42,35,32,0.05)' : 'rgba(232,122,61,0.12)',
+                        }}
+                      >
+                        <Ionicons name="add" size={16} color={commonCategoryLimit >= 29 ? '#D1C7BC' : '#E87A3D'} />
+                      </Pressable>
+                    </View>
+                  </View>
+                </Fragment>
+              )}
+            </View>
 
             {/* Reorder/Delete grid */}
             <View style={{ borderRadius: 12, padding: 8 }}>
