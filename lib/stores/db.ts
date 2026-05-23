@@ -415,6 +415,47 @@ export async function getTransactionsByMonth(
   return rows.map(mapTransactionRow);
 }
 
+/**
+ * Lean transaction row — no JOINed category/wallet columns.
+ * Used by the store's hot loader; cats/wallets are attached in JS from the
+ * already-loaded category/wallet stores (saves ~12 columns × N rows over the
+ * JS bridge and skips per-row JOIN work in SQLite).
+ */
+export type RawTxOnlyRow = {
+  id: string;
+  type: string;
+  amount: number;
+  category_id: string;
+  note: string | null;
+  date: string;
+  created_at: string;
+  wallet_id: string | null;
+};
+
+export async function getRawTransactionsByRange(
+  db: SQLiteDatabase,
+  start: string,
+  end: string,
+  walletId?: string | null,
+  limit?: number,
+): Promise<RawTxOnlyRow[]> {
+  const params: (string | number)[] = [start, end];
+  let walletFilter = "";
+  if (walletId) {
+    walletFilter = " AND wallet_id = ?";
+    params.push(walletId);
+  }
+  const limitClause = limit && limit > 0 ? ` LIMIT ${limit}` : "";
+
+  return db.getAllAsync<RawTxOnlyRow>(
+    `SELECT id, type, amount, category_id, note, date, created_at, wallet_id
+     FROM transactions
+     WHERE date BETWEEN ? AND ?${walletFilter}
+     ORDER BY date DESC, created_at DESC${limitClause}`,
+    params,
+  );
+}
+
 export async function getTransactionsByRange(
   db: SQLiteDatabase,
   start: string,

@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import type { Period, Transaction, TransactionType } from '@/types';
 import {
   getDb,
-  getTransactionsByRange,
+  getRawTransactionsByRange,
   getSummaryByRange,
   insertTransaction,
   updateTransaction as updateTx,
@@ -15,6 +15,10 @@ import { getCurrentPeriod, getPeriodRange } from '@/lib/utils/period';
 import { sendBudgetAlert, sendDailyBudgetAlert } from '@/lib/utils/notifications';
 import { getToday } from '@/lib/utils/format';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
+import { useCategoryStore } from '@/lib/stores/category-store';
+import { useWalletStore } from '@/lib/stores/wallet-store';
+
+const TX_LIMIT = 1000;
 
 const SELECTED_WALLET_KEY = 'selected_wallet_id';
 
@@ -85,22 +89,42 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
       const walletId = get().selectedWalletId;
       const { start, end } = getPeriodRange(p);
       const db = getDb();
-      const transactions = await getTransactionsByRange(db, start, end, walletId);
+      const rows = await getRawTransactionsByRange(db, start, end, walletId, TX_LIMIT);
       // Stale guard: discard result if a newer load was started
       if (id !== _loadId) return;
+
+      // Build lookup maps from already-loaded stores; avoids SQL JOIN on hot path.
+      const cats = useCategoryStore.getState().categories;
+      const wallets = useWalletStore.getState().wallets;
+      const catMap = new Map(cats.map(c => [c.id, c]));
+      const walletMap = new Map(wallets.map(w => [w.id, w]));
+
+      const transactions: Transaction[] = new Array(rows.length);
       let totalIncome = 0;
       let totalExpense = 0;
-      for (const t of transactions) {
-        if (t.type === 'income') totalIncome += t.amount;
-        else if (t.type === 'expense') totalExpense += t.amount;
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        const walletId2 = r.wallet_id ?? 'wallet-cash';
+        const tx: Transaction = {
+          id: r.id,
+          type: r.type as TransactionType,
+          amount: r.amount,
+          categoryId: r.category_id,
+          note: r.note ?? undefined,
+          date: r.date,
+          createdAt: r.created_at,
+          walletId: walletId2,
+          category: catMap.get(r.category_id),
+          wallet: walletMap.get(walletId2),
+        };
+        transactions[i] = tx;
+        if (tx.type === 'income') totalIncome += tx.amount;
+        else if (tx.type === 'expense') totalExpense += tx.amount;
       }
-      set({ transactions, totalIncome, totalExpense });
+      set({ transactions, totalIncome, totalExpense, isLoading: false });
     } catch (err) {
       console.error('[loadTransactions]', err);
-    } finally {
-      if (id === _loadId) {
-        set({ isLoading: false });
-      }
+      if (id === _loadId) set({ isLoading: false });
     }
   },
 
