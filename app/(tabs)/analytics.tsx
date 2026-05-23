@@ -20,6 +20,7 @@ export default function AnalyticsScreen() {
   const setCurrentPeriod = useTransactionStore(s => s.setCurrentPeriod);
   const selectedWalletId = useTransactionStore(s => s.selectedWalletId);
   const setSelectedWalletId = useTransactionStore(s => s.setSelectedWalletId);
+  const isLoading = useTransactionStore(s => s.isLoading);
   const params = useLocalSearchParams<{ view?: string }>();
   const initialView: ViewType =
     params.view === 'income' || params.view === 'expense' || params.view === 'all'
@@ -88,6 +89,7 @@ export default function AnalyticsScreen() {
                 onChange={setCurrentPeriod}
                 className=""
                 typeUI='compact'
+                isLoading={isLoading}
               />
             </View>
             {/* Expense / Income / All toggle */}
@@ -128,6 +130,43 @@ export default function AnalyticsScreen() {
           />
 
         </ScrollView>
+
+        {/* {isLoading && (
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              alignItems: 'center',
+              paddingTop: 100,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: 'rgba(43,33,24,0.85)',
+                paddingHorizontal: 14,
+                paddingVertical: 8,
+                borderRadius: 20,
+                gap: 8,
+              }}
+            >
+              <ActivityIndicator size="small" color="#fff" />
+              <Text
+                style={{
+                  fontFamily: 'IBMPlexSansThai_500Medium',
+                  fontSize: 12,
+                  color: '#fff',
+                }}
+              >
+                กำลังโหลด...
+              </Text>
+            </View>
+          </View>
+        )} */}
       </SafeAreaView>
     </WallpaperBackground>
   );

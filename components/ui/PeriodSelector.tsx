@@ -13,13 +13,14 @@ import type { Period, PeriodType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 
 interface Props {
   period: Period;
   onChange: (p: Period) => void;
   className?: string;
   typeUI?: 'full' | 'compact';
+  isLoading?: boolean;
 }
 
 type PresetType = Extract<
@@ -57,7 +58,7 @@ const formatShortThai = (d: Date, typeUI: 'full' | 'compact' = 'compact') => {
   return `${d.getDate()}   ${typeUI === 'full' ? THAI_MONTHS_FULL[d.getMonth()] : THAI_MONTHS[d.getMonth()]}   ${yy}`;
 };
 
-export function PeriodSelector({ period, onChange, className, typeUI = 'compact' }: Props) {
+export function PeriodSelector({ period, onChange, className, typeUI = 'compact', isLoading = false }: Props) {
   const [open, setOpen] = useState(false);
   const isDark = useIsDarkTheme();
   const chevronActive = isDark ? '#A39685' : '#6B5F52';
@@ -184,7 +185,11 @@ export function PeriodSelector({ period, onChange, className, typeUI = 'compact'
           <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 16 }} className="text-foreground" numberOfLines={1}>
             {formatPeriodLabel(period, typeUI)}
           </Text>
-          <Ionicons name="chevron-down" size={14} color="#A39685" style={{ marginLeft: 4 }} />
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#E87A3D" style={{ marginLeft: 4 }} />
+          ) : (
+            <Ionicons name="chevron-down" size={14} color="#A39685" style={{ marginLeft: 4 }} />
+          )}
         </Pressable>
         <Pressable
           onPress={() => { if (canShift) { Haptics.selectionAsync(); onChange(shiftPeriod(period, 1)); } }}

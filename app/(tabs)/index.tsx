@@ -17,7 +17,7 @@ import type { Analysis, Transaction } from '@/types';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Pressable, Text, View } from 'react-native';
+import { Alert, Image, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const CAT_INCOME = require('@/assets/summary/cat-income.png');
@@ -179,6 +179,7 @@ export default function TransactionsScreen() {
                 onChange={setCurrentPeriod}
                 className=""
                 typeUI='full'
+                isLoading={isLoading}
               />
             </View>
           </View>
@@ -271,7 +272,7 @@ export default function TransactionsScreen() {
           }
         />
 
-        {isLoading && (
+        {/* {isLoading && (
           <View
             pointerEvents="none"
             style={{
@@ -306,7 +307,7 @@ export default function TransactionsScreen() {
               </Text>
             </View>
           </View>
-        )}
+        )} */}
 
         <FAB onPress={handleAddNew} />
       </SafeAreaView>
