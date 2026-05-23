@@ -8,7 +8,7 @@ import { useThemeStore } from '@/lib/stores/theme-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -18,7 +18,6 @@ export default function AnalyticsScreen() {
   const transactions = useTransactionStore(s => s.transactions);
   const currentPeriod = useTransactionStore(s => s.currentPeriod);
   const setCurrentPeriod = useTransactionStore(s => s.setCurrentPeriod);
-  const loadTransactions = useTransactionStore(s => s.loadTransactions);
   const selectedWalletId = useTransactionStore(s => s.selectedWalletId);
   const setSelectedWalletId = useTransactionStore(s => s.setSelectedWalletId);
   const params = useLocalSearchParams<{ view?: string }>();
@@ -37,17 +36,6 @@ export default function AnalyticsScreen() {
   }, [params.view]);
 
   const { expenseByCategory, incomeByCategory, balance } = useSummary(transactions);
-
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      loadTransactions(currentPeriod);
-    }, 150);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [currentPeriod, loadTransactions]);
 
   const allByCategory = useMemo(() => {
     const map = new Map<string, typeof expenseByCategory[number]>();

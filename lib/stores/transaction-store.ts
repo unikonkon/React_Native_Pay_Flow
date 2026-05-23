@@ -85,17 +85,16 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
       const walletId = get().selectedWalletId;
       const { start, end } = getPeriodRange(p);
       const db = getDb();
-      const [transactions, summary] = await Promise.all([
-        getTransactionsByRange(db, start, end, walletId),
-        getSummaryByRange(db, start, end, walletId),
-      ]);
+      const transactions = await getTransactionsByRange(db, start, end, walletId);
       // Stale guard: discard result if a newer load was started
       if (id !== _loadId) return;
-      set({
-        transactions,
-        totalIncome: summary.totalIncome,
-        totalExpense: summary.totalExpense,
-      });
+      let totalIncome = 0;
+      let totalExpense = 0;
+      for (const t of transactions) {
+        if (t.type === 'income') totalIncome += t.amount;
+        else if (t.type === 'expense') totalExpense += t.amount;
+      }
+      set({ transactions, totalIncome, totalExpense });
     } catch (err) {
       console.error('[loadTransactions]', err);
     } finally {

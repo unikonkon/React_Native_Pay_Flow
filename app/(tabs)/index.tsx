@@ -16,8 +16,8 @@ import { formatCurrency, getToday } from '@/lib/utils/format';
 import type { Analysis, Transaction } from '@/types';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Image, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const CAT_INCOME = require('@/assets/summary/cat-income.png');
@@ -28,8 +28,8 @@ export default function TransactionsScreen() {
   const transactions = useTransactionStore(s => s.transactions);
   const currentPeriod = useTransactionStore(s => s.currentPeriod);
   const setCurrentPeriod = useTransactionStore(s => s.setCurrentPeriod);
-  const loadTransactions = useTransactionStore(s => s.loadTransactions);
   const selectedWalletId = useTransactionStore(s => s.selectedWalletId);
+  const isLoading = useTransactionStore(s => s.isLoading);
   const setSelectedWalletId = useTransactionStore(s => s.setSelectedWalletId);
   const deleteTransaction = useTransactionStore(s => s.deleteTransaction);
   const deleteTransactions = useTransactionStore(s => s.deleteTransactions);
@@ -69,17 +69,6 @@ export default function TransactionsScreen() {
   // Reset dismiss when target changes (so user sees the new threshold)
   useEffect(() => { setDismissDaily(false); }, [dailyExpenseTarget, isDailyTargetEnabled]);
   useEffect(() => { setDismissMonthly(false); }, [monthlyExpenseTarget, isMonthlyTargetEnabled]);
-
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      loadTransactions(currentPeriod);
-    }, 150);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [currentPeriod, loadTransactions]);
 
   // Reload frequent analyses only when wallet filter changes
   useEffect(() => {
@@ -251,42 +240,73 @@ export default function TransactionsScreen() {
 
         </View>
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
+        <TransactionList
+          transactions={transactions}
+          onItemPress={handleItemPress}
+          onItemLongPress={handleItemLongPress}
+          onDeleteItem={handleDeleteItem}
+          onDeleteGroup={handleDeleteGroup}
+          onCopyItem={handleCopyItem}
           contentContainerStyle={{ paddingBottom: 20 }}
-        >
+          ListHeaderComponent={
+            <View>
+              {isDailyTargetEnabled && !dismissDaily && (
+                <AlertBanner
+                  scope="daily"
+                  currentExpense={todayExpense}
+                  target={dailyExpenseTarget}
+                  onDismiss={() => setDismissDaily(true)}
+                />
+              )}
+              {isMonthlyTargetEnabled && !dismissMonthly && (
+                <AlertBanner
+                  scope="monthly"
+                  currentExpense={totalExpense}
+                  target={monthlyExpenseTarget}
+                  onDismiss={() => setDismissMonthly(true)}
+                />
+              )}
+              <FrequentTransactions onSelect={handleFrequentSelect} />
+            </View>
+          }
+        />
 
-          {/* Budget Alerts */}
-          {isDailyTargetEnabled && !dismissDaily && (
-            <AlertBanner
-              scope="daily"
-              currentExpense={todayExpense}
-              target={dailyExpenseTarget}
-              onDismiss={() => setDismissDaily(true)}
-            />
-          )}
-          {isMonthlyTargetEnabled && !dismissMonthly && (
-            <AlertBanner
-              scope="monthly"
-              currentExpense={totalExpense}
-              target={monthlyExpenseTarget}
-              onDismiss={() => setDismissMonthly(true)}
-            />
-          )}
-
-          <FrequentTransactions
-            onSelect={handleFrequentSelect}
-          />
-
-          <TransactionList
-            transactions={transactions}
-            onItemPress={handleItemPress}
-            onItemLongPress={handleItemLongPress}
-            onDeleteItem={handleDeleteItem}
-            onDeleteGroup={handleDeleteGroup}
-            onCopyItem={handleCopyItem}
-          />
-        </ScrollView>
+        {isLoading && (
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              alignItems: 'center',
+              paddingTop: 100,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: 'rgba(43,33,24,0.85)',
+                paddingHorizontal: 14,
+                paddingVertical: 8,
+                borderRadius: 20,
+                gap: 8,
+              }}
+            >
+              <ActivityIndicator size="small" color="#fff" />
+              <Text
+                style={{
+                  fontFamily: 'IBMPlexSansThai_500Medium',
+                  fontSize: 12,
+                  color: '#fff',
+                }}
+              >
+                กำลังโหลด...
+              </Text>
+            </View>
+          </View>
+        )}
 
         <FAB onPress={handleAddNew} />
       </SafeAreaView>
