@@ -61,11 +61,12 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
   totalExpense: 0,
 
   setCurrentPeriod: (period) => {
-    set({ currentPeriod: period });
+    // Set period + isLoading together so subscribers re-render once instead of twice.
+    set({ currentPeriod: period, isLoading: true });
     get().loadTransactions(period);
   },
   setSelectedWalletId: (id) => {
-    set({ selectedWalletId: id });
+    set({ selectedWalletId: id, isLoading: true });
     AsyncStorage.setItem(SELECTED_WALLET_KEY, id ?? '').catch(() => {});
     get().loadTransactions();
   },
@@ -83,7 +84,9 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
 
   loadTransactions: async (period) => {
     const id = ++_loadId;
-    set({ isLoading: true });
+    // Caller (e.g. setCurrentPeriod) may have already set isLoading=true; only
+    // notify subscribers when the flag actually changes.
+    if (!get().isLoading) set({ isLoading: true });
     try {
       const p = period ?? get().currentPeriod;
       const walletId = get().selectedWalletId;

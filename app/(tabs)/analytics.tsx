@@ -38,7 +38,11 @@ export default function AnalyticsScreen() {
 
   const { expenseByCategory, incomeByCategory, balance } = useSummary(transactions);
 
+  // Only merge expense + income into the unified breakdown when the user is
+  // looking at the combined view. Skipping this when viewType is expense/income
+  // avoids a Map allocation + sort on every transactions update.
   const allByCategory = useMemo(() => {
+    if (viewType !== 'all') return [];
     const map = new Map<string, typeof expenseByCategory[number]>();
     for (const item of [...expenseByCategory, ...incomeByCategory]) {
       const existing = map.get(item.categoryId);
@@ -55,7 +59,7 @@ export default function AnalyticsScreen() {
       r.percentage = grandTotal > 0 ? (r.total / grandTotal) * 100 : 0;
     }
     return result.sort((a, b) => b.total - a.total);
-  }, [expenseByCategory, incomeByCategory]);
+  }, [viewType, expenseByCategory, incomeByCategory]);
 
   const data = viewType === 'expense' ? expenseByCategory : viewType === 'income' ? incomeByCategory : allByCategory;
   const title = viewType === 'expense' ? 'สัดส่วนรายจ่ายตามหมวดหมู่' : viewType === 'income' ? 'สัดส่วนรายรับตามหมวดหมู่' : 'สัดส่วนรวมตามหมวดหมู่';

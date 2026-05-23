@@ -9,7 +9,6 @@ import { WalletFilter } from '@/components/wallet/WalletFilter';
 import { getBgMascotSource } from '@/lib/constants/mascots';
 import { useAlertSettingsStore } from '@/lib/stores/alert-settings-store';
 import { useAnalysisStore } from '@/lib/stores/analysis-store';
-import { getDb, getSummaryByRange } from '@/lib/stores/db';
 import { getPeriodRange } from '@/lib/utils/period';
 import { useThemeStore } from '@/lib/stores/theme-store';
 import { useTransactionStore } from '@/lib/stores/transaction-store';
@@ -50,34 +49,22 @@ export default function TransactionsScreen() {
   const [dismissDaily, setDismissDaily] = useState(false);
   const [dismissMonthly, setDismissMonthly] = useState(false);
 
-  // Today's expense — derive from in-memory transactions when today is inside the
-  // currently-loaded period (saves a round-trip SQL). Falls back to a one-shot
-  // query when today is outside the period (e.g., user paged to a past month).
+  // Today's expense — derived ONLY from in-memory transactions. If today is
+  // outside the currently-loaded period (user paged to a past/future month),
+  // we keep it at 0 instead of issuing a separate SQL query — the daily banner
+  // is only meaningful for the live "today" view anyway.
   const [todayExpense, setTodayExpense] = useState(0);
   useEffect(() => {
     if (!isDailyTargetEnabled) { setTodayExpense(0); return; }
     const today = getToday();
     const { start, end } = getPeriodRange(currentPeriod);
-    if (today >= start && today <= end) {
-      let sum = 0;
-      for (const t of transactions) {
-        if (t.type === 'expense' && t.date === today) sum += t.amount;
-      }
-      setTodayExpense(sum);
-      return;
+    if (today < start || today > end) { setTodayExpense(0); return; }
+    let sum = 0;
+    for (const t of transactions) {
+      if (t.type === 'expense' && t.date === today) sum += t.amount;
     }
-    // Today is outside the loaded period — issue a small targeted query.
-    let cancelled = false;
-    (async () => {
-      try {
-        const summary = await getSummaryByRange(getDb(), today, today, selectedWalletId);
-        if (!cancelled) setTodayExpense(summary.totalExpense);
-      } catch {
-        if (!cancelled) setTodayExpense(0);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [transactions, currentPeriod, selectedWalletId, isDailyTargetEnabled]);
+    setTodayExpense(sum);
+  }, [transactions, currentPeriod, isDailyTargetEnabled]);
 
   // Reset dismiss when target changes (so user sees the new threshold)
   useEffect(() => { setDismissDaily(false); }, [dailyExpenseTarget, isDailyTargetEnabled]);
