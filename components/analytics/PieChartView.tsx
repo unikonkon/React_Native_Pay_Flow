@@ -1,9 +1,10 @@
 import { CatCategoryIcon } from '@/components/common/CatCategoryIcon';
 import { formatCurrency } from '@/lib/utils/format';
+import { getPeriodRange } from '@/lib/utils/period';
 import type { Category, CategorySummary, Period } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
 import { AllTransactionsCalendarModal } from './AllTransactionsCalendarModal';
@@ -38,6 +39,15 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [showAllModal, setShowAllModal] = useState(false);
   const [showCompareModal, setShowCompareModal] = useState(false);
+
+  const daysInPeriod = useMemo(() => {
+    if (!period) return 1;
+    const { start, end } = getPeriodRange(period);
+    const s = new Date(start);
+    const e = new Date(end);
+    const days = Math.round((e.getTime() - s.getTime()) / 86400000) + 1;
+    return Math.max(1, days);
+  }, [period]);
 
   if (data.length === 0) {
     return (
@@ -326,7 +336,7 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
                 strokeColor={color}
               />
               <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6}}>
                   {viewType === 'all' && item.category && (
                     <View
                       style={{
@@ -350,12 +360,21 @@ export function PieChartView({ data, title, minPercentage = 0, period, walletId,
                       </Text>
                     </View>
                   )}
+
                   <Text
                     numberOfLines={1}
                     style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15, flexShrink: 1 }}
                     className="text-foreground"
                   >
                     {item.category?.name ?? 'อื่น ๆ'}
+                  </Text>
+
+                  <Text
+                    numberOfLines={1}
+                    style={{ fontFamily: 'IBMPlexSansThai_400Regular', fontSize: 11, fontVariant: ['tabular-nums'], flexShrink: 1 }}
+                    className="text-muted-foreground"
+                  >
+                    เฉลี่ย {formatCurrency(item.total / daysInPeriod)}/วัน
                   </Text>
                 </View>
                 {/* Progress bar */}

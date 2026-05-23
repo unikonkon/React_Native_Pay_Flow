@@ -83,7 +83,7 @@ export function TransactionGroupItem({
 
       <View className="flex-1" style={{ minWidth: 0 }}>
         <View className="flex-row items-center" style={{ gap: 7 }}>
-          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 15 }} className="text-foreground" numberOfLines={1}>
+          <Text style={{ fontFamily: 'IBMPlexSansThai_600SemiBold', fontSize: 13 }} className="text-foreground" numberOfLines={1}>
             {head.category?.name ?? 'ไม่ระบุ'}
           </Text>
           {isGroup && (

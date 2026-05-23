@@ -17,8 +17,8 @@ export function DayGroupHeader({ date, income, expense }: DayGroupHeaderProps) {
     <View
       className="self-start flex-row items-center bg-accent"
       style={{
-        borderTopLeftRadius: 14,
-        borderTopRightRadius: 14,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
         borderBottomRightRadius: 14,
         paddingHorizontal: 12,
         paddingVertical: 5,
