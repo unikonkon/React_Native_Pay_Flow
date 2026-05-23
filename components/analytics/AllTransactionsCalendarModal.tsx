@@ -21,9 +21,15 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
   const allTransactions = useTransactionStore(s => s.transactions);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
+  const [expandedMonthAvg, setExpandedMonthAvg] = useState<Set<string>>(new Set());
+  const [expandedAvgDays, setExpandedAvgDays] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!visible) setSelectedDay(null);
+    if (!visible) {
+      setSelectedDay(null);
+      setExpandedMonthAvg(new Set());
+      setExpandedAvgDays(new Set());
+    }
   }, [visible]);
 
   useEffect(() => {
@@ -196,6 +202,11 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
             const monthBalance = monthIncome - monthExpense;
             const avgExpensePerDay = daysInMonth > 0 ? monthExpense / daysInMonth : 0;
             const avgBalancePerDay = daysInMonth > 0 ? monthBalance / daysInMonth : 0;
+            const exceedingDays = m.days
+              .filter(d => (d.expenseAmount ?? 0) > avgExpensePerDay && (d.expenseAmount ?? 0) > 0)
+              .sort((a, b) => (b.expenseAmount ?? 0) - (a.expenseAmount ?? 0));
+            const monthKey = `${m.year}-${m.month}`;
+            const isMonthAvgExpanded = expandedMonthAvg.has(monthKey);
 
             return (
               <View key={`${m.year}-${m.month}`}>
@@ -346,6 +357,221 @@ export function AllTransactionsCalendarModal({ visible, onClose, period, walletI
                         </>
                       )}
                     </View>
+
+                    {exceedingDays.length > 0 && (
+                      <>
+                        <Pressable
+                          onPress={() => {
+                            Haptics.selectionAsync();
+                            setExpandedMonthAvg(prev => {
+                              const next = new Set(prev);
+                              if (next.has(monthKey)) next.delete(monthKey);
+                              else next.add(monthKey);
+                              return next;
+                            });
+                          }}
+                          style={({ pressed }) => ({
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginTop: 12,
+                            paddingTop: 10,
+                            borderTopWidth: 0.5,
+                            borderTopColor: 'rgba(42,35,32,0.08)',
+                            opacity: pressed ? 0.7 : 1,
+                          })}
+                        >
+                          {/* <View
+                            style={{
+                              width: 22,
+                              height: 22,
+                              borderRadius: 11,
+                              backgroundColor: '#FBE5E1',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              marginRight: 8,
+                            }}
+                          >
+                            <Ionicons name="flame" size={12} color="#C65A4E" />
+                          </View> */}
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, justifyContent: 'space-between' }}
+                            className="pt-3"
+                          >
+                            <Text
+                              style={{
+                                fontFamily: 'IBMPlexSansThai_600SemiBold',
+                                fontSize: 12,
+                              }}
+                              className="text-foreground"
+                            >
+                              {exceedingDays.length} วันใช้เกินค่าเฉลี่ย
+                            </Text>
+                            <View style={{ flex: 1 }} />
+                            <Text
+                              style={{
+                                fontFamily: 'IBMPlexSansThai_400Regular',
+                                fontSize: 10,
+                                marginRight: 6,
+                              }}
+                              className="text-muted-foreground"
+                            >
+                              {isMonthAvgExpanded ? 'ดู' : 'ซ่อน'}
+                            </Text>
+
+                            <Ionicons
+                              name={isMonthAvgExpanded ? 'chevron-up' : 'chevron-down'}
+                              size={13}
+                              color="#A39685"
+                            />
+                          </View>
+                        </Pressable>
+
+                        {!isMonthAvgExpanded && (
+                          <View style={{ marginTop: 4 }}>
+                            {exceedingDays.map((d, idx) => {
+                              const dateStr = `${m.year}-${String(m.month + 1).padStart(2, '0')}-${String(d.day).padStart(2, '0')}`;
+                              const isDayExpanded = expandedAvgDays.has(dateStr);
+                              const dayExpense = d.expenseAmount ?? 0;
+                              const excess = dayExpense - avgExpensePerDay;
+                              const expenseTxs = (d.txs ?? []).filter(t => t.type === 'expense');
+
+                              return (
+                                <View key={dateStr} className="pt-3">
+                                  <Pressable
+                                    onPress={() => {
+                                      Haptics.selectionAsync();
+                                      setExpandedAvgDays(prev => {
+                                        const next = new Set(prev);
+                                        if (next.has(dateStr)) next.delete(dateStr);
+                                        else next.add(dateStr);
+                                        return next;
+                                      });
+                                    }}
+                                    style={({ pressed }) => ({
+                                      flexDirection: 'row',
+                                      alignItems: 'center',
+                                      paddingVertical: 8,
+                                      borderTopWidth: idx > 0 ? 0.5 : 0,
+                                      borderTopColor: 'rgba(42,35,32,0.05)',
+                                      opacity: pressed ? 0.7 : 1,
+                                    })}
+                                  >
+
+                                    <View style={{ flex: 1 }}>
+                                      <Text
+                                        style={{
+                                          fontFamily: 'IBMPlexSansThai_600SemiBold',
+                                          fontSize: 12,
+                                        }}
+                                        className="text-foreground"
+                                        numberOfLines={1}
+                                      >
+                                        {formatThaiFullDate(dateStr)}
+                                      </Text>
+                                    </View>
+
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+                                      <Text
+                                        style={{
+                                          fontFamily: 'IBMPlexSansThai_600SemiBold',
+                                          fontSize: 12,
+                                          fontVariant: ['tabular-nums'],
+                                          marginRight: 6,
+                                        }}
+                                      >
+                                        ใช้ -{formatCurrency(dayExpense)}
+                                      </Text>
+                                      <Text
+                                        style={{
+                                          fontFamily: 'IBMPlexSansThai_400Regular',
+                                          fontSize: 10,
+                                          fontVariant: ['tabular-nums'],
+                                          color: '#C65A4E',
+                                          marginTop: 1,
+                                        }}
+                                        className="text-muted-foreground"
+                                        numberOfLines={1}
+                                      >
+                                        เกินเฉลี่ย +{formatCurrency(excess)} · {expenseTxs.length} รายการ
+
+                                      </Text>
+                                      <Ionicons
+                                        name={isDayExpanded ? 'chevron-up' : 'chevron-down'}
+                                        size={12}
+                                        color="#A39685"
+                                      />
+                                    </View>
+                                  </Pressable>
+
+                                  {isDayExpanded && expenseTxs.length > 0 && (
+                                    <View
+                                      style={{
+                                        marginLeft: 32,
+                                        marginBottom: 6,
+                                        paddingTop: 2,
+                                      }}
+                                    >
+                                      {expenseTxs
+                                        .sort((a, b) => b.amount - a.amount)
+                                        .map(tx => {
+                                          const catColor = tx.category?.color ?? '#D3CBC3';
+                                          const catName = tx.category?.name ?? 'อื่น ๆ';
+                                          const primary = tx.note || tx.wallet?.name || catName;
+                                          const overItem = tx.amount > avgExpensePerDay;
+                                          return (
+                                            <View
+                                              key={tx.id}
+                                              style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                paddingVertical: 5,
+                                                gap: 8,
+                                              }}
+                                            >
+                                              <View
+                                                style={{
+                                                  width: 6,
+                                                  height: 6,
+                                                  borderRadius: 3,
+                                                  backgroundColor: catColor,
+                                                }}
+                                              />
+                                              <View style={{ flex: 1 }}>
+                                                <Text
+                                                  style={{
+                                                    fontFamily: 'IBMPlexSansThai_400Regular',
+                                                    fontSize: 11,
+                                                  }}
+                                                  className="text-foreground"
+                                                  numberOfLines={1}
+                                                >
+                                                  {catName} · {primary}
+                                                </Text>
+                                              </View>
+                                              {overItem && (
+                                                <Ionicons name="warning" size={10} color="#C65A4E" />
+                                              )}
+                                              <Text
+                                                style={{
+                                                  fontFamily: 'Inter_600SemiBold',
+                                                  fontSize: 11,
+                                                  fontVariant: ['tabular-nums'],
+                                                  color: '#C65A4E',
+                                                }}
+                                              >
+                                                -{formatCurrency(tx.amount)}
+                                              </Text>
+                                            </View>
+                                          );
+                                        })}
+                                    </View>
+                                  )}
+                                </View>
+                              );
+                            })}
+                          </View>
+                        )}
+                      </>
+                    )}
                   </View>
                 )}
               </View>
