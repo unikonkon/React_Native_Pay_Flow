@@ -1,63 +1,93 @@
-# Welcome to your Expo app 👋
+# Money Maow (แมวมันนี่) 🐱💰
 
-ใช้ npx expo start รันเทส ต้องมี app Expo Go ใน โทรศัพ
+แอปบันทึกรายรับ-รายจ่ายบนมือถือ สร้างด้วย [Expo](https://expo.dev) + React Native รองรับ Android / iOS / Web
 
-✅ Your project is ready!
+## เทคโนโลยีหลัก
 
-To run your project, navigate to the directory and run one of the following npm commands.
+- **Expo SDK 54** + **React Native 0.81** + **React 19** + **TypeScript**
+- **Expo Router** — file-based routing (Bottom Tabs)
+- **NativeWind (Tailwind CSS)** — จัดการสไตล์
+- **Zustand** — state management
+- **expo-sqlite** — ฐานข้อมูลในเครื่อง
+- **Google Generative AI (Gemini)** — วิเคราะห์การเงินด้วย AI
+- **react-native-chart-kit / react-native-svg** — กราฟและแผนภูมิ
+- **ExcelJS** — นำเข้า/ส่งออกข้อมูล
 
-- cd my-app
-- npm run android
-- npm run ios
-- npm run web
+## ฟีเจอร์
 
+- 📝 บันทึกรายรับ-รายจ่าย พร้อมหมวดหมู่ (ปรับแต่ง/เพิ่มหมวดหมู่เองได้)
+- 👛 รองรับหลายกระเป๋าเงิน (Wallet)
+- 📊 หน้า Analytics — สรุปยอด, Pie Chart, ปฏิทินค่าใช้จ่าย, เปรียบเทียบรายจ่าย
+- 🤖 AI Analysis — วิเคราะห์การเงินและเป้าหมายการออมด้วย Gemini
+- 🎨 ธีมและ Wallpaper ปรับแต่งได้ (รองรับ Dark Mode)
+- 🔔 การแจ้งเตือน + ตั้งค่า Alert งบประมาณ
+- 🔐 ล็อกแอปด้วย Biometric (expo-local-authentication)
+- 📤 โอนย้ายข้อมูล นำเข้า/ส่งออก (Excel, ไฟล์ backup)
 
+## โครงสร้าง Project
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+```
+├── app/                      # หน้าจอ (Expo Router — file-based routing)
+│   ├── (tabs)/               # แท็บหลัก: หน้าแรก, Analytics, AI Analysis, More
+│   ├── transaction/add.tsx   # หน้าเพิ่มรายการ
+│   ├── settings/             # ตั้งค่า: ธีม, กระเป๋า, แจ้งเตือน, โอนย้ายข้อมูล
+│   └── _layout.tsx           # Root layout
+│
+├── components/               # UI Components แยกตามโดเมน
+│   ├── transaction/          # ฟอร์ม/รายการธุรกรรม, เลือกหมวดหมู่
+│   ├── analytics/            # กราฟ, ปฏิทิน, การ์ดสรุปยอด
+│   ├── ai/                   # แสดงผลวิเคราะห์ AI
+│   ├── wallet/               # จัดการกระเป๋าเงิน
+│   ├── settings/             # หน้าตั้งค่าย่อย
+│   ├── ui/                   # Component กลาง (FAB, AmountInput, PeriodSelector ฯลฯ)
+│   ├── common/               # ของใช้ร่วม (Calculator, ไอคอนแมว, Loading)
+│   └── layout/               # Wallpaper, HapticTab
+│
+├── lib/
+│   ├── stores/               # Zustand stores + SQLite (db.ts)
+│   ├── constants/            # หมวดหมู่, ธีม, มาสคอต, wallpaper
+│   ├── utils/                # format, period, notifications, auth ฯลฯ
+│   └── api/ai.ts             # เรียก Gemini API
+│
+├── hooks/                    # Custom hooks (useSummary)
+├── types/                    # TypeScript types กลาง
+├── assets/                   # รูปภาพ, ฟอนต์, ไอคอน
+├── docs/superpowers/         # เอกสาร spec / plan ของแต่ละ phase
+└── patches/                  # patch-package fixes
+```
 
-## Get started
+## เริ่มต้นใช้งาน
 
-1. Install dependencies
+1. ติดตั้ง dependencies
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. รันแอป (ต้องมีแอป Expo Go ในโทรศัพท์)
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+   หรือรันแยกตาม platform:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   ```bash
+   npm run android
+   npm run ios
+   npm run web
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Build (EAS)
 
 ```bash
-npm run reset-project
+npm run build:android:apk        # APK สำหรับทดสอบ (preview)
+npm run build:android:apk:prod   # APK production
+npm run build:android:local      # build ในเครื่อง
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## เอกสารเพิ่มเติม
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- [MOBILE-APP-ARCHITECTURE.md](MOBILE-APP-ARCHITECTURE.md) — สถาปัตยกรรมแอป
+- [App Build.md](App%20Build.md) — ขั้นตอนการ build
+- [docs/superpowers/](docs/superpowers/) — spec และ plan ของแต่ละฟีเจอร์
